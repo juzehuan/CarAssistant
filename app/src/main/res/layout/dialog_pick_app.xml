@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    应用选择弹窗
+    - 顶部标题区：主色渐变背景
+    - 中间搜索框 + 列表
+    - 底部按钮区：取消/确认
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog"
+    android:minHeight="420dp">
+
+    <!-- 标题区：主色渐变背景，圆角顶部 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_home_header"
+        android:paddingStart="22dp"
+        android:paddingEnd="22dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="18dp">
+
+        <TextView
+            android:id="@+id/tv_pick_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pick_app_title"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/dialog_title_size"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tv_pick_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/pick_app_subtitle"
+            android:textColor="@color/text_white_70"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+    <!-- 搜索框 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_search_input"
+        android:layout_marginStart="18dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginTop="14dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_search_white"
+            android:tint="@color/text_hint"
+            tools:ignore="UseAppTint"/>
+
+        <EditText
+            android:id="@+id/et_pick_search"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:background="@null"
+            android:hint="@string/pick_search_hint"
+            android:textColorHint="@color/text_hint"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:maxLines="1"
+            android:singleLine="true"/>
+
+        <ImageView
+            android:id="@+id/iv_pick_clear"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_panel_close"
+            android:tint="@color/text_hint"
+            android:padding="2dp"
+            android:visibility="gone"
+            tools:ignore="UseAppTint"/>
+    </LinearLayout>
+
+    <!-- 列表 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_pick"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:minHeight="240dp"
+        android:layout_marginTop="8dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:scrollbars="vertical"/>
+
+    <!-- 底部按钮区 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end|center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="18dp">
+
+        <Button
+            android:id="@+id/btn_pick_cancel"
+            style="@style/Widget.CarAssistant.DialogButton.Negative"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"/>
+
+        <Button
+            android:id="@+id/btn_pick_confirm"
+            style="@style/Widget.CarAssistant.DialogButton.Positive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@string/pick_app_confirm"/>
+    </LinearLayout>
+</LinearLayout>

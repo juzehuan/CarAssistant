@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 巨屏（≥1080dp，超大屏车机/车载大屏）适配 -->
+<resources>
+    <dimen name="page_padding">32dp</dimen>
+    <dimen name="card_radius">24dp</dimen>
+    <dimen name="card_radius_lg">28dp</dimen>
+    <dimen name="card_padding">32dp</dimen>
+    <dimen name="card_padding_lg">36dp</dimen>
+    <dimen name="card_elevation">3dp</dimen>
+    <dimen name="feature_icon_size">84dp</dimen>
+    <dimen name="float_button_size">68dp</dimen>
+    <dimen name="text_title">28sp</dimen>
+    <dimen name="text_subtitle">22sp</dimen>
+    <dimen name="text_body">20sp</dimen>
+    <dimen name="text_caption">17sp</dimen>
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">12dp</dimen>
+    <dimen name="spacing_lg">16dp</dimen>
+    <dimen name="spacing_xl">20dp</dimen>
+
+    <!-- 首页响应式布局 -->
+    <dimen name="home_card_margin">32dp</dimen>
+    <dimen name="home_card_padding">40dp</dimen>
+    <dimen name="home_section_margin">36dp</dimen>
+    <dimen name="home_feature_card_min_width">220dp</dimen>
+    <dimen name="home_feature_spacing">20dp</dimen>
+    <dimen name="home_feature_icon_size">80dp</dimen>
+    <dimen name="home_feature_title_size">22sp</dimen>
+
+    <!-- 功能卡片最小宽度（用于计算列数） -->
+    <dimen name="feature_card_min_width">220dp</dimen>
+    <dimen name="feature_card_spacing">20dp</dimen>
+
+    <!-- 内容最大宽度（限制大屏上卡片不拉伸过宽） -->
+    <dimen name="content_max_width">1400dp</dimen>
+
+    <!-- 弹窗 -->
+    <dimen name="dialog_corner">32dp</dimen>
+    <dimen name="dialog_padding_h">32dp</dimen>
+    <dimen name="dialog_padding_v">30dp</dimen>
+    <dimen name="dialog_title_size">26sp</dimen>
+    <dimen name="dialog_message_size">20sp</dimen>
+    <dimen name="dialog_button_height">60dp</dimen>
+    <dimen name="dialog_button_text">20sp</dimen>
+
+    <!-- 列表项 -->
+    <dimen name="list_item_padding_h">28dp</dimen>
+    <dimen name="list_item_padding_v">20dp</dimen>
+    <dimen name="list_item_corner">22dp</dimen>
+    <dimen name="list_item_icon_size">76dp</dimen>
+    <dimen name="list_item_title_size">24sp</dimen>
+    <dimen name="list_item_subtitle_size">18sp</dimen>
+
+    <!-- 渐变头部 -->
+    <dimen name="header_padding_h">38dp</dimen>
+    <dimen name="header_padding_top">44dp</dimen>
+    <dimen name="header_padding_bottom">40dp</dimen>
+    <dimen name="header_title_size">32sp</dimen>
+
+    <!-- 顶栏返回按钮 -->
+    <dimen name="back_btn_size">52dp</dimen>
+
+    <!-- 悬浮球面板 -->
+    <dimen name="float_panel_width">620dp</dimen>
+    <dimen name="float_panel_list_height">540dp</dimen>
+    <dimen name="float_panel_title_size">22sp</dimen>
+    <dimen name="float_panel_text_size">20sp</dimen>
+    <dimen name="float_app_icon_size">88dp</dimen>
+    <dimen name="float_app_name_size">16sp</dimen>
+
+    <!-- 首页头部信息 -->
+    <dimen name="home_header_title_size">32sp</dimen>
+    <dimen name="home_header_label_size">18sp</dimen>
+    <dimen name="home_header_value_size">21sp</dimen>
+    <dimen name="home_header_row_title_size">21sp</dimen>
+    <dimen name="home_header_row_sub_size">18sp</dimen>
+    <dimen name="home_section_title_size">21sp</dimen>
+    <dimen name="home_tip_size">18sp</dimen>
+
+    <!-- 控制面板 -->
+    <dimen name="control_icon_size">66dp</dimen>
+    <dimen name="control_toggle_icon_size">52dp</dimen>
+    <dimen name="control_toggle_text_size">18sp</dimen>
+    <dimen name="control_value_size">26sp</dimen>
+
+    <!-- 底部导航 -->
+    <dimen name="bottom_nav_text_size">18sp</dimen>
+</resources>

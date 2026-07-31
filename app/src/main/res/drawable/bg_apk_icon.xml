@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- APK 图标背景：绿色渐变 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:startColor="@color/icon_bg_app_start"
+        android:endColor="@color/icon_bg_app_end"
+        android:angle="45"
+        android:type="linear"/>
+</shape>

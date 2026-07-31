@@ -1,0 +1,10 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Phosphor Fill 风格暂停图标 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M8,5 L10,5 C10.55,5 11,5.45 11,6 L11,18 C11,18.55 10.55,19 10,19 L8,19 C7.45,19 7,18.55 7,18 L7,6 C7,5.45 7.45,5 8,5 Z M14,5 L16,5 C16.55,5 17,5.45 17,6 L17,18 C17,18.55 16.55,19 16,19 L14,19 C13.45,19 13,18.55 13,18 L13,6 C13,5.45 13.45,5 14,5 Z"/>
+</vector>

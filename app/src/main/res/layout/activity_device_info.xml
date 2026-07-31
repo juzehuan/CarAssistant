@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    设备信息页
+    - 渐变头部：返回 + 标题 + 截图按钮
+    - 基本信息卡：彩色图标 + 信息行
+    - 硬件配置卡：彩色图标 + 信息行
+    - 电量卡：彩色图标 + 信息行
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_home_header"
+        android:paddingStart="@dimen/page_padding"
+        android:paddingEnd="@dimen/header_padding_h"
+        android:paddingTop="@dimen/header_padding_top"
+        android:paddingBottom="@dimen/header_padding_bottom">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/btn_back"
+                android:layout_width="@dimen/back_btn_size"
+                android:layout_height="@dimen/back_btn_size"
+                android:src="@drawable/ic_back_white"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/back"
+                tools:ignore="UseAppTint"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="@string/device_title"
+                android:textColor="#FFFFFF"
+                android:textSize="@dimen/header_title_size"
+                android:textStyle="bold"/>
+
+            <Button
+                android:id="@+id/btn_screenshot"
+                style="@style/Widget.CarAssistant.Button.Secondary.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/device_screenshot"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#33FFFFFF"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/device_screenshot_dir"
+            android:textColor="@color/text_white_70"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/page_padding">
+
+            <!-- 基本信息 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding_lg"
+                android:background="@drawable/bg_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_feature_device"
+                        android:background="@drawable/bg_icon_device"
+                        android:padding="8dp"
+                        tools:ignore="UseAppTint"/>
+
+                    <TextView
+                        style="@style/CardTitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/device_basic"/>
+                </LinearLayout>
+
+                <include
+                    android:id="@+id/row_model"
+                    layout="@layout/item_info_row"/>
+                <include
+                    android:id="@+id/row_brand"
+                    layout="@layout/item_info_row"/>
+                <include
+                    android:id="@+id/row_android"
+                    layout="@layout/item_info_row"/>
+                <include
+                    android:id="@+id/row_sdk"
+                    layout="@layout/item_info_row"/>
+                <include
+                    android:id="@+id/row_security"
+                    layout="@layout/item_info_row"/>
+            </LinearLayout>
+
+            <!-- 硬件配置 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding_lg"
+                android:background="@drawable/bg_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_feature_monitor"
+                        android:background="@drawable/bg_icon_monitor"
+                        android:padding="8dp"
+                        tools:ignore="UseAppTint"/>
+
+                    <TextView
+                        style="@style/CardTitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/device_hardware"/>
+                </LinearLayout>
+
+                <include
+                    android:id="@+id/row_cpu"
+                    layout="@layout/item_info_row"/>
+                <include
+                    android:id="@+id/row_cores"
+                    layout="@layout/item_info_row"/>
+                <include
+                    android:id="@+id/row_memory"
+                    layout="@layout/item_info_row"/>
+                <include
+                    android:id="@+id/row_storage"
+                    layout="@layout/item_info_row"/>
+                <include
+                    android:id="@+id/row_resolution"
+                    layout="@layout/item_info_row"/>
+                <include
+                    android:id="@+id/row_dpi"
+                    layout="@layout/item_info_row"/>
+            </LinearLayout>
+
+            <!-- 电量 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding_lg"
+                android:background="@drawable/bg_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_feature_clean"
+                        android:background="@drawable/bg_icon_clean"
+                        android:padding="8dp"
+                        tools:ignore="UseAppTint"/>
+
+                    <TextView
+                        style="@style/CardTitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/device_battery"/>
+                </LinearLayout>
+
+                <include
+                    android:id="@+id/row_battery_level"
+                    layout="@layout/item_info_row"/>
+                <include
+                    android:id="@+id/row_battery_status"
+                    layout="@layout/item_info_row"/>
+                <include
+                    android:id="@+id/row_battery_temp"
+                    layout="@layout/item_info_row"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

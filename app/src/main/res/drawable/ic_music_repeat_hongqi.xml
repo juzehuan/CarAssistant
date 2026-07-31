@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 循环图标（Phosphor Fill 风格，圆润饱满） -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:height="28dp"
+    android:width="28dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFF5F0E8"
+        android:pathData="M17,2l4,4 -4,4V7H6V5h11V2z"/>
+    <path
+        android:fillColor="#FFF5F0E8"
+        android:pathData="M7,22l-4,-4 4,-4v3h11v2H7v3z"/>
+</vector>

@@ -1,0 +1,59 @@
+# ================= Build =================
+build/
+.gradle/
+app/build/
+.cxx/
+captures/
+local.properties
+
+# ================= IDE =================
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# ================= OS =================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ================= Logs / Temp =================
+*.log
+*.txt
+float_debug.txt
+uninstall_debug.txt
+crash_log.txt
+full_log*.txt
+music_log.txt
+
+# ================= Screenshots / Captures =================
+*.png
+*.jpg
+*.jpeg
+music_ui*.png
+
+# ================= Decompiled / Reference (do not distribute) =================
+_hk_decompiled/
+_hk_jadx/
+_ref_apk/
+_ref_extract/
+参考/
+
+# ================= Third-party tools (large binaries, do not distribute) =================
+tools/jadx/
+tools/jadx.zip
+tools/*.zip
+
+# ================= APKs (release artifacts, not source) =================
+*.apk
+!app/build/outputs/apk/**/*.apk
+
+# ================= Native / Keystore =================
+*.keystore
+*.jks
+!debug.keystore
+
+# ================= Misc =================
+.attach_pid*
+hs_err_pid*

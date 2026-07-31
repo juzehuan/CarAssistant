@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 自适应图标背景：纯色背景，避免跨 mipmap 引用 -->
+<color xmlns:android="http://schemas.android.com/apk/res/android">
+    #1E54E5
+</color>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    播放按钮背景（移植自鸿启桌面 bg_play_button_hongqi.xml）
+    - 圆形金色渐变底
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/music_play_btn_bg"/>
+</shape>

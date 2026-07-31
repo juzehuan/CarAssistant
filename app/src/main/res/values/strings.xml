@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">车机助手</string>
+
+    <!-- 通用动作 -->
+    <string name="launch_fail">启动失败</string>
+    <string name="app_not_installed">应用未安装</string>
+    <string name="cleaned">已清理</string>
+    <string name="home_feature_home">返回首页</string>
+
+    <!-- 底部导航 -->
+    <string name="tab_home">首页</string>
+    <string name="tab_clean">清理</string>
+    <string name="tab_app">应用</string>
+    <string name="tab_file">文件</string>
+
+    <!-- 首页 -->
+    <string name="home_welcome">欢迎使用车机助手</string>
+    <string name="home_feature_clean">清理优化</string>
+    <string name="home_feature_app">应用管理</string>
+    <string name="home_feature_file">文件管理</string>
+    <string name="home_feature_usb">U盘管理</string>
+    <string name="home_feature_float">桌面侧边栏</string>
+    <string name="home_feature_control">控制面板</string>
+    <string name="home_feature_monitor">性能监控</string>
+    <string name="home_feature_autostart">自启管理</string>
+    <string name="home_feature_device">设备信息</string>
+    <string name="home_storage_used">%1$s 已用 / %2$s 总计</string>
+
+    <!-- 清理 -->
+    <string name="clean_title">清理优化</string>
+    <string name="clean_scan">扫描垃圾</string>
+    <string name="clean_scaning">正在扫描…</string>
+    <string name="clean_clean">一键清理</string>
+    <string name="clean_junk_title">垃圾文件</string>
+    <string name="clean_cache">缓存垃圾</string>
+    <string name="clean_apk">多余APK安装包</string>
+    <string name="clean_log">日志文件</string>
+    <string name="clean_thumb">缩略图缓存</string>
+    <string name="clean_empty">暂无垃圾，已经很干净</string>
+    <string name="clean_done">清理完成，释放 %1$s</string>
+    <string name="clean_summary_done">扫描完成，建议清理 %1$s</string>
+    <!-- 清理-Root 模式 -->
+    <string name="clean_root_mode">Root 已开启</string>
+    <string name="clean_root_tag">Root</string>
+    <string name="clean_root_summary_done">Root 模式扫描完成，建议清理 %1$s（含其他应用缓存）</string>
+    <string name="clean_no_root_summary">未检测到 Root，仅清理本应用可访问的垃圾</string>
+    <string name="clean_confirm_root">将清理选中的垃圾文件，含其他应用缓存（需 Root 权限）。清理后不可恢复，确认继续？</string>
+    <string name="clean_confirm_no_root">将清理选中的垃圾文件，清理后不可恢复，确认继续？</string>
+    <string name="clean_root_failed">部分 Root 项清理失败，请检查 Root 权限</string>
+
+    <!-- 内存 -->
+    <string name="memory_title">内存加速</string>
+    <string name="memory_total">总内存 %1$s</string>
+    <string name="memory_used">已用</string>
+    <string name="memory_avail_short">可用</string>
+    <string name="memory_avail">可用：%1$s</string>
+    <string name="memory_running">运行进程 %1$d</string>
+    <string name="memory_boost">一键加速</string>
+    <string name="memory_boosting">正在加速…</string>
+    <string name="memory_done">加速完成，释放 %1$s 内存</string>
+    <!-- 内存-Root 模式 -->
+    <string name="memory_root_done">加速完成，强制结束 %1$d 个后台应用，释放 %2$s 内存</string>
+    <string name="memory_no_root_done">加速完成，释放 %1$s 内存（无 Root，效果有限，建议开启 Root）</string>
+    <string name="memory_no_apps_to_kill">没有可清理的后台应用</string>
+
+    <!-- 应用管理 -->
+    <string name="app_title">应用管理</string>
+    <string name="app_all">全部</string>
+    <string name="app_user">用户应用</string>
+    <string name="app_system">系统应用</string>
+    <string name="app_open">打开</string>
+    <string name="app_uninstall">卸载</string>
+    <string name="app_uninstall_confirm">确定要卸载 %1$s 吗？\n\n卸载将清除该应用的所有数据。</string>
+    <string name="app_detail">详情</string>
+    <string name="app_clear_cache">清除缓存</string>
+    <string name="app_search_hint">搜索应用名或包名</string>
+    <string name="app_search_no_match">未找到匹配的应用</string>
+    <string name="app_open_failed">无法启动 %1$s，已跳转应用详情</string>
+    <string name="app_disabled_cannot_open">%1$s 已被禁用，无法启动，已跳转详情页可手动启用</string>
+    <string name="app_disabled_cannot_open_short">应用已被禁用，无法启动</string>
+
+    <!-- 文件管理 -->
+    <string name="file_title">文件管理</string>
+    <string name="file_internal">内部存储</string>
+    <string name="file_sd">SD 卡</string>
+    <string name="file_usb">U盘</string>
+    <string name="file_empty">空文件夹</string>
+    <string name="file_install_apk">安装</string>
+    <string name="file_install_apk_confirm">确定要安装 %1$s 吗？</string>
+    <string name="file_search_hint">搜索文件名</string>
+    <string name="file_search_no_match">未找到匹配的文件</string>
+
+    <!-- U盘 -->
+    <string name="usb_title">U盘管理</string>
+    <string name="usb_none">未检测到 U 盘</string>
+    <string name="usb_plugged">U盘已插入：%1$s</string>
+    <string name="usb_removed">U盘已拔出</string>
+    <string name="usb_open">浏览 U 盘</string>
+    <string name="usb_safe_eject">安全弹出</string>
+
+    <!-- 侧边栏 -->
+    <string name="float_open">侧边栏已开启</string>
+    <string name="float_start_failed">侧边栏启动失败，请检查权限或重启应用</string>
+    <string name="float_close">关闭侧边栏</string>
+    <string name="float_panel_edit">编辑快捷应用</string>
+    <string name="float_panel_empty">暂无快捷应用\n请在设置中添加</string>
+    <string name="float_quick_actions">侧边栏快捷按钮</string>
+    <string name="float_quick_actions_desc">在侧边栏底部显示返回、主页等系统快捷按钮，需开启无障碍服务才能生效</string>
+    <string name="float_quick_master">显示快捷按钮区</string>
+    <string name="quick_back">返回</string>
+    <string name="quick_home">主页</string>
+    <string name="quick_recents">最近任务</string>
+    <string name="quick_lock">锁屏</string>
+    <string name="quick_accessibility_required">请先在按键映射页开启无障碍服务</string>
+    <!-- 侧边栏 -->
+    <string name="sidebar_title">侧边栏</string>
+    <string name="sidebar_apps">快捷应用</string>
+    <string name="sidebar_apps_empty">暂无快捷应用\n请在设置中添加</string>
+    <string name="sidebar_running_title">侧边栏运行中</string>
+    <string name="sidebar_running_text">从屏幕边缘滑入打开侧边栏</string>
+    <string name="sidebar_hint">从屏幕左/右边缘向内滑动打开侧边栏</string>
+    <!-- 侧边栏系统开关 -->
+    <string name="quick_wifi">WiFi</string>
+    <string name="quick_bluetooth">蓝牙</string>
+    <string name="quick_brightness">亮度</string>
+    <string name="quick_torch">手电</string>
+    <string name="quick_rotation">旋转</string>
+    <string name="quick_on">已开启</string>
+    <string name="quick_off">已关闭</string>
+    <string name="control_wifi_on">WiFi 已开启</string>
+    <string name="control_wifi_off">WiFi 已关闭</string>
+    <string name="control_bluetooth_on">蓝牙已开启</string>
+    <string name="control_bluetooth_off">蓝牙已关闭</string>
+    <string name="control_hotspot_on">热点已开启</string>
+    <string name="control_hotspot_off">热点已关闭</string>
+    <string name="control_dark_on">夜间模式已开启</string>
+    <string name="control_dark_off">夜间模式已关闭</string>
+    <string name="control_open_settings">已跳转系统设置</string>
+    <string name="control_volume_changed">音量已调整</string>
+    <string name="control_brightness_changed">亮度已调整</string>
+
+    <!-- 按键映射权限 -->
+    <string name="keymap_accessibility_label">车机助手按键映射</string>
+    <string name="keymap_accessibility_desc">用于全局拦截物理按键和模拟系统手势（返回、最近任务、锁屏等）。不读取屏幕内容，不上传任何数据。</string>
+    <string name="keymap_permissions_title">需要开启的权限</string>
+    <string name="keymap_perm_accessibility">无障碍服务</string>
+    <string name="keymap_perm_notification">通知权限</string>
+    <string name="keymap_perm_not_granted">未开启</string>
+    <string name="keymap_perm_granted">已开启</string>
+    <string name="keymap_perm_go_grant">去开启</string>
+    <string name="keymap_perm_accessibility_tip">请在系统设置中找到「车机助手按键映射」并开启，开启后按键映射可在任意界面生效</string>
+    <string name="keymap_perm_notification_not_required">当前系统无需单独申请通知权限</string>
+
+    <!-- 媒体会话服务（方控媒体按键定向派发） -->
+    <string name="media_session_service_label">车机助手媒体会话</string>
+    <string name="keymap_perm_media_session">媒体会话访问</string>
+    <string name="keymap_perm_media_session_tip">用于将方向盘媒体键定向派发到指定音乐应用，请在通知访问设置中开启「车机助手媒体会话」</string>
+    <string name="media_target_app">目标应用（可选）</string>
+    <string name="media_target_app_hint">不选则由系统路由到当前播放器；选择后优先控制该应用的媒体会话</string>
+    <string name="media_target_any">当前播放器（系统默认）</string>
+    <string name="float_permission_title">需要悬浮窗权限</string>
+    <string name="float_permission_msg">侧边栏需要"显示在其他应用上层"权限，是否立即开启？</string>
+    <string name="float_grant">去开启</string>
+    <string name="float_cancel">取消</string>
+
+    <!-- 通用 -->
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="back">返回</string>
+    <string name="loading">加载中…</string>
+    <string name="permission_storage_required">需要存储权限才能管理文件</string>
+    <string name="permission_grant">授予权限</string>
+    <string name="permission_settings">去设置</string>
+    <string name="empty_list">暂无内容</string>
+
+    <!-- 设置页 -->
+    <string name="settings_title">设置</string>
+    <string name="settings_float_apps">侧边栏快捷应用</string>
+    <string name="settings_float_apps_desc">点击下方按钮选择常用应用，侧边栏展开后将显示这些应用</string>
+    <string name="float_apps_count_selected">已选 %1$d 个</string>
+    <string name="float_apps_count_none">未设置</string>
+    <string name="settings_float_apps_pick">选择应用</string>
+    <string name="settings_float_apps_empty">尚未选择应用，点击右上角"选择应用"</string>
+    <string name="settings_whitelist">内存清理白名单</string>
+    <string name="settings_whitelist_desc">白名单中的应用在"一键加速"时不会被结束</string>
+    <string name="settings_whitelist_pick">添加应用</string>
+    <string name="settings_whitelist_empty">白名单为空</string>
+    <string name="pick_app_title">选择应用</string>
+    <string name="pick_app_subtitle">从列表中勾选需要添加的应用</string>
+    <string name="pick_app_confirm">确认</string>
+    <string name="pick_search_hint">搜索应用名</string>
+    <string name="remove">移除</string>
+    <string name="settings_about">关于</string>
+    <string name="settings_about_version">版本 %1$s</string>
+    <string name="settings_about_desc">车机助手 - 车机端工具箱</string>
+    <string name="settings_open_settings">打开设置页</string>
+
+    <!-- 控制面板 -->
+    <string name="control_volume">媒体音量</string>
+    <string name="control_brightness">屏幕亮度</string>
+    <string name="control_quick">快捷开关</string>
+    <string name="control_wifi">WiFi</string>
+    <string name="control_bluetooth">蓝牙</string>
+    <string name="control_hotspot">热点</string>
+    <string name="control_hotspot_unknown">热点</string>
+    <string name="control_dark">夜间模式</string>
+    <string name="control_airplane">飞行模式</string>
+    <string name="control_location">定位</string>
+    <string name="control_brightness_permission">修改系统亮度需要"修改系统设置"权限，是否立即开启？</string>
+
+    <!-- 设备信息 -->
+    <string name="device_title">设备信息</string>
+    <string name="device_screenshot">一键截屏</string>
+    <string name="device_screenshot_success">截图已保存：%1$s</string>
+    <string name="device_screenshot_failed">截图失败，请检查存储权限</string>
+    <string name="device_screenshot_dir">截屏已保存到 Pictures/Screenshots 目录</string>
+    <string name="device_basic">基本信息</string>
+    <string name="device_hardware">硬件配置</string>
+    <string name="device_system">系统信息</string>
+    <string name="device_battery">电量</string>
+    <string name="device_model">设备型号</string>
+    <string name="device_brand">品牌</string>
+    <string name="device_android">Android 版本</string>
+    <string name="device_sdk">SDK 版本</string>
+    <string name="device_cpu">CPU 架构</string>
+    <string name="device_cores">CPU 核心数</string>
+    <string name="device_memory">内存</string>
+    <string name="device_storage">存储</string>
+    <string name="device_resolution">屏幕分辨率</string>
+    <string name="device_dpi">屏幕密度</string>
+    <string name="device_security_patch">安全补丁</string>
+    <string name="device_battery_level">当前电量</string>
+    <string name="device_battery_status">电池状态</string>
+    <string name="device_battery_temp">电池温度</string>
+
+    <!-- 自启管理 -->
+    <string name="autostart_title">自启管理</string>
+    <string name="autostart_scanning">正在扫描自启应用…</string>
+    <string name="autostart_empty">未发现自启应用</string>
+    <string name="autostart_disable">禁用自启</string>
+    <string name="autostart_enable">允许自启</string>
+    <string name="autostart_count">共 %1$d 个自启应用</string>
+    <string name="autostart_system_app">系统应用</string>
+    <string name="autostart_tab_system">系统自启项</string>
+    <string name="autostart_tab_user">开机自启项</string>
+    <string name="autostart_user_desc">以下应用将在车机开机后自动启动</string>
+    <string name="autostart_user_empty">尚未添加开机自启应用\n点击右上角「添加」按钮选择应用</string>
+    <string name="autostart_user_count">已添加 %1$d 个开机自启应用</string>
+    <string name="autostart_add">添加</string>
+    <string name="autostart_remove_confirm">确定要移除「%1$s」的开机自启吗？</string>
+    <string name="autostart_pick_title">选择开机自启应用</string>
+    <string name="autostart_pick_subtitle">勾选需要在开机时自动启动的应用</string>
+    <string name="autostart_loading_apps">正在加载应用列表…</string>
+    <string name="autostart_user_app">用户应用</string>
+    <string name="autostart_refresh">刷新</string>
+    <string name="autostart_search_hint">搜索应用名或包名</string>
+    <string name="autostart_launch">启动</string>
+    <string name="autostart_launch_all">全部启动</string>
+    <string name="autostart_launch_failed">启动失败：%1$s</string>
+    <string name="autostart_launch_all_done">已启动 %1$d 个应用</string>
+    <string name="autostart_filter_all">全部</string>
+    <string name="autostart_filter_system">系统</string>
+    <string name="autostart_filter_user">用户</string>
+    <string name="autostart_search_no_match">未找到匹配的自启应用</string>
+    <string name="autostart_toggle_confirm_disable">确定要禁用「%1$s」吗？\n\n禁用后该应用将无法启动且不会开机自启，可在本页重新启用。</string>
+    <string name="autostart_toggle_confirm_enable">确定要启用「%1$s」吗？</string>
+    <string name="autostart_disable_success">已禁用 %1$s</string>
+    <string name="autostart_enable_success">已启用 %1$s</string>
+    <string name="autostart_toggle_failed">操作失败，请检查 Root 权限</string>
+    <string name="autostart_dangerous_protected">该系统应用受保护，不允许禁用</string>
+    <string name="autostart_no_root">当前设备无 Root 权限，无法启用/禁用应用</string>
+    <!-- 开机自启参数（闹钟链调度） -->
+    <string name="autostart_options">启动参数</string>
+    <string name="autostart_options_desc">开机后按顺序延迟启动各应用，避免系统繁忙导致启动失败</string>
+    <string name="autostart_first_delay">首次启动延迟（秒）</string>
+    <string name="autostart_interval">相邻应用间隔（秒）</string>
+    <string name="autostart_return_home">启动完成后返回桌面</string>
+    <string name="autostart_options_saved">启动参数已保存</string>
+    <string name="autostart_invalid_number">请输入有效数字（0-300）</string>
+    <string name="autostart_unit_seconds">秒</string>
+    <string name="autostart_status_enabled">允许自启</string>
+    <string name="autostart_status_disabled">已禁用</string>
+    <string name="autostart_section_timing">启动时序</string>
+    <string name="autostart_section_behavior">启动行为</string>
+
+    <!-- 性能监控 -->
+    <string name="monitor_title">性能监控</string>
+    <string name="monitor_cpu">CPU 使用率</string>
+    <string name="monitor_memory">内存占用</string>
+    <string name="monitor_temp">设备温度</string>
+    <string name="monitor_fps">刷新率</string>
+    <string name="monitor_battery">电量</string>
+    <string name="monitor_float">悬浮监控</string>
+    <string name="monitor_float_on">开启悬浮监控</string>
+    <string name="monitor_float_off">关闭悬浮监控</string>
+    <string name="monitor_overheat">设备过热告警</string>
+    <string name="monitor_overheat_msg">设备温度过高（%1$.1f°C），请暂停使用并散热</string>
+    <string name="monitor_history">历史峰值</string>
+    <string name="monitor_peak_cpu">CPU 峰值</string>
+    <string name="monitor_peak_temp">温度峰值</string>
+    <string name="monitor_freq">CPU 频率</string>
+
+    <!-- 按键映射 -->
+    <string name="keymap_title">按键映射</string>
+    <string name="home_feature_keymap">按键映射</string>
+    <string name="keymap_usage">使用说明</string>
+    <string name="keymap_usage_desc">1. 点击右上角 + 号添加映射，按下物理按键（方向盘键/音量键等）\n2. 支持触发模式：单击 / 双击 / 长按 / 组合键（按住一键再按另一键）\n3. 支持动作：应用启动、音量、媒体、开关、亮度、系统操作、设置子页、常用应用、URL、广播等\n4. 长按列表项可编辑动作，点击播放按钮可立即测试\n5. 菜单支持导入/导出配置和应用预设模板\n6. 如无法捕获按键，可点击「手动输入」输入 keyCode\n7. 映射生效范围：车机助手在前台运行时</string>
+    <string name="keymap_empty">暂无按键映射\n点击右上角 + 号添加\n或通过菜单应用预设模板</string>
+
+    <!-- 音乐伴侣 -->
+    <string name="home_feature_music">音乐伴侣</string>
+    <string name="music_title">音乐伴侣</string>
+    <string name="music_no_song">暂无歌曲</string>
+    <string name="music_unknown_artist">未知歌手</string>
+    <string name="music_open_app">点击卡片打开音乐应用</string>
+    <string name="music_connected">已连接</string>
+    <string name="music_disconnected">未连接</string>
+    <string name="music_permission_title">需要通知访问权限</string>
+    <string name="music_permission_desc">音乐伴侣需要「通知访问权限」来读取系统媒体会话信息（歌曲标题、歌手、播放状态、专辑封面），不会读取或上传任何通知内容。</string>
+    <string name="music_permission_grant">去开启</string>
+    <string name="music_permission_required">请先授予通知访问权限</string>
+    <string name="music_lyrics">歌词</string>
+    <string name="music_lyrics_loading">歌词加载中…</string>
+    <string name="music_no_lyrics">暂无歌词</string>
+    <string name="music_progress">播放进度</string>
+    <string name="music_prev">上一首</string>
+    <string name="music_play">播放/暂停</string>
+    <string name="music_next">下一首</string>
+    <string name="music_repeat">循环模式</string>
+    <string name="music_repeat_off">顺序播放</string>
+    <string name="music_repeat_one">单曲循环</string>
+    <string name="music_repeat_all">列表循环</string>
+    <string name="music_tip">提示：若未自动识别当前播放的歌曲，请确保音乐应用正在播放且已授予通知访问权限</string>
+    <string name="music_no_active_session">未发现正在播放的音乐会话，请先打开音乐应用并播放</string>
+    <string name="music_open_app_first">请先打开音乐应用并开始播放</string>
+    <string name="music_settings_coming_soon">设置功能即将上线</string>
+
+    <!-- 首次启动权限引导 -->
+    <string name="permission_guide_title">权限授权</string>
+    <string name="permission_guide_welcome">欢迎使用车机助手</string>
+    <string name="permission_guide_desc">为保证所有功能正常运作，请授予以下权限。我们仅在必要时访问相关数据，不会读取或上传您的隐私内容。</string>
+    <string name="permission_section_required">必需权限</string>
+    <string name="permission_section_required_desc">应用基础功能依赖，必须授予</string>
+    <string name="permission_section_special">重要权限</string>
+    <string name="permission_section_special_desc">用于侧边栏、文件管理、清理、音乐伴侣等进阶功能</string>
+    <string name="permission_action_grant_runtime">一键申请运行时权限</string>
+    <string name="permission_action_go_settings">去开启</string>
+    <string name="permission_status_granted">已授予</string>
+    <string name="permission_status_not_granted">未授予</string>
+    <string name="permission_runtime_requesting">申请中…</string>
+    <string name="permission_runtime_done">运行时权限已全部授予</string>
+    <string name="permission_runtime_partial">部分权限未授予，点击重试</string>
+
+    <string name="perm_name_runtime">运行时权限</string>
+    <string name="perm_desc_runtime">通知 / 蓝牙 / 相机 / 存储（Android 10 及以下）</string>
+
+    <string name="perm_name_overlay">悬浮窗权限</string>
+    <string name="perm_desc_overlay">侧边栏、悬浮球、监控悬浮窗等需要绘制在其他应用上层</string>
+
+    <string name="perm_name_storage">所有文件访问权限</string>
+    <string name="perm_desc_storage">文件管理、U 盘管理、垃圾清理扫描需要访问设备全部文件</string>
+
+    <string name="perm_name_usage">使用情况访问</string>
+    <string name="perm_desc_usage">垃圾清理需要扫描各应用的缓存占用，需要使用情况访问权限</string>
+
+    <string name="perm_name_write_settings">修改系统设置</string>
+    <string name="perm_desc_write_settings">控制面板的亮度调节、自动旋转开关需要修改系统设置权限</string>
+
+    <string name="perm_name_listener">通知访问权限</string>
+    <string name="perm_desc_listener">音乐伴侣读取媒体会话、方控媒体键定向派发需要通知访问权限，不会读取通知内容</string>
+
+    <string name="permission_enter_app">进入应用</string>
+    <string name="permission_skip_special">跳过特殊权限</string>
+    <string name="permission_skip_confirm">未授予的特殊权限将导致对应功能不可用，确定跳过？</string>
+    <string name="permission_skip_yes">跳过</string>
+    <string name="permission_skip_no">继续授权</string>
+    <string name="permission_runtime_required_toast">请先授予所有必需权限</string>
+</resources>

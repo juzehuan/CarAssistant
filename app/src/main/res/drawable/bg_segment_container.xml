@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 分段控件容器：浅灰下沉底，营造「凹槽」感 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#EEF1F6"/>
+    <corners android:radius="20dp"/>
+</shape>

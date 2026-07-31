@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    文件管理页
+    - 渐变头部：标题 + 当前路径
+    - 搜索框：按文件名过滤
+    - 路径导航栏：进入目录后显示
+    - 存储入口 + 文件列表
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:orientation="vertical">
+
+    <!-- 顶部渐变头部 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_page_header"
+        android:paddingStart="@dimen/header_padding_h"
+        android:paddingEnd="@dimen/header_padding_h"
+        android:paddingTop="@dimen/header_padding_top"
+        android:paddingBottom="@dimen/header_padding_bottom">
+
+        <TextView
+            android:id="@+id/tv_file_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/file_title"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/header_title_size"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tv_file_path"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/text_white_70"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="middle"
+            tools:text="/storage/emulated/0"/>
+    </LinearLayout>
+
+    <!-- 搜索框 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_card"
+        android:layout_marginStart="@dimen/page_padding"
+        android:layout_marginEnd="@dimen/page_padding"
+        android:layout_marginTop="-8dp"
+        android:elevation="3dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_search_white"
+            android:tint="@color/text_hint"
+            tools:ignore="UseAppTint"/>
+
+        <EditText
+            android:id="@+id/et_file_search"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:background="@null"
+            android:hint="@string/file_search_hint"
+            android:textColorHint="@color/text_hint"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:maxLines="1"
+            android:singleLine="true"/>
+
+        <ImageView
+            android:id="@+id/iv_file_search_clear"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_panel_close"
+            android:tint="@color/text_hint"
+            android:padding="2dp"
+            android:visibility="gone"
+            tools:ignore="UseAppTint"/>
+    </LinearLayout>
+
+    <!-- 路径导航栏（仅进入目录后显示） -->
+    <LinearLayout
+        android:id="@+id/ll_nav_bar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_nav_path"
+        android:layout_marginStart="@dimen/page_padding"
+        android:layout_marginEnd="@dimen/page_padding"
+        android:layout_marginTop="12dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/iv_nav_back"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_back"
+            android:tint="@color/brand_primary"
+            android:padding="2dp"
+            tools:ignore="UseAppTint"/>
+
+        <TextView
+            android:id="@+id/tv_nav_path"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:maxLines="1"
+            android:ellipsize="start"
+            tools:text="内部存储 / Download / files"/>
+    </LinearLayout>
+
+    <!-- 存储入口 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_storage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/page_padding"
+        android:paddingEnd="@dimen/page_padding"
+        android:paddingTop="6dp"
+        android:nestedScrollingEnabled="false"/>
+
+    <!-- 文件列表 / 空提示 -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_files"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingStart="@dimen/page_padding"
+            android:paddingEnd="@dimen/page_padding"
+            android:paddingTop="6dp"
+            android:paddingBottom="@dimen/page_padding"
+            android:clipToPadding="false"/>
+
+        <TextView
+            android:id="@+id/tv_file_empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/file_empty"
+            android:textColor="@color/text_hint"
+            android:textSize="14sp"
+            android:drawableTop="@drawable/ic_empty_box"
+            android:drawablePadding="14dp"
+            android:visibility="gone"/>
+    </FrameLayout>
+
+</LinearLayout>

@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 顶部信息卡（渐变背景） -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_home_header"
+            android:layout_marginStart="@dimen/home_card_margin"
+            android:layout_marginEnd="@dimen/home_card_margin"
+            android:layout_marginTop="@dimen/home_card_margin"
+            android:padding="@dimen/home_card_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_home"
+                    app:tint="#FFFFFF"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/home_welcome"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/home_header_title_size"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+            <!-- 存储 / 内存 进度（大屏双列，小屏单列） -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="6dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="存储"
+                        android:textColor="@color/text_white_70"
+                        android:textSize="@dimen/home_header_label_size"/>
+                    <TextView
+                        android:id="@+id/tv_storage_info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="#FFFFFF"
+                        android:textSize="@dimen/home_header_value_size"
+                        android:textStyle="bold"
+                        tools:text="32 GB / 64 GB"/>
+                    <ProgressBar
+                        android:id="@+id/pb_storage"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="6dp"
+                        android:layout_marginTop="6dp"
+                        android:max="100"
+                        android:progress="50"
+                        android:progressTint="#FFFFFF"
+                        android:progressBackgroundTint="#33FFFFFF"
+                        tools:targetApi="21"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="6dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="内存"
+                        android:textColor="@color/text_white_70"
+                        android:textSize="@dimen/home_header_label_size"/>
+                    <TextView
+                        android:id="@+id/tv_memory_info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="#FFFFFF"
+                        android:textSize="@dimen/home_header_value_size"
+                        android:textStyle="bold"
+                        tools:text="2.1 GB / 4 GB"/>
+                    <ProgressBar
+                        android:id="@+id/pb_memory"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="6dp"
+                        android:layout_marginTop="6dp"
+                        android:max="100"
+                        android:progress="50"
+                        android:progressTint="#FFFFFF"
+                        android:progressBackgroundTint="#33FFFFFF"
+                        tools:targetApi="21"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 悬浮球开关 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_float_switch"
+                android:padding="12dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_feature_float"
+                    app:tint="#FFFFFF"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/home_feature_float"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/home_header_row_title_size"
+                    android:textStyle="bold"/>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_float"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:theme="@style/SwitchWhite"/>
+            </LinearLayout>
+
+            <!-- 自定义悬浮球应用入口 -->
+            <LinearLayout
+                android:id="@+id/row_float_apps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_float_switch"
+                android:padding="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:backgroundTint="#33FFFFFF">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_settings"
+                    app:tint="#FFFFFF"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/settings_float_apps"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/home_header_row_title_size"/>
+
+                <TextView
+                    android:id="@+id/tv_float_apps_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:textColor="@color/text_white_70"
+                    android:textSize="@dimen/home_header_row_sub_size"
+                    tools:text="已选 4 个"/>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="#FFFFFF"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 功能宫格标题 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/home_section_margin"
+            android:layout_marginTop="@dimen/home_section_margin"
+            android:text="常用功能"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/home_section_title_size"
+            android:textStyle="bold"/>
+
+        <!-- 功能宫格：RecyclerView + GridLayoutManager，列数由代码动态计算 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_features"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/home_card_margin"
+            android:clipToPadding="false"
+            android:scrollbars="none"
+            android:nestedScrollingEnabled="false"/>
+
+        <TextView
+            android:id="@+id/tv_tip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="18dp"
+            android:layout_marginBottom="24dp"
+            android:text="提示：开启悬浮球可在桌面快速打开常用应用，点击设置可自定义快捷应用"
+            android:textColor="@color/text_hint"
+            android:textSize="@dimen/home_tip_size"/>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:orientation="vertical">
+
+    <!-- 顶部渐变头部 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_home_header"
+        android:paddingStart="@dimen/page_padding"
+        android:paddingEnd="@dimen/header_padding_h"
+        android:paddingTop="@dimen/header_padding_top"
+        android:paddingBottom="@dimen/header_padding_bottom">
+
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="@dimen/back_btn_size"
+            android:layout_height="@dimen/back_btn_size"
+            android:src="@drawable/ic_back_white"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back"
+            tools:ignore="UseAppTint"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="@string/keymap_title"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/header_title_size"
+            android:textStyle="bold"/>
+
+        <ImageView
+            android:id="@+id/btn_add"
+            android:layout_width="@dimen/back_btn_size"
+            android:layout_height="@dimen/back_btn_size"
+            android:src="@drawable/ic_add_white"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/keymap_title"
+            tools:ignore="UseAppTint"/>
+
+        <ImageView
+            android:id="@+id/btn_menu"
+            android:layout_width="@dimen/back_btn_size"
+            android:layout_height="@dimen/back_btn_size"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/ic_more_white"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="菜单"
+            tools:ignore="UseAppTint,HardcodedText"/>
+    </LinearLayout>
+
+    <!-- 说明卡 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/card_padding_lg"
+        android:layout_margin="@dimen/page_padding"
+        android:background="@drawable/bg_card">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_feature_keymap"
+                android:background="@drawable/bg_icon_keymap"
+                android:padding="8dp"
+                tools:ignore="UseAppTint"/>
+
+            <TextView
+                style="@style/CardTitleText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:text="@string/keymap_usage"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:lineSpacingExtra="3dp"
+            android:text="@string/keymap_usage_desc"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_caption"/>
+    </LinearLayout>
+
+    <!--
+        权限状态引导卡
+        - 无障碍权限：开启后按键映射可在任意界面生效（核心）
+        - 通知权限：用于显示映射触发反馈 Toast（Android 13+）
+    -->
+    <LinearLayout
+        android:id="@+id/card_permissions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/card_padding_lg"
+        android:layout_marginStart="@dimen/page_padding"
+        android:layout_marginEnd="@dimen/page_padding"
+        android:layout_marginBottom="@dimen/page_padding"
+        android:background="@drawable/bg_card"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/keymap_permissions_title"
+            android:textColor="@color/text_primary"
+            android:textSize="@dimen/text_subtitle"
+            android:textStyle="bold"/>
+
+        <!-- 无障碍权限项 -->
+        <LinearLayout
+            android:id="@+id/row_accessibility"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
+
+            <ImageView
+                android:id="@+id/iv_accessibility_icon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_accessibility"
+                tools:ignore="UseAppTint,ContentDescription"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/keymap_perm_accessibility"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_body"/>
+
+                <TextView
+                    android:id="@+id/tv_accessibility_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/keymap_perm_not_granted"
+                    android:textColor="@color/danger"
+                    android:textSize="@dimen/text_caption"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btn_accessibility_go"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:background="@drawable/bg_perm_button"
+                android:text="@string/keymap_perm_go_grant"
+                android:textColor="@color/brand_primary"
+                android:textSize="@dimen/text_caption"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <!-- 通知权限项 -->
+        <LinearLayout
+            android:id="@+id/row_notification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
+
+            <ImageView
+                android:id="@+id/iv_notification_icon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_notification"
+                tools:ignore="UseAppTint,ContentDescription"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/keymap_perm_notification"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_body"/>
+
+                <TextView
+                    android:id="@+id/tv_notification_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/keymap_perm_not_granted"
+                    android:textColor="@color/danger"
+                    android:textSize="@dimen/text_caption"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btn_notification_go"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:background="@drawable/bg_perm_button"
+                android:text="@string/keymap_perm_go_grant"
+                android:textColor="@color/brand_primary"
+                android:textSize="@dimen/text_caption"
+                android:textStyle="bold"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 映射列表 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_mappings"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="@dimen/page_padding"
+        android:paddingEnd="@dimen/page_padding"
+        android:paddingBottom="@dimen/page_padding"
+        android:clipToPadding="false"/>
+
+    <!-- 空状态 -->
+    <TextView
+        android:id="@+id/tv_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="@string/keymap_empty"
+        android:textColor="@color/text_hint"
+        android:textSize="14sp"
+        android:drawableTop="@drawable/ic_empty_box"
+        android:drawablePadding="14dp"
+        android:visibility="gone"/>
+
+</LinearLayout>

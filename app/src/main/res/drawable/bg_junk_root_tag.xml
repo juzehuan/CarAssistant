@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Root 项小徽章背景：品牌浅蓝底 + 圆角 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/brand_primary_light"/>
+    <corners android:radius="4dp"/>
+    <stroke
+        android:width="0.5dp"
+        android:color="@color/brand_primary_soft"/>
+</shape>

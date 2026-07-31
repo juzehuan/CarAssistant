@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 侧边栏系统开关按钮：开启态（品牌蓝渐变圆形） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:startColor="#3D7BFF"
+        android:endColor="#1E54E5"
+        android:angle="45"
+        android:type="linear"/>
+</shape>

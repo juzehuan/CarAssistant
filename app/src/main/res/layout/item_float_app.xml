@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    悬浮面板应用项
+    - 图标：dimens 控制大小（大屏自动放大）
+    - 名称：单行省略
+    - 点击有 ripple 反馈
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:paddingStart="6dp"
+    android:paddingEnd="6dp"
+    android:background="@drawable/bg_float_app_item">
+
+    <ImageView
+        android:id="@+id/iv_float_app_icon"
+        android:layout_width="@dimen/float_app_icon_size"
+        android:layout_height="@dimen/float_app_icon_size"
+        android:scaleType="centerCrop"
+        android:background="@drawable/bg_float_app_icon"
+        android:padding="8dp"
+        tools:src="@mipmap/ic_launcher"
+        tools:ignore="UseAppTint,ContentDescription"/>
+
+    <TextView
+        android:id="@+id/tv_float_app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:textColor="@color/text_secondary"
+        android:textSize="@dimen/float_app_name_size"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:maxLength="6"
+        tools:text="应用名"/>
+</LinearLayout>

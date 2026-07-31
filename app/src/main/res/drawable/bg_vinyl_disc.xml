@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    黑胶唱片背景（移植自鸿启桌面 bg_vinyl_disc.xml）
+    - 外圈红色高光 + 黑色盘面 + 多圈纹路 + 金色中心 + 中心孔
+    - 用于音乐伴侣专辑封面旋转动画
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:height="280dp"
+    android:width="280dp"
+    android:viewportWidth="280"
+    android:viewportHeight="280">
+
+    <!-- 外圈红色高光（半透明） -->
+    <path
+        android:fillColor="#FFC8102E"
+        android:fillAlpha="0.15"
+        android:pathData="M140,140 m-140,0 a140,140 0 1,0 280,0 a140,140 0 1,0 -280,0"/>
+
+    <!-- 浅色光圈 -->
+    <path
+        android:fillColor="#FFF5F0E8"
+        android:fillAlpha="0.15"
+        android:pathData="M140,140 m-130,0 a130,130 0 1,0 260,0 a130,130 0 1,0 -260,0"/>
+
+    <!-- 黑色盘面 -->
+    <path
+        android:fillColor="#FF0D0A08"
+        android:pathData="M140,140 m-122,0 a122,122 0 1,0 244,0 a122,122 0 1,0 -244,0"/>
+
+    <!-- 纹路 1 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF1A1512"
+        android:strokeWidth="1"
+        android:pathData="M140,140 m-105,0 a105,105 0 1,0 210,0 a105,105 0 1,0 -210,0"/>
+
+    <!-- 纹路 2 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF1A1512"
+        android:strokeWidth="1"
+        android:pathData="M140,140 m-88,0 a88,88 0 1,0 176,0 a88,88 0 1,0 -176,0"/>
+
+    <!-- 纹路 3 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF221D18"
+        android:strokeWidth="0.5"
+        android:pathData="M140,140 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0"/>
+
+    <!-- 纹路 4 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF1A1512"
+        android:strokeWidth="1"
+        android:pathData="M140,140 m-52,0 a52,52 0 1,0 104,0 a52,52 0 1,0 -104,0"/>
+
+    <!-- 中心黑色标签底 -->
+    <path
+        android:fillColor="#FF050403"
+        android:pathData="M140,140 m-42,0 a42,42 0 1,0 84,0 a42,42 0 1,0 -84,0"/>
+
+    <!-- 中心标签描边（浅色） -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFF5F0E8"
+        android:strokeWidth="3"
+        android:strokeAlpha="0.25"
+        android:pathData="M140,140 m-42,0 a42,42 0 1,0 84,0 a42,42 0 1,0 -84,0"/>
+
+    <!-- 金色中心点 -->
+    <path
+        android:fillColor="#FFC9A961"
+        android:pathData="M140,140 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"/>
+
+    <!-- 中心孔 -->
+    <path
+        android:fillColor="#FF050403"
+        android:pathData="M140,140 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0"/>
+
+    <!-- 高光反射（左上扇形） -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.06"
+        android:pathData="M140,140 m-120,0 a120,120 0 0,1 84.85,-84.85 L220,30 a122,122 0 0,0 -82,-82 Z"/>
+
+</vector>

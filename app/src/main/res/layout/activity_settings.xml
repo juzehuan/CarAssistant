@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    设置页
+    - 渐变头部：返回 + 标题
+    - 悬浮球快捷应用卡：彩色图标 + 列表
+    - 内存清理白名单卡：彩色图标 + 列表
+    - 关于卡：版本号 + 描述
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:orientation="vertical">
+
+    <!-- 顶部渐变头部 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_home_header"
+        android:paddingStart="@dimen/page_padding"
+        android:paddingEnd="@dimen/header_padding_h"
+        android:paddingTop="@dimen/header_padding_top"
+        android:paddingBottom="@dimen/header_padding_bottom">
+
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="@dimen/back_btn_size"
+            android:layout_height="@dimen/back_btn_size"
+            android:src="@drawable/ic_back_white"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back"
+            tools:ignore="UseAppTint"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="@string/settings_title"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/header_title_size"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/page_padding"
+            android:paddingEnd="@dimen/page_padding"
+            android:paddingTop="16dp"
+            android:paddingBottom="20dp">
+
+            <!-- 悬浮球应用区块 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding_lg"
+                android:background="@drawable/bg_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_feature_float"
+                        android:background="@drawable/bg_icon_float"
+                        android:padding="9dp"
+                        tools:ignore="UseAppTint"/>
+
+                    <TextView
+                        style="@style/CardTitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="@string/settings_float_apps"/>
+
+                    <Button
+                        android:id="@+id/btn_pick_float"
+                        style="@style/Widget.CarAssistant.Button.Secondary.Small"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_float_apps_pick"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/settings_float_apps_desc"
+                    android:textColor="@color/text_hint"
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="2dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_float_apps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:nestedScrollingEnabled="false"/>
+
+                <TextView
+                    android:id="@+id/tv_float_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:layout_marginBottom="10dp"
+                    android:gravity="center"
+                    android:text="@string/settings_float_apps_empty"
+                    android:textColor="@color/text_hint"
+                    android:textSize="12sp"
+                    android:drawableTop="@drawable/ic_empty_box"
+                    android:drawablePadding="8dp"/>
+            </LinearLayout>
+
+            <!-- 悬浮球快捷按钮卡片 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding_lg"
+                android:background="@drawable/bg_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_quick_back"
+                        android:background="@drawable/bg_icon_control"
+                        android:padding="9dp"
+                        android:tint="#FFFFFF"
+                        tools:ignore="UseAppTint"/>
+
+                    <TextView
+                        style="@style/CardTitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="@string/float_quick_actions"/>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/sw_quick_master"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:theme="@style/SwitchBrand"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/float_quick_actions_desc"
+                    android:textColor="@color/text_hint"
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="2dp"/>
+
+                <!-- 子开关列表：返回 / 主页 / 最近任务 / 锁屏 -->
+                <LinearLayout
+                    android:id="@+id/ll_quick_options"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <!-- 返回 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="12dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_toggle_item">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_quick_back"
+                            android:padding="4dp"
+                            android:background="@drawable/bg_float_quick_button"
+                            android:tint="#FFFFFF"
+                            tools:ignore="UseAppTint"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:text="@string/quick_back"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"/>
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/sw_quick_back"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:theme="@style/SwitchBrand"/>
+                    </LinearLayout>
+
+                    <!-- 主页 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="12dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_toggle_item">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_quick_home"
+                            android:padding="4dp"
+                            android:background="@drawable/bg_float_quick_button"
+                            android:tint="#FFFFFF"
+                            tools:ignore="UseAppTint"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:text="@string/quick_home"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"/>
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/sw_quick_home"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:theme="@style/SwitchBrand"/>
+                    </LinearLayout>
+
+                    <!-- 最近任务 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="12dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_toggle_item">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_quick_recents"
+                            android:padding="4dp"
+                            android:background="@drawable/bg_float_quick_button"
+                            android:tint="#FFFFFF"
+                            tools:ignore="UseAppTint"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:text="@string/quick_recents"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"/>
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/sw_quick_recents"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:theme="@style/SwitchBrand"/>
+                    </LinearLayout>
+
+                    <!-- 锁屏 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="12dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_toggle_item">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_quick_lock"
+                            android:padding="4dp"
+                            android:background="@drawable/bg_float_quick_button"
+                            android:tint="#FFFFFF"
+                            tools:ignore="UseAppTint"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:text="@string/quick_lock"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"/>
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/sw_quick_lock"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:theme="@style/SwitchBrand"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 白名单区块 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding_lg"
+                android:background="@drawable/bg_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_feature_memory"
+                        android:background="@drawable/bg_icon_memory"
+                        android:padding="9dp"
+                        tools:ignore="UseAppTint"/>
+
+                    <TextView
+                        style="@style/CardTitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="@string/settings_whitelist"/>
+
+                    <Button
+                        android:id="@+id/btn_pick_whitelist"
+                        style="@style/Widget.CarAssistant.Button.Secondary.Small"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_whitelist_pick"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/settings_whitelist_desc"
+                    android:textColor="@color/text_hint"
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="2dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_whitelist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:nestedScrollingEnabled="false"/>
+
+                <TextView
+                    android:id="@+id/tv_whitelist_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:layout_marginBottom="10dp"
+                    android:gravity="center"
+                    android:text="@string/settings_whitelist_empty"
+                    android:textColor="@color/text_hint"
+                    android:textSize="12sp"
+                    android:drawableTop="@drawable/ic_empty_box"
+                    android:drawablePadding="8dp"/>
+            </LinearLayout>
+
+            <!-- 关于 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding_lg"
+                android:background="@drawable/bg_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_settings"
+                        android:background="@drawable/bg_icon_control"
+                        android:padding="9dp"
+                        tools:ignore="UseAppTint"/>
+
+                    <TextView
+                        style="@style/CardTitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="@string/settings_about"/>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@color/divider"/>
+
+                <TextView
+                    android:id="@+id/tv_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tools:text="版本 1.0"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/settings_about_desc"
+                    android:textColor="@color/text_hint"
+                    android:textSize="12sp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

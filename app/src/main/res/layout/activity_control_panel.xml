@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    控制面板
+    - 渐变头部：返回 + 标题
+    - 音量调节卡：彩色图标 + 标题 + 当前值 + SeekBar
+    - 亮度调节卡：彩色图标 + 标题 + 当前值 + SeekBar
+    - 快捷开关卡：3x2 网格，选中态品牌色描边
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:orientation="vertical">
+
+    <!-- 顶部渐变头部 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_home_header"
+        android:paddingStart="@dimen/page_padding"
+        android:paddingEnd="@dimen/header_padding_h"
+        android:paddingTop="@dimen/header_padding_top"
+        android:paddingBottom="@dimen/header_padding_bottom">
+
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="@dimen/back_btn_size"
+            android:layout_height="@dimen/back_btn_size"
+            android:src="@drawable/ic_back_white"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back"
+            tools:ignore="UseAppTint"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="@string/home_feature_control"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/header_title_size"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/page_padding"
+            android:gravity="center_horizontal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:maxWidth="@dimen/content_max_width">
+
+                <!-- 音量调节 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding_lg"
+                    android:background="@drawable/bg_card">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/control_icon_size"
+                            android:layout_height="@dimen/control_icon_size"
+                            android:src="@drawable/ic_ctrl_volume"
+                            android:background="@drawable/bg_icon_control"
+                            android:padding="9dp"
+                            tools:ignore="UseAppTint"/>
+
+                        <TextView
+                            style="@style/CardTitleText"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:text="@string/control_volume"/>
+
+                        <TextView
+                            android:id="@+id/tv_volume_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/brand_primary"
+                            android:textSize="@dimen/control_value_size"
+                            android:textStyle="bold"
+                            tools:text="8 / 15"/>
+                    </LinearLayout>
+
+                    <SeekBar
+                        android:id="@+id/sb_volume"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:max="15"
+                        android:progress="8"
+                        android:progressTint="@color/brand_primary"
+                        android:progressBackgroundTint="@color/progress_track"
+                        tools:targetApi="21"/>
+                </LinearLayout>
+
+                <!-- 亮度调节 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding_lg"
+                    android:background="@drawable/bg_card">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/control_icon_size"
+                            android:layout_height="@dimen/control_icon_size"
+                            android:src="@drawable/ic_ctrl_brightness"
+                            android:background="@drawable/bg_icon_keymap"
+                            android:padding="9dp"
+                            tools:ignore="UseAppTint"/>
+
+                        <TextView
+                            style="@style/CardTitleText"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:text="@string/control_brightness"/>
+
+                        <TextView
+                            android:id="@+id/tv_brightness_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/brand_primary"
+                            android:textSize="@dimen/control_value_size"
+                            android:textStyle="bold"
+                            tools:text="128 / 255"/>
+                    </LinearLayout>
+
+                    <SeekBar
+                        android:id="@+id/sb_brightness"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:max="255"
+                        android:progress="128"
+                        android:progressTint="@color/brand_primary"
+                        android:progressBackgroundTint="@color/progress_track"
+                        tools:targetApi="21"/>
+                </LinearLayout>
+
+                <!-- 快捷开关（Grid：3列，大屏自动加大间距） -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding_lg"
+                    android:background="@drawable/bg_card">
+
+                    <TextView
+                        style="@style/CardTitleText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/control_quick"/>
+
+                    <!-- 第 1 行：WiFi/蓝牙/热点 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:id="@+id/btn_wifi"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="@dimen/spacing_md"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="@drawable/bg_toggle_item"
+                            android:layout_marginEnd="@dimen/spacing_sm">
+
+                            <ImageView
+                                android:id="@+id/iv_wifi"
+                                android:layout_width="@dimen/control_toggle_icon_size"
+                                android:layout_height="@dimen/control_toggle_icon_size"
+                                android:src="@drawable/ic_ctrl_wifi"
+                                android:padding="2dp"/>
+
+                            <TextView
+                                android:id="@+id/tv_wifi"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="@string/control_wifi"
+                                android:textSize="@dimen/control_toggle_text_size"
+                                android:textColor="@color/text_secondary"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/btn_bluetooth"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="@dimen/spacing_md"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="@drawable/bg_toggle_item"
+                            android:layout_marginStart="@dimen/spacing_sm"
+                            android:layout_marginEnd="@dimen/spacing_sm">
+
+                            <ImageView
+                                android:id="@+id/iv_bluetooth"
+                                android:layout_width="@dimen/control_toggle_icon_size"
+                                android:layout_height="@dimen/control_toggle_icon_size"
+                                android:src="@drawable/ic_ctrl_bluetooth"
+                                android:padding="2dp"/>
+
+                            <TextView
+                                android:id="@+id/tv_bluetooth"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="@string/control_bluetooth"
+                                android:textSize="@dimen/control_toggle_text_size"
+                                android:textColor="@color/text_secondary"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/btn_hotspot"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="@dimen/spacing_md"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="@drawable/bg_toggle_item"
+                            android:layout_marginStart="@dimen/spacing_sm">
+
+                            <ImageView
+                                android:id="@+id/iv_hotspot"
+                                android:layout_width="@dimen/control_toggle_icon_size"
+                                android:layout_height="@dimen/control_toggle_icon_size"
+                                android:src="@drawable/ic_ctrl_hotspot"
+                                android:padding="2dp"/>
+
+                            <TextView
+                                android:id="@+id/tv_hotspot"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="@string/control_hotspot"
+                                android:textSize="@dimen/control_toggle_text_size"
+                                android:textColor="@color/text_secondary"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- 第 2 行：夜间模式/飞行模式/位置 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:id="@+id/btn_dark"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="@dimen/spacing_md"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="@drawable/bg_toggle_item"
+                            android:layout_marginEnd="@dimen/spacing_sm">
+
+                            <ImageView
+                                android:id="@+id/iv_dark"
+                                android:layout_width="@dimen/control_toggle_icon_size"
+                                android:layout_height="@dimen/control_toggle_icon_size"
+                                android:src="@drawable/ic_ctrl_dark"
+                                android:padding="2dp"/>
+
+                            <TextView
+                                android:id="@+id/tv_dark"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="@string/control_dark"
+                                android:textSize="@dimen/control_toggle_text_size"
+                                android:textColor="@color/text_secondary"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/btn_airplane"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="@dimen/spacing_md"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="@drawable/bg_toggle_item"
+                            android:layout_marginStart="@dimen/spacing_sm"
+                            android:layout_marginEnd="@dimen/spacing_sm">
+
+                            <ImageView
+                                android:layout_width="@dimen/control_toggle_icon_size"
+                                android:layout_height="@dimen/control_toggle_icon_size"
+                                android:src="@drawable/ic_ctrl_airplane"
+                                android:padding="2dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="@string/control_airplane"
+                                android:textSize="@dimen/control_toggle_text_size"
+                                android:textColor="@color/text_secondary"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/btn_location"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="@dimen/spacing_md"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="@drawable/bg_toggle_item"
+                            android:layout_marginStart="@dimen/spacing_sm">
+
+                            <ImageView
+                                android:layout_width="@dimen/control_toggle_icon_size"
+                                android:layout_height="@dimen/control_toggle_icon_size"
+                                android:src="@drawable/ic_ctrl_location"
+                                android:padding="2dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="@string/control_location"
+                                android:textSize="@dimen/control_toggle_text_size"
+                                android:textColor="@color/text_secondary"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

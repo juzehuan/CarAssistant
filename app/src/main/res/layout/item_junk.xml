@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 垃圾清理列表项：图标 + 名称/描述 + 勾选框 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="@dimen/list_item_padding_h"
+    android:paddingEnd="@dimen/list_item_padding_h"
+    android:paddingTop="@dimen/list_item_padding_v"
+    android:paddingBottom="@dimen/list_item_padding_v"
+    android:layout_marginStart="2dp"
+    android:layout_marginEnd="2dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    android:background="@drawable/bg_junk_item">
+
+    <ImageView
+        android:id="@+id/iv_junk_icon"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_clean"
+        android:background="@drawable/bg_junk_icon"
+        android:padding="10dp"
+        tools:ignore="UseAppTint"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="14dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tv_junk_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="缓存垃圾"/>
+
+            <!-- Root 专属徽章：仅 rootOnly 项显示 -->
+            <TextView
+                android:id="@+id/tv_junk_root_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:paddingTop="1dp"
+                android:paddingBottom="1dp"
+                android:background="@drawable/bg_junk_root_tag"
+                android:text="@string/clean_root_tag"
+                android:textColor="@color/brand_primary"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_junk_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:textColor="@color/text_hint"
+            android:textSize="11sp"
+            android:maxLines="2"
+            tools:text="12 项 / 12.5 MB"/>
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/cb_junk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:theme="@style/SwitchBrand"/>
+</LinearLayout>

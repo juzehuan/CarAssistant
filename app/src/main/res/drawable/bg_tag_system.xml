@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 标签背景：浅灰圆角胶囊形 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/stroke_card"/>
+    <corners android:radius="10dp"/>
+</shape>

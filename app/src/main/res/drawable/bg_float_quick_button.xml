@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    悬浮面板快捷按钮背景：圆形品牌蓝渐变
+    - oval shape 不使用 <corners>（兼容 Android 9 严格解析）
+    - gradient angle 必须是 45 的倍数（兼容 Android 9）
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:startColor="#3D7BFF"
+        android:endColor="#1E54E5"
+        android:angle="45"
+        android:type="linear"/>
+</shape>

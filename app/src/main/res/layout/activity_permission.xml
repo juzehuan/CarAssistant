@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    首次启动权限引导页
+    - 顶部渐变头部：标题
+    - 欢迎说明卡
+    - 必需权限分组卡：运行时权限一键申请
+    - 重要权限分组卡：列表展示，每项可单独跳转系统设置
+    - 底部双按钮：进入应用（必需权限已授予时可用） + 跳过特殊权限
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:orientation="vertical">
+
+    <!-- 顶部渐变头部 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_home_header"
+        android:paddingStart="@dimen/page_padding"
+        android:paddingEnd="@dimen/header_padding_h"
+        android:paddingTop="@dimen/header_padding_top"
+        android:paddingBottom="@dimen/header_padding_bottom">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/permission_guide_welcome"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/home_header_title_size"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:text="@string/permission_guide_desc"
+            android:textColor="@color/text_white_70"
+            android:textSize="@dimen/text_caption"/>
+    </LinearLayout>
+
+    <!-- 主体内容 -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/page_padding">
+
+            <!-- ========== 必需权限分组 ========== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding_lg"
+                android:background="@drawable/bg_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        style="@style/CardTitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/permission_section_required"/>
+
+                    <TextView
+                        android:id="@+id/tv_runtime_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="3dp"
+                        android:paddingBottom="3dp"
+                        android:background="@drawable/bg_status_disabled"
+                        android:text="@string/permission_status_not_granted"
+                        android:textColor="@color/text_hint"
+                        android:textSize="@dimen/text_caption"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/permission_section_required_desc"
+                    android:textColor="@color/text_hint"
+                    android:textSize="@dimen/text_caption"/>
+
+                <!-- 运行时权限项 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_perm_notification"
+                        android:background="@drawable/bg_icon_control"
+                        android:padding="8dp"
+                        tools:ignore="UseAppTint,ContentDescription"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/perm_name_runtime"
+                            android:textColor="@color/text_primary"
+                            android:textSize="@dimen/text_body"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/perm_desc_runtime"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="@dimen/text_caption"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 一键申请按钮 -->
+                <Button
+                    android:id="@+id/btn_request_runtime"
+                    style="@style/Widget.CarAssistant.Button.Primary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/permission_action_grant_runtime"/>
+            </LinearLayout>
+
+            <!-- ========== 重要权限分组 ========== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/page_padding"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding_lg"
+                android:background="@drawable/bg_card">
+
+                <TextView
+                    style="@style/CardTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/permission_section_special"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/permission_section_special_desc"
+                    android:textColor="@color/text_hint"
+                    android:textSize="@dimen/text_caption"/>
+
+                <!-- 悬浮窗权限 -->
+                <LinearLayout
+                    android:id="@+id/row_overlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_perm_overlay"
+                        tools:ignore="UseAppTint,ContentDescription"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/perm_name_overlay"
+                            android:textColor="@color/text_primary"
+                            android:textSize="@dimen/text_body"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/perm_desc_overlay"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="@dimen/text_caption"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_overlay_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:background="@drawable/bg_status_disabled"
+                        android:text="@string/permission_status_not_granted"
+                        android:textColor="@color/text_hint"
+                        android:textSize="@dimen/text_caption"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <!-- 所有文件访问权限 -->
+                <LinearLayout
+                    android:id="@+id/row_storage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_perm_storage"
+                        tools:ignore="UseAppTint,ContentDescription"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/perm_name_storage"
+                            android:textColor="@color/text_primary"
+                            android:textSize="@dimen/text_body"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/perm_desc_storage"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="@dimen/text_caption"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_storage_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:background="@drawable/bg_status_disabled"
+                        android:text="@string/permission_status_not_granted"
+                        android:textColor="@color/text_hint"
+                        android:textSize="@dimen/text_caption"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <!-- 使用情况访问 -->
+                <LinearLayout
+                    android:id="@+id/row_usage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_perm_usage"
+                        tools:ignore="UseAppTint,ContentDescription"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/perm_name_usage"
+                            android:textColor="@color/text_primary"
+                            android:textSize="@dimen/text_body"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/perm_desc_usage"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="@dimen/text_caption"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_usage_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:background="@drawable/bg_status_disabled"
+                        android:text="@string/permission_status_not_granted"
+                        android:textColor="@color/text_hint"
+                        android:textSize="@dimen/text_caption"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <!-- 修改系统设置 -->
+                <LinearLayout
+                    android:id="@+id/row_write_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_perm_settings"
+                        tools:ignore="UseAppTint,ContentDescription"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/perm_name_write_settings"
+                            android:textColor="@color/text_primary"
+                            android:textSize="@dimen/text_body"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/perm_desc_write_settings"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="@dimen/text_caption"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_write_settings_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:background="@drawable/bg_status_disabled"
+                        android:text="@string/permission_status_not_granted"
+                        android:textColor="@color/text_hint"
+                        android:textSize="@dimen/text_caption"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <!-- 通知访问权限 -->
+                <LinearLayout
+                    android:id="@+id/row_listener"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_perm_listener"
+                        tools:ignore="UseAppTint,ContentDescription"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/perm_name_listener"
+                            android:textColor="@color/text_primary"
+                            android:textSize="@dimen/text_body"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/perm_desc_listener"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="@dimen/text_caption"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_listener_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:background="@drawable/bg_status_disabled"
+                        android:text="@string/permission_status_not_granted"
+                        android:textColor="@color/text_hint"
+                        android:textSize="@dimen/text_caption"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 占位填充 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="20dp"/>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- 底部按钮区 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/page_padding"
+        android:background="@color/bg_card"
+        android:elevation="6dp">
+
+        <Button
+            android:id="@+id/btn_skip_special"
+            style="@style/Widget.CarAssistant.Button.Secondary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="@string/permission_skip_special"/>
+
+        <Button
+            android:id="@+id/btn_enter_app"
+            style="@style/Widget.CarAssistant.Button.Primary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.4"
+            android:text="@string/permission_enter_app"/>
+    </LinearLayout>
+
+</LinearLayout>

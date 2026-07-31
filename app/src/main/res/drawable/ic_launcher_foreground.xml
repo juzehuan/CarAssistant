@@ -1,0 +1,281 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!--
+        现代化车机助手图标 v4
+        设计理念：科技感 + 智能化 + 汽车元素
+        - 圆润车身，前挡风玻璃带科技蓝渐变
+        - LED 大灯组发光效果
+        - 中央 AI 智能核心（六边形）
+        - 底部投影悬浮感
+    -->
+
+    <!-- 底部投影 -->
+    <path
+        android:fillColor="#000000"
+        android:fillAlpha="0.10"
+        android:pathData="
+            M26,72
+            C26,70 28,69 30,69
+            L78,69
+            C80,69 82,70 82,72
+            L82,73
+            C82,74 80,75 78,75
+            L30,75
+            C28,75 26,74 26,73
+            Z"/>
+
+    <!-- 车身主体：圆润矩形 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M28,42
+            C28,39 30,37 33,37
+            L75,37
+            C78,37 80,39 80,42
+            L80,67
+            C80,69 78,71 76,71
+            L32,71
+            C30,71 28,69 28,67
+            Z"/>
+
+    <!-- 车身顶部高光带 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.8"
+        android:pathData="
+            M33,37
+            L75,37
+            C78,37 80,39 80,42
+            L80,42.5
+            L28,42.5
+            L28,42
+            C28,39 30,37 33,37
+            Z"/>
+
+    <!-- 前挡风玻璃：深蓝渐变区域 -->
+    <path
+        android:fillColor="#0A2A6E"
+        android:pathData="
+            M33,43
+            C33,42.5 33.5,42 34,42
+            L74,42
+            C74.5,42 75,42.5 75,43
+            L75,51
+            C75,51.5 74.5,52 74,52
+            L34,52
+            C33.5,52 33,51.5 33,51
+            Z"/>
+
+    <!-- 玻璃斜向高光 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.35"
+        android:pathData="
+            M34,42
+            L44,42
+            L38,52
+            L34,52
+            C33.5,52 33,51.5 33,51
+            L33,43
+            C33,42.5 33.5,42 34,42
+            Z"/>
+
+    <!-- 玻璃中部细高光 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.12"
+        android:pathData="
+            M48,42
+            L52,42
+            L50,52
+            L46,52
+            Z"/>
+
+    <!-- 智能核心外环：品牌蓝圆环 -->
+    <path
+        android:fillColor="#2E6BFF"
+        android:pathData="
+            M54,46.5
+            m-4,0
+            a4,4 0 1,0 8,0
+            a4,4 0 1,0 -8,0"/>
+
+    <!-- 智能核心内部：白色六边形（AI 芯片） -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M54,44.5
+            L55.7,45.5
+            L55.7,47.5
+            L54,48.5
+            L52.3,47.5
+            L52.3,45.5
+            Z"/>
+
+    <!-- 左 LED 大灯：发光主体 -->
+    <path
+        android:fillColor="#FFE082"
+        android:pathData="
+            M34,56
+            C34,55 35,54 36,54
+            L40,54
+            C41,54 42,55 42,56
+            L42,60
+            C42,61 41,62 40,62
+            L36,62
+            C35,62 34,61 34,60
+            Z"/>
+
+    <!-- 左大灯高光 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.7"
+        android:pathData="
+            M35.5,56
+            C35.5,55.5 36,55 36.5,55
+            L38,55
+            C38.5,55 39,55.5 39,56
+            L39,57
+            C39,57.5 38.5,58 38,58
+            L36.5,58
+            C36,58 35.5,57.5 35.5,57
+            Z"/>
+
+    <!-- 左大灯光晕 -->
+    <path
+        android:fillColor="#FFD54F"
+        android:fillAlpha="0.20"
+        android:pathData="
+            M31,55
+            C31,54 32,53 33,53
+            L43,53
+            C44,53 45,54 45,55
+            L45,61
+            C45,62 44,63 43,63
+            L33,63
+            C32,63 31,62 31,61
+            Z"/>
+
+    <!-- 右 LED 大灯：发光主体 -->
+    <path
+        android:fillColor="#FFE082"
+        android:pathData="
+            M66,56
+            C66,55 67,54 68,54
+            L72,54
+            C73,54 74,55 74,56
+            L74,60
+            C74,61 73,62 72,62
+            L68,62
+            C67,62 66,61 66,60
+            Z"/>
+
+    <!-- 右大灯高光 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.7"
+        android:pathData="
+            M69,56
+            C69,55.5 69.5,55 70,55
+            L71.5,55
+            C72,55 72.5,55.5 72.5,56
+            L72.5,57
+            C72.5,57.5 72,58 71.5,58
+            L70,58
+            C69.5,58 69,57.5 69,57
+            Z"/>
+
+    <!-- 右大灯光晕 -->
+    <path
+        android:fillColor="#FFD54F"
+        android:fillAlpha="0.20"
+        android:pathData="
+            M63,55
+            C63,54 64,53 65,53
+            L75,53
+            C76,53 77,54 77,55
+            L77,61
+            C77,62 76,63 75,63
+            L65,63
+            C64,63 63,62 63,61
+            Z"/>
+
+    <!-- 格栅横条 x3 -->
+    <path
+        android:fillColor="#3A4A6B"
+        android:pathData="
+            M46,57
+            L62,57
+            C62.5,57 63,57.5 63,58
+            L63,58.3
+            C63,58.8 62.5,59.3 62,59.3
+            L46,59.3
+            C45.5,59.3 45,58.8 45,58.3
+            L45,58
+            C45,57.5 45.5,57 46,57
+            Z"/>
+    <path
+        android:fillColor="#3A4A6B"
+        android:pathData="
+            M46,60
+            L62,60
+            C62.5,60 63,60.5 63,61
+            L63,61.3
+            C63,61.8 62.5,62.3 62,62.3
+            L46,62.3
+            C45.5,62.3 45,61.8 45,61.3
+            L45,61
+            C45,60.5 45.5,60 46,60
+            Z"/>
+    <path
+        android:fillColor="#3A4A6B"
+        android:pathData="
+            M46,63
+            L62,63
+            C62.5,63 63,63.5 63,64
+            L63,64.3
+            C63,64.8 62.5,65.3 62,65.3
+            L46,65.3
+            C45.5,65.3 45,64.8 45,64.3
+            L45,64
+            C45,63.5 45.5,63 46,63
+            Z"/>
+
+    <!-- 底部保险杠阴影 -->
+    <path
+        android:fillColor="#E8ECF3"
+        android:pathData="
+            M32,68
+            L76,68
+            L76,68.5
+            C76,69.5 75,70.5 74,70.5
+            L34,70.5
+            C33,70.5 32,69.5 32,68.5
+            Z"/>
+
+    <!-- 左右后视镜（增加细节） -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M28,46
+            C27,46 26,46.5 26,47.5
+            L26,49
+            C26,49.5 26.5,50 27,50
+            L28,50
+            L28,46
+            Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M80,46
+            C81,46 82,46.5 82,47.5
+            L82,49
+            C82,49.5 81.5,50 81,50
+            L80,50
+            L80,46
+            Z"/>
+</vector>

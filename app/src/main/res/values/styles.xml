@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- 白色主题开关（用于深色头部背景） -->
+    <style name="SwitchWhite" parent="Theme.AppCompat.Light">
+        <item name="colorControlActivated">#FFFFFF</item>
+        <item name="colorSwitchThumbNormal">#CCFFFFFF</item>
+    </style>
+
+    <!-- 品牌色主题开关/复选框 -->
+    <style name="SwitchBrand" parent="Theme.AppCompat.Light">
+        <item name="colorControlActivated">@color/brand_primary</item>
+        <item name="colorAccent">@color/brand_primary</item>
+    </style>
+
+    <!-- 底部导航文字样式（大屏自动放大） -->
+    <style name="BottomNavText" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">@dimen/bottom_nav_text_size</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+</resources>

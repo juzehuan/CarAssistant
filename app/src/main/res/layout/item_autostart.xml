@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    系统自启项列表项（优化版）
+    - 图标 + 名称行（含「系统应用」徽章）+ 状态徽章 + 包名
+    - 状态用圆点 + 徽章双重点示，提升扫视可读性
+    - 底部双按钮：禁用/启用 + 详情
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/list_item_padding_h"
+    android:paddingEnd="@dimen/list_item_padding_h"
+    android:paddingTop="@dimen/list_item_padding_v"
+    android:paddingBottom="@dimen/list_item_padding_v"
+    android:layout_marginStart="2dp"
+    android:layout_marginEnd="2dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="5dp"
+    android:background="@drawable/bg_app_item">
+
+    <!-- 顶部行：图标 + 信息 + 主操作按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/iv_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            tools:src="@mipmap/ic_launcher"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="14dp"
+            android:orientation="vertical">
+
+            <!-- 名称 + 系统应用徽章 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tv_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="应用名"/>
+
+                <TextView
+                    android:id="@+id/tv_system"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:background="@drawable/bg_tag_system"
+                    android:text="@string/autostart_system_app"
+                    android:textColor="@color/text_hint"
+                    android:textSize="10sp"
+                    android:visibility="gone"/>
+            </LinearLayout>
+
+            <!-- 状态徽章：圆点 + 文字（启用绿/禁用灰） -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+
+                <ImageView
+                    android:id="@+id/iv_status_dot"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:src="@drawable/ic_dot"
+                    tools:ignore="UseAppTint"
+                    tools:tint="@color/success"/>
+
+                <TextView
+                    android:id="@+id/tv_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:textColor="@color/success"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_status_enabled"
+                    tools:text="允许自启"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_pkg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:textColor="@color/text_hint"
+                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="com.example.app"/>
+        </LinearLayout>
+
+        <!-- 主操作按钮：禁用/启用 -->
+        <Button
+            android:id="@+id/btn_toggle"
+            style="@style/Widget.CarAssistant.Button.Danger.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:text="@string/autostart_disable"/>
+    </LinearLayout>
+
+    <!-- 底部详情按钮：满宽次级按钮 -->
+    <Button
+        android:id="@+id/btn_detail"
+        style="@style/Widget.CarAssistant.Button.Secondary.Small"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/app_detail"/>
+</LinearLayout>

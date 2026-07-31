@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 圆形图标背景：品牌蓝渐变 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:startColor="@color/icon_bg_memory_start"
+        android:endColor="@color/icon_bg_memory_end"
+        android:angle="45"
+        android:type="linear"/>
+</shape>
