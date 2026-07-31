@@ -45,9 +45,8 @@ tools/jadx/
 tools/jadx.zip
 tools/*.zip
 
-# ================= APKs (release artifacts, not source) =================
+# ================= APKs (build artifacts, not source) =================
 *.apk
-!app/build/outputs/apk/**/*.apk
 
 # ================= Native / Keystore =================
 *.keystore
