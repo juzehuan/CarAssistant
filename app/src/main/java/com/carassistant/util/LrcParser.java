@@ -53,32 +53,41 @@ public final class LrcParser {
     public static final class LrcLine {
         public final long time;   // 毫秒
         public final String text;
+        public final String translation;
 
         public LrcLine(long time, String text) {
+            this(time, text, "");
+        }
+
+        public LrcLine(long time, String text, String translation) {
             this.time = time;
             this.text = text == null ? "" : text;
+            this.translation = translation == null ? "" : translation;
         }
 
         public long getTime() { return time; }
         public String getText() { return text; }
+        public String getTranslation() { return translation; }
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof LrcLine)) return false;
             LrcLine l = (LrcLine) o;
-            return time == l.time && TextUtils.equals(text, l.text);
+            return time == l.time && TextUtils.equals(text, l.text)
+                    && TextUtils.equals(translation, l.translation);
         }
 
         @Override
         public int hashCode() {
             int h = Long.hashCode(time) * 31;
-            return h + (text != null ? text.hashCode() : 0);
+            h += (text != null ? text.hashCode() : 0);
+            return h * 31 + (translation != null ? translation.hashCode() : 0);
         }
 
         @Override
         public String toString() {
-            return "LrcLine(time=" + time + ", text=" + text + ")";
+            return "LrcLine(time=" + time + ", text=" + text + ", translation=" + translation + ")";
         }
     }
 
@@ -87,11 +96,17 @@ public final class LrcParser {
         public final String prev;
         public final String current;
         public final String next;
+        public final String currentTranslation;
 
         public LyricsTriple(String prev, String current, String next) {
+            this(prev, current, next, "");
+        }
+
+        public LyricsTriple(String prev, String current, String next, String currentTranslation) {
             this.prev = prev == null ? "" : prev;
             this.current = current == null ? "" : current;
             this.next = next == null ? "" : next;
+            this.currentTranslation = currentTranslation == null ? "" : currentTranslation;
         }
     }
 
@@ -140,8 +155,16 @@ public final class LrcParser {
             // 歌词文本 = 最后一个标签之后的部分
             String text = lastTagEnd > 0 && lastTagEnd <= line.length()
                     ? line.substring(lastTagEnd).trim() : "";
+            // 解析翻译（双语歌词以 " || " 分隔）
+            String mainText = text;
+            String translation = "";
+            if (text.contains(" || ")) {
+                int idx = text.indexOf(" || ");
+                mainText = text.substring(0, idx).trim();
+                translation = text.substring(idx + 4).trim();
+            }
             for (Long t : times) {
-                parsed.add(new LrcLine(t, text));
+                parsed.add(new LrcLine(t, mainText, translation));
             }
         }
         // 按时间升序排序
@@ -175,6 +198,22 @@ public final class LrcParser {
     public void clear() {
         synchronized (lock) {
             lrcLines.clear();
+        }
+    }
+
+    /**
+     * 直接设置歌词行（用于从 {@link com.carassistant.lyrics.LrcTimeline} 同步行数据）。
+     * 调用后 lrcLines 会被替换为传入列表的副本，并按时间升序排序。
+     */
+    public void setLines(List<LrcLine> lines) {
+        synchronized (lock) {
+            if (lines == null || lines.isEmpty()) {
+                lrcLines = new ArrayList<>();
+                return;
+            }
+            List<LrcLine> copy = new ArrayList<>(lines);
+            Collections.sort(copy, (a, b) -> Long.compare(a.time, b.time));
+            lrcLines = copy;
         }
     }
 
@@ -220,7 +259,7 @@ public final class LrcParser {
     public LyricsTriple getLyricsAtPosition(long position) {
         synchronized (lock) {
             if (lrcLines.isEmpty()) {
-                return new LyricsTriple("", "暂无歌词", "");
+                return new LyricsTriple("", "暂无歌词", "", "");
             }
             LrcLine prevLine = null;
             LrcLine currentLine = null;
@@ -238,7 +277,8 @@ public final class LrcParser {
             String prev = prevLine != null ? prevLine.text : "";
             String current = currentLine != null ? currentLine.text : "";
             String next = nextLine != null ? nextLine.text : "";
-            return new LyricsTriple(prev, current, next);
+            String currentTrans = currentLine != null ? currentLine.translation : "";
+            return new LyricsTriple(prev, current, next, currentTrans);
         }
     }
 }

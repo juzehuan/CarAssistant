@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    分隔线渐变（中心透明，两端淡金色）
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="#00C9A961"
+        android:centerColor="#33C9A961"
+        android:endColor="#00C9A961"
+        android:angle="0"
+        android:type="linear"/>
+</shape>

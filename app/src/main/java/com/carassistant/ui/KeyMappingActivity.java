@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
@@ -345,6 +344,9 @@ public class KeyMappingActivity extends AppCompatActivity {
 
     /** 根据动作类型决定后续输入流程 */
     private void handleActionInput(int actionType, ActionSaveCallback cb) {
+        android.util.Log.d("KeyMapping", "handleActionInput: actionType=" + actionType
+                + " isMedia=" + KeyMappingUtil.isMediaAction(actionType)
+                + " isNeedApp=" + KeyMappingUtil.isActionNeedApp(actionType));
         if (KeyMappingUtil.isActionNeedApp(actionType)) {
             pickApp((pkg, label) -> cb.onActionReady(pkg, "打开 " + label, ""));
         } else if (KeyMappingUtil.isMediaAction(actionType)) {
@@ -374,22 +376,34 @@ public class KeyMappingActivity extends AppCompatActivity {
      * - 选择指定应用：进入应用选择弹窗，选定后定向派发到该应用
      */
     private void chooseMediaTarget(int actionType, MediaTargetCallback cb) {
-        String[] options = {
-                getString(R.string.media_target_any),
-                getString(R.string.media_target_app)
-        };
-        new AlertDialog.Builder(this)
+        android.util.Log.d("KeyMapping", "chooseMediaTarget: actionType=" + actionType);
+        // 注意：AlertDialog 的 setMessage 和 setItems 互斥，同时调用时 items 会被隐藏。
+        // 改用自定义布局：顶部显示提示文字，下方是两个可选按钮 + 取消。
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_media_target, null);
+        TextView tvHint = view.findViewById(R.id.tv_media_target_hint);
+        View btnAny = view.findViewById(R.id.btn_target_any);
+        View btnPick = view.findViewById(R.id.btn_target_pick);
+        tvHint.setText(getString(R.string.media_target_app_hint));
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(getString(R.string.media_target_app))
-                .setMessage(getString(R.string.media_target_app_hint))
-                .setItems(options, (d, w) -> {
-                    if (w == 0) {
-                        cb.onTargetSelected("");
-                    } else {
-                        pickApp((pkg, label) -> cb.onTargetSelected(pkg));
-                    }
-                })
+                .setView(view)
                 .setNegativeButton(R.string.cancel, null)
-                .show();
+                .create();
+        dialog.show();
+
+        btnAny.setOnClickListener(v -> {
+            android.util.Log.d("KeyMapping", "chooseMediaTarget: 选当前播放器");
+            dialog.dismiss();
+            cb.onTargetSelected("");
+        });
+        btnPick.setOnClickListener(v -> {
+            android.util.Log.d("KeyMapping", "chooseMediaTarget: 选指定应用");
+            dialog.dismiss();
+            // 可选模式：显示"不选，用系统默认"按钮，允许跳过
+            pickApp((pkg, label) -> cb.onTargetSelected(pkg),
+                    true, getString(R.string.media_target_skip));
+        });
     }
 
     interface MediaTargetCallback { void onTargetSelected(String targetPackage); }
@@ -454,8 +468,19 @@ public class KeyMappingActivity extends AppCompatActivity {
 
     interface ActionSelectedCallback { void onActionSelected(int actionType); }
 
-    /** 选择应用 */
+    /** 选择应用（必选模式：点击应用立即回调并关闭） */
     private void pickApp(AppPickedCallback cb) {
+        pickApp(cb, false, null);
+    }
+
+    /**
+     * 选择应用
+     * @param cb 回调
+     * @param optional true=可选模式（显示确认按钮，允许不选直接确认）；false=必选（点击即选）
+     * @param confirmText 可选模式下的确认按钮文字；为 null 时使用默认"确定"
+     */
+    private void pickApp(AppPickedCallback cb, boolean optional, String confirmText) {
+        android.util.Log.d("KeyMapping", "pickApp: optional=" + optional + " confirmText=" + confirmText);
         // 复用悬浮球/自启管理的应用选择弹窗
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_pick_app, null);
         RecyclerView rvPick = view.findViewById(R.id.rv_pick);
@@ -464,7 +489,8 @@ public class KeyMappingActivity extends AppCompatActivity {
         TextView tvTitle = view.findViewById(R.id.tv_pick_title);
         TextView tvSubtitle = view.findViewById(R.id.tv_pick_subtitle);
         tvTitle.setText("选择应用");
-        tvSubtitle.setText("点击选择要启动的应用");
+        tvSubtitle.setText(optional ? "点击选择目标应用，或点下方按钮跳过"
+                                     : "点击选择要启动的应用");
 
         com.carassistant.adapter.PickAppAdapter adapter = new com.carassistant.adapter.PickAppAdapter();
         rvPick.setAdapter(adapter);
@@ -481,49 +507,60 @@ public class KeyMappingActivity extends AppCompatActivity {
         });
 
         view.findViewById(R.id.btn_pick_cancel).setOnClickListener(v -> dialog.dismiss());
-        view.findViewById(R.id.btn_pick_confirm).setVisibility(View.GONE);
 
-        // 异步加载应用列表（包含系统应用，只要有 launchIntent 即可），避免阻塞 UI
+        // 可选模式：显示确认按钮，点击则回调空（表示不选，用系统默认）
+        android.widget.Button btnConfirm = view.findViewById(R.id.btn_pick_confirm);
+        if (optional) {
+            btnConfirm.setVisibility(View.VISIBLE);
+            btnConfirm.setText(confirmText != null ? confirmText : "确定");
+            btnConfirm.setOnClickListener(v -> {
+                cb.onAppPicked("", "");
+                dialog.dismiss();
+            });
+        } else {
+            btnConfirm.setVisibility(View.GONE);
+        }
+
+        // 异步加载应用列表：用 getInstalledApplications + getLaunchIntentForPackage 过滤
+        // （与 AutostartActivity 一致，规避 Android 11+ queryIntentActivities 可见性限制）
         final Context appCtx = getApplicationContext();
-        new AsyncTask<Void, Void, List<com.carassistant.util.AppUtil.AppInfo>>() {
-            @Override
-            protected List<com.carassistant.util.AppUtil.AppInfo> doInBackground(Void... voids) {
-                try {
-                    PackageManager pm = appCtx.getPackageManager();
-                    // 使用 queryIntentActivities 查询所有带 LAUNCHER 入口的应用
-                    // 比 getInstalledApplications + getLaunchIntentForPackage 更准确，且天然过滤不可启动应用
-                    Intent main = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
-                    List<android.content.pm.ResolveInfo> ris = pm.queryIntentActivities(main, 0);
-                    List<com.carassistant.util.AppUtil.AppInfo> result = new ArrayList<>();
-                    for (android.content.pm.ResolveInfo ri : ris) {
-                        try {
-                            String pkg = ri.activityInfo.packageName;
-                            ApplicationInfo ai = pm.getApplicationInfo(pkg, 0);
-                            com.carassistant.util.AppUtil.AppInfo info = new com.carassistant.util.AppUtil.AppInfo();
-                            info.packageName = pkg;
-                            info.name = pm.getApplicationLabel(ai).toString();
-                            info.icon = pm.getApplicationIcon(ai);
-                            info.launchIntent = pm.getLaunchIntentForPackage(pkg);
-                            info.system = (ai.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
-                            result.add(info);
-                        } catch (Exception ignored) {}
-                    }
-                    Collections.sort(result, (a, b) -> {
-                        // 用户应用优先，再按名称排序
-                        if (a.system != b.system) return a.system ? 1 : -1;
-                        return a.name.compareToIgnoreCase(b.name);
-                    });
-                    return result;
-                } catch (Exception e) {
-                    return new ArrayList<>();
+        java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            List<com.carassistant.util.AppUtil.AppInfo> result = new ArrayList<>();
+            try {
+                PackageManager pm = appCtx.getPackageManager();
+                List<ApplicationInfo> ais = pm.getInstalledApplications(0);
+                android.util.Log.d("KeyMapping", "pickApp: getInstalledApplications 返回 " + ais.size() + " 个应用");
+                for (ApplicationInfo ai : ais) {
+                    try {
+                        // 仅保留可启动的应用（有 LAUNCHER 入口）
+                        if (pm.getLaunchIntentForPackage(ai.packageName) == null) continue;
+                        com.carassistant.util.AppUtil.AppInfo info = new com.carassistant.util.AppUtil.AppInfo();
+                        info.packageName = ai.packageName;
+                        info.name = pm.getApplicationLabel(ai).toString();
+                        info.icon = pm.getApplicationIcon(ai);
+                        info.launchIntent = pm.getLaunchIntentForPackage(ai.packageName);
+                        info.system = (ai.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+                        result.add(info);
+                    } catch (Exception ignored) {}
                 }
+                Collections.sort(result, (a, b) -> {
+                    // 用户应用优先，再按名称排序
+                    if (a.system != b.system) return a.system ? 1 : -1;
+                    return a.name.compareToIgnoreCase(b.name);
+                });
+                android.util.Log.d("KeyMapping", "pickApp: 可启动应用数 " + result.size());
+            } catch (Exception e) {
+                android.util.Log.e("KeyMapping", "pickApp: 加载应用列表失败", e);
             }
 
-            @Override
-            protected void onPostExecute(List<com.carassistant.util.AppUtil.AppInfo> data) {
+            final List<com.carassistant.util.AppUtil.AppInfo> all = result;
+            runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed()) return;
-                final List<com.carassistant.util.AppUtil.AppInfo> all = data;
                 adapter.setData(all);
+                if (all.isEmpty()) {
+                    tvSubtitle.setText("未获取到应用列表，请检查权限或反馈问题");
+                }
                 // 搜索过滤
                 etSearch.addTextChangedListener(new TextWatcher() {
                     @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -541,8 +578,9 @@ public class KeyMappingActivity extends AppCompatActivity {
                     }
                 });
                 ivClear.setOnClickListener(v -> etSearch.setText(""));
-            }
-        }.execute();
+            });
+        });
+        executor.shutdown();
     }
 
     interface AppPickedCallback { void onAppPicked(String pkg, String label); }

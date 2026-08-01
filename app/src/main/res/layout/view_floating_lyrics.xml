@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    悬浮歌词视图（网易云音乐风格）
+    - 单行歌词 + 歌曲名
+    - 可拖动
+    - 点击跳转到音乐伴侣
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_floating_lyrics"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:minWidth="200dp"
+    android:maxWidth="400dp">
+
+    <!-- 当前歌词行 -->
+    <TextView
+        android:id="@+id/tv_float_lyric"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="360dp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:text="暂无歌词"
+        android:textColor="#FFFFFFFF"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:shadowColor="#80000000"
+        android:shadowDx="0"
+        android:shadowDy="1"
+        android:shadowRadius="3"/>
+
+    <!-- 歌曲信息 -->
+    <TextView
+        android:id="@+id/tv_float_song"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:maxWidth="360dp"
+        android:text=""
+        android:textColor="#B3E60026"
+        android:textSize="11sp"/>
+</LinearLayout>

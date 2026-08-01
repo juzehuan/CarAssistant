@@ -58,6 +58,17 @@ public class KeyMappingAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
         sInstance = this;
         keyDetector = new KeyTriggerDetector(this);
+        // 显式请求按键过滤能力（1:1 对齐红旗方控 GlobalKeyAccessibilityService）
+        // 某些设备上仅靠 XML 的 canRequestFilterKeyEvents 不生效，必须在代码中显式设置
+        try {
+            android.accessibilityservice.AccessibilityServiceInfo info = getServiceInfo();
+            if (info != null) {
+                info.flags |= android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
+                setServiceInfo(info);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "设置 FLAG_REQUEST_FILTER_KEY_EVENTS 失败", e);
+        }
         Log.i(TAG, "无障碍服务已连接，按键映射全局生效");
         // 兜底：开机自启调度（三重保险之一，防 BootReceiver 未触发）
         AppAutoStartManager.scheduleFromBoot(this);

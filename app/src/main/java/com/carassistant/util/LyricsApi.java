@@ -396,11 +396,63 @@ public final class LyricsApi {
             JSONObject lrc = lrcJson.optJSONObject("lrc");
             if (lrc == null) return null;
             String content = lrc.optString("lyric", "");
-            return content.contains("[") ? content : null;
+            if (!content.contains("[")) return null;
+            // 获取翻译歌词
+            JSONObject tlyric = lrcJson.optJSONObject("tlyric");
+            if (tlyric != null) {
+                String trans = tlyric.optString("lyric", "");
+                if (!TextUtils.isEmpty(trans)) {
+                    content = mergeTranslation(content, trans);
+                }
+            }
+            return content;
         } catch (Exception e) {
             Log.w(TAG, "NetEase lyrics failed", e);
             return null;
         }
+    }
+
+    /** 合并翻译歌词：相同时间标签的行用 " || " 连接 */
+    private static String mergeTranslation(String mainLrc, String translationLrc) {
+        if (TextUtils.isEmpty(mainLrc)) return mainLrc;
+        if (TextUtils.isEmpty(translationLrc)) return mainLrc;
+        java.util.Map<Long, String> transMap = new java.util.HashMap<>();
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile("\\[(\\d{2}):(\\d{2})\\.(\\d{2,3})\\](.*)");
+        for (String line : translationLrc.split("\n")) {
+            java.util.regex.Matcher m = p.matcher(line.trim());
+            if (m.matches()) {
+                try {
+                    long ms = Long.parseLong(m.group(1)) * 60000
+                            + Long.parseLong(m.group(2)) * 1000
+                            + (m.group(3).length() == 2 ? Long.parseLong(m.group(3)) * 10 : Long.parseLong(m.group(3)));
+                    String text = m.group(4) == null ? "" : m.group(4).trim();
+                    if (!text.isEmpty()) transMap.put(ms, text);
+                } catch (Exception ignored) {}
+            }
+        }
+        if (transMap.isEmpty()) return mainLrc;
+        StringBuilder sb = new StringBuilder();
+        for (String line : mainLrc.split("\n")) {
+            java.util.regex.Matcher m = p.matcher(line.trim());
+            if (m.matches()) {
+                try {
+                    long ms = Long.parseLong(m.group(1)) * 60000
+                            + Long.parseLong(m.group(2)) * 1000
+                            + (m.group(3).length() == 2 ? Long.parseLong(m.group(3)) * 10 : Long.parseLong(m.group(3)));
+                    String trans = transMap.get(ms);
+                    if (trans != null && !trans.isEmpty()) {
+                        sb.append(line.trim()).append(" || ").append(trans).append("\n");
+                    } else {
+                        sb.append(line.trim()).append("\n");
+                    }
+                } catch (Exception e) {
+                    sb.append(line.trim()).append("\n");
+                }
+            } else {
+                sb.append(line.trim()).append("\n");
+            }
+        }
+        return sb.toString();
     }
 
     /** GeciMe：result[0].lrc URL → 下载 LRC */

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    播放按钮外圈光晕（播放时显示，呼吸动画）
+    - 比主按钮大 12dp 的半透明金色圆环
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#00C9A961"/>
+    <stroke android:width="6dp" android:color="#44C9A961"/>
+</shape>

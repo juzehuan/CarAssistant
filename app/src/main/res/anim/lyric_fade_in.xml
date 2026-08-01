@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    歌词淡入动画
+    - 从 alpha 0 + 下方 16dp 滑入
+-->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:anim/decelerate_interpolator">
+    <alpha
+        android:fromAlpha="0.0"
+        android:toAlpha="1.0"
+        android:duration="400"/>
+    <translate
+        android:fromYDelta="16dp"
+        android:toYDelta="0"
+        android:duration="400"/>
+</set>

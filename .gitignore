@@ -38,12 +38,21 @@ _hk_decompiled/
 _hk_jadx/
 _ref_apk/
 _ref_extract/
+_lyrics_companion_jadx/
+_lyrics_companion_jadx_old/
 参考/
 
 # ================= Third-party tools (large binaries, do not distribute) =================
 tools/jadx/
 tools/jadx.zip
 tools/*.zip
+
+# ================= Temp scripts / UI dumps =================
+analyze*.ps1
+server.ps1
+measure*.html
+ui_*.xml
+keystore.properties
 
 # ================= APKs (build artifacts, not source) =================
 *.apk

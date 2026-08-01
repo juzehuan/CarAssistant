@@ -114,11 +114,8 @@ public class AppFragment extends Fragment {
                 confirmUninstall(info);
             }
             @Override public void onDetail(AppUtil.AppInfo info) {
-                try {
-                    Intent it = AppUtil.buildAppDetailIntent(info.packageName);
-                    it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(it);
-                } catch (Exception ignored) {}
+                // 点击应用图标/整行不再打开系统设置页，直接启动应用
+                launchApp(info);
             }
         });
         rv.setAdapter(adapter);

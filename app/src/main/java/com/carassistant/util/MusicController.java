@@ -26,12 +26,17 @@ import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.carassistant.lyrics.LrcTimeline;
+import com.carassistant.lyrics.LyricResult;
+import com.carassistant.lyrics.MultiSourceLyricClient;
+import com.carassistant.lyrics.MusicSnapshot;
 import com.carassistant.service.TargetMediaSessionService;
 
 import java.io.InputStream;
@@ -41,6 +46,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * 音乐伴侣控制器（Java 重写自鸿启桌面 Kotlin 版 MusicController）
@@ -108,6 +116,36 @@ public final class MusicController {
 
     private final LrcParser lrcParser = new LrcParser();
 
+    // ============ 歌词时间线状态（供 LyricsPanelView 渲染使用） ============
+    /** 当前歌词时间线（支持行级 + 逐字 + 翻译） */
+    private volatile LrcTimeline currentTimeline = LrcTimeline.EMPTY;
+    /** 当前歌词源名称（如 "网易云音乐"、"QQ音乐"） */
+    private volatile String currentLyricSourceName = "";
+    /** 歌词是否已加载完成（无论是否拿到内容） */
+    private volatile boolean currentLyricLoaded = false;
+    /** 当前曲目媒体 ID（用于 NetEase/Soda 直查） */
+    private volatile String currentMediaId = "";
+    /** 当前播放器友好名称（用于 UI 显示） */
+    private volatile String currentSourceName = "音乐播放器";
+    /** 当前播放器源 ID（netease/qqmusic/kugou/kuwo/soda），用于多源歌词优先级 */
+    private volatile String currentSourceId = "";
+    /** 曲目代际：每次元数据变更自增，用于丢弃过期歌词回调 */
+    private volatile long trackGeneration = 0L;
+
+    /** 实时位置推算基准（PlaybackState.getPosition() 的快照） */
+    private volatile long basePositionMs = 0L;
+    /** basePositionMs 快照时刻的 elapsedRealtime */
+    private volatile long positionUpdatedAtElapsedMs = 0L;
+    /** 播放速度（1.0 = 正常） */
+    private volatile float playbackSpeed = 1.0f;
+
+    /** 多源歌词客户端（懒初始化） */
+    private volatile MultiSourceLyricClient lyricClient;
+    /** 歌词加载线程池（缓存线程，避免并发限制） */
+    private final ExecutorService lyricExecutor = Executors.newCachedThreadPool();
+    /** 当前歌词加载任务（用于取消） */
+    private volatile Future<?> lyricLoadTask;
+
     // 当前状态
     private String currentTitle = "";
     private String currentArtist = "";
@@ -117,6 +155,7 @@ public final class MusicController {
     private boolean currentIsPlaying = false;
     private int currentRepeatMode = 0;
     private boolean isConnected = false;
+    private long lyricOffsetMs = 0L;
 
     // 轮询任务
     private Runnable pollRunnable;
@@ -144,6 +183,9 @@ public final class MusicController {
                 sessionManager = (MediaSessionManager) context.getSystemService(Context.MEDIA_SESSION_SERVICE);
             } catch (Exception e) {
                 Log.w(TAG, "get MediaSessionManager failed", e);
+            }
+            if (lyricClient == null) {
+                lyricClient = new MultiSourceLyricClient(context);
             }
             registerActiveSessionsListener();
             startPolling();
@@ -176,6 +218,13 @@ public final class MusicController {
     public void release() {
         stopProgressUpdate();
         stopPolling();
+        if (lyricLoadTask != null) {
+            lyricLoadTask.cancel(true);
+            lyricLoadTask = null;
+        }
+        try {
+            lyricExecutor.shutdownNow();
+        } catch (Exception ignored) {}
         if (sessionsListener != null && sessionManager != null) {
             try {
                 sessionManager.removeOnActiveSessionsChangedListener(sessionsListener);
@@ -190,6 +239,9 @@ public final class MusicController {
         mediaController = null;
         controllerCallback = null;
         isConnected = false;
+        currentTimeline = LrcTimeline.EMPTY;
+        currentLyricLoaded = false;
+        currentLyricSourceName = "";
         synchronized (lock) {
             callbacks.clear();
         }
@@ -314,6 +366,115 @@ public final class MusicController {
     public int getRepeatMode() { return currentRepeatMode; }
     public LrcParser getLrcParser() { return lrcParser; }
 
+    /** 获取当前音乐来源应用包名 */
+    public String getMusicPackageName() {
+        if (mediaController != null) {
+            try {
+                return mediaController.getPackageName();
+            } catch (Exception ignored) {}
+        }
+        return null;
+    }
+
+    // ============ LyricsPanelView 渲染所需的快照 API ============
+
+    /**
+     * 获取当前播放位置的歌词快照（供 LyricsPanelView.onDraw 调用）。
+     *
+     * @param offsetMs 用户偏移（毫秒），正值延后歌词、负值提前
+     * @return 不可变快照，永远不会 null
+     */
+    public MusicSnapshot snapshot(int offsetMs) {
+        long pos = currentPositionMs();
+        return buildSnapshot(pos, Math.max(0L, offsetMs + pos));
+    }
+
+    /**
+     * 获取拖动浏览位置的歌词快照（不依赖实时播放位置）。
+     *
+     * @param offsetMs         用户偏移（毫秒）
+     * @param browsePositionMs 用户拖动到的目标播放位置
+     * @return 不可变快照，永远不会 null
+     */
+    public MusicSnapshot snapshotForLyricBrowse(int offsetMs, long browsePositionMs) {
+        return buildSnapshot(Math.max(0L, browsePositionMs - offsetMs),
+                Math.max(0L, browsePositionMs));
+    }
+
+    /**
+     * 行跳转：从 positionMs 偏移 delta 行（±1/±2...），返回目标行的起始时间。
+     * 用于 LyricsPanelView 拖动浏览时计算目标定位。
+     */
+    public long shiftLyricPosition(long positionMs, int delta) {
+        return currentTimeline.shiftedPosition(positionMs, delta);
+    }
+
+    /** 推算当前实时播放位置（基于基准位置 + 速度 * 经过时间） */
+    private long currentPositionMs() {
+        if (!currentIsPlaying) return basePositionMs;
+        long elapsed = SystemClock.elapsedRealtime() - positionUpdatedAtElapsedMs;
+        if (elapsed <= 0) return basePositionMs;
+        long advanced = (long) (elapsed * playbackSpeed);
+        long pos = basePositionMs + advanced;
+        if (currentDuration > 0 && pos > currentDuration) pos = currentDuration;
+        return Math.max(0L, pos);
+    }
+
+    /** 构建不可变快照 */
+    private MusicSnapshot buildSnapshot(long rawPositionMs, long lyricPositionMs) {
+        LrcTimeline timeline = currentTimeline;
+        LrcTimeline.At at = timeline.isEmpty() ? LrcTimeline.At.EMPTY : timeline.at(lyricPositionMs);
+        boolean lyricAvailable = !timeline.isEmpty();
+        return new MusicSnapshot(
+                isConnected,
+                currentIsPlaying,
+                currentSourceName,
+                currentTitle,
+                currentArtist,
+                currentAlbumArt,
+                currentDuration > 0 ? currentDuration : -1L,
+                rawPositionMs,
+                currentLyricLoaded,
+                lyricAvailable,
+                currentLyricSourceName,
+                at
+        );
+    }
+
+    /** 根据媒体控制器包名推断播放器源 ID（用于多源歌词优先级） */
+    private static String sourceIdFromPackage(String pkg) {
+        if (TextUtils.isEmpty(pkg)) return "";
+        if (pkg.contains("netease.cloudmusic")) return "netease";
+        if (pkg.contains("qqmusic")) return "qqmusic";
+        if (pkg.contains("kugou")) return "kugou";
+        if (pkg.contains("kuwo")) return "kuwo";
+        if (pkg.contains("soda") || pkg.contains("gdmusic")) return "soda";
+        return "";
+    }
+
+    /** 根据媒体控制器包名推断播放器友好名称 */
+    private static String sourceNameFromPackage(String pkg) {
+        if (TextUtils.isEmpty(pkg)) return "音乐播放器";
+        if (pkg.contains("netease.cloudmusic")) return "网易云音乐";
+        if (pkg.contains("qqmusic")) return "QQ音乐";
+        if (pkg.contains("kugou")) return "酷狗音乐";
+        if (pkg.contains("kuwo")) return "酷我音乐";
+        if (pkg.contains("soda") || pkg.contains("gdmusic")) return "汽水音乐";
+        if (pkg.contains("bilibili")) return "哔哩哔哩";
+        if (pkg.contains("spotify")) return "Spotify";
+        if (pkg.contains("ytmusic") || pkg.contains("youtube")) return "YouTube Music";
+        return "音乐播放器";
+    }
+
+    public synchronized long getLyricOffsetMs() { return lyricOffsetMs; }
+
+    public synchronized void setLyricOffsetMs(long ms) { lyricOffsetMs = ms; }
+
+    public void adjustLyricOffset(long deltaMs) {
+        lyricOffsetMs += deltaMs;
+        updateLyrics(currentPosition);
+    }
+
     public List<RecentSong> getRecentSongs() {
         synchronized (recentSongs) {
             return new ArrayList<>(recentSongs);
@@ -370,7 +531,9 @@ public final class MusicController {
             cb.onPlayStateChanged(currentIsPlaying);
             cb.onRepeatModeChanged(currentRepeatMode);
         }
-        LrcParser.LyricsTriple l = lrcParser.getLyricsAtPosition(currentPosition);
+        long shifted = currentPosition - lyricOffsetMs;
+        if (shifted < 0) shifted = 0;
+        LrcParser.LyricsTriple l = lrcParser.getLyricsAtPosition(shifted);
         cb.onLyricsChanged(l.prev, l.current, l.next);
     }
 
@@ -468,8 +631,8 @@ public final class MusicController {
                 if (state == null) return;
                 boolean playing = state.getState() == PlaybackState.STATE_PLAYING;
                 int repeatMode = readRepeatMode(state);
-                notifyPlayStateChanged(playing);
-                notifyRepeatModeChanged(repeatMode);
+                float speed = state.getPlaybackSpeed();
+                if (speed <= 0f) speed = 1.0f;
                 long duration = currentDuration;
                 if (mediaController != null) {
                     MediaMetadata md = mediaController.getMetadata();
@@ -477,6 +640,12 @@ public final class MusicController {
                         duration = md.getLong(MediaMetadata.METADATA_KEY_DURATION);
                     }
                 }
+                // 更新实时位置推算基准
+                basePositionMs = Math.max(0L, state.getPosition());
+                positionUpdatedAtElapsedMs = SystemClock.elapsedRealtime();
+                playbackSpeed = playing ? speed : 0.0f;
+                notifyPlayStateChanged(playing);
+                notifyRepeatModeChanged(repeatMode);
                 notifyProgressChanged(state.getPosition(), duration);
             }
 
@@ -500,12 +669,55 @@ public final class MusicController {
                     }
                 }
                 long duration = metadata.getLong(MediaMetadata.METADATA_KEY_DURATION);
+                // 提取媒体 ID 与播放器源信息
+                String mediaId = metadata.getString(MediaMetadata.METADATA_KEY_MEDIA_ID);
+                String pkg = mediaController != null ? mediaController.getPackageName() : "";
+                currentMediaId = mediaId == null ? "" : mediaId;
+                currentSourceId = sourceIdFromPackage(pkg);
+                currentSourceName = sourceNameFromPackage(pkg);
+                // 重置歌词时间线（切歌）
+                trackGeneration++;
+                currentTimeline = LrcTimeline.EMPTY;
+                currentLyricLoaded = false;
+                currentLyricSourceName = "";
+                lrcParser.clear();
                 notifyMetadataChanged(title, artist, art);
                 addRecentSong(title, artist, art);
                 if (duration > 0) currentDuration = duration;
+                // 封面回退：MediaMetadata 未提供封面时，异步从 QQ/酷狗搜索
+                if (art == null) {
+                    final String fTitle = title;
+                    final String fArtist = artist;
+                    final long fDuration = duration;
+                    final long gen = trackGeneration;
+                    lyricExecutor.submit(() -> {
+                        try {
+                            String coverUrl = com.carassistant.lyrics.CoverArtSearchClient.find(
+                                    fTitle, fArtist, fDuration);
+                            if (coverUrl.isEmpty()) return;
+                            Bitmap cover = com.carassistant.lyrics.HttpCompat.downloadBitmap(coverUrl);
+                            if (cover == null) return;
+                            // 防止切歌后回灌旧封面
+                            if (gen != trackGeneration) return;
+                            android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
+                            h.post(() -> {
+                                if (gen != trackGeneration) return;
+                                if (fTitle.equals(currentTitle) && fArtist.equals(currentArtist)) {
+                                    notifyMetadataChanged(currentTitle, currentArtist, cover);
+                                }
+                            });
+                        } catch (Throwable t) {
+                            android.util.Log.w("MusicController", "cover fallback failed", t);
+                        }
+                    });
+                }
                 if (mediaController != null) {
                     PlaybackState st = mediaController.getPlaybackState();
                     if (st != null) {
+                        basePositionMs = Math.max(0L, st.getPosition());
+                        positionUpdatedAtElapsedMs = SystemClock.elapsedRealtime();
+                        float sp = st.getPlaybackSpeed();
+                        playbackSpeed = (st.getState() == PlaybackState.STATE_PLAYING && sp > 0) ? sp : 0.0f;
                         notifyProgressChanged(st.getPosition(), currentDuration);
                     }
                 }
@@ -527,6 +739,15 @@ public final class MusicController {
         }
         isConnected = true;
 
+        // 设置播放器源信息并重置歌词状态（切到新会话）
+        String pkg = controller.getPackageName();
+        currentSourceId = sourceIdFromPackage(pkg);
+        currentSourceName = sourceNameFromPackage(pkg);
+        trackGeneration++;
+        currentTimeline = LrcTimeline.EMPTY;
+        currentLyricLoaded = false;
+        currentLyricSourceName = "";
+        lrcParser.clear();
         // 立即派发当前元数据
         MediaMetadata md = controller.getMetadata();
         if (md != null) {
@@ -547,6 +768,8 @@ public final class MusicController {
             long duration = md.getLong(MediaMetadata.METADATA_KEY_DURATION);
             if (duration <= 0) duration = 240_000L;
             currentDuration = duration;
+            String mediaId = md.getString(MediaMetadata.METADATA_KEY_MEDIA_ID);
+            currentMediaId = mediaId == null ? "" : mediaId;
             notifyMetadataChanged(title, artist, art);
             addRecentSong(title, artist, art);
         }
@@ -556,6 +779,10 @@ public final class MusicController {
             currentIsPlaying = playing;
             currentPosition = st.getPosition();
             currentRepeatMode = readRepeatMode(st);
+            basePositionMs = Math.max(0L, st.getPosition());
+            positionUpdatedAtElapsedMs = SystemClock.elapsedRealtime();
+            float sp = st.getPlaybackSpeed();
+            playbackSpeed = (playing && sp > 0) ? sp : 0.0f;
             notifyPlayStateChanged(playing);
             notifyProgressChanged(currentPosition, currentDuration);
             notifyRepeatModeChanged(currentRepeatMode);
@@ -613,32 +840,76 @@ public final class MusicController {
     }
 
     private void updateLyrics(long position) {
-        LrcParser.LyricsTriple l = lrcParser.getLyricsAtPosition(position);
+        long shifted = position - lyricOffsetMs;
+        if (shifted < 0) shifted = 0;
+        LrcParser.LyricsTriple l = lrcParser.getLyricsAtPosition(shifted);
         notifyLyricsChanged(l.prev, l.current, l.next);
     }
 
     private void fetchLyricsAsync(final String title, final String artist) {
-        lrcParser.clear();
+        if (lyricLoadTask != null) {
+            lyricLoadTask.cancel(true);
+            lyricLoadTask = null;
+        }
         notifyLyricsChanged("", "歌词加载中...", "");
-        LyricsApi.getInstance().fetchLyrics(artist, title, context, new LyricsApi.Callback() {
-            @Override
-            public void onSuccess(String lrcContent) {
+        final MultiSourceLyricClient client = lyricClient;
+        if (client == null) {
+            currentLyricLoaded = true;
+            notifyLyricsChanged("", "暂无歌词", "");
+            return;
+        }
+        final long generation = trackGeneration;
+        final String mediaId = currentMediaId;
+        final String sourceId = currentSourceId;
+        final long duration = currentDuration;
+        lyricLoadTask = lyricExecutor.submit(() -> {
+            try {
+                LyricResult result = client.load(sourceId, mediaId, title, artist, duration);
+                if (Thread.currentThread().isInterrupted()) return;
+                if (generation != trackGeneration) return; // 已切歌，丢弃过期结果
                 if (handler != null) {
                     handler.post(() -> {
-                        boolean ok = lrcParser.parse(lrcContent);
-                        Log.d(TAG, "lyrics parsed: " + ok + ", lines=" + lrcParser.getTotalLines());
-                        updateLyrics(currentPosition);
+                        if (generation != trackGeneration) return;
+                        applyLyricResult(result, generation);
+                    });
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "fetchLyrics failed", e);
+                if (handler != null && generation == trackGeneration) {
+                    handler.post(() -> {
+                        if (generation != trackGeneration) return;
+                        currentLyricLoaded = true;
+                        currentTimeline = LrcTimeline.EMPTY;
+                        currentLyricSourceName = "";
+                        notifyLyricsChanged("", "暂无歌词", "");
                     });
                 }
             }
-
-            @Override
-            public void onFailure(String error) {
-                if (handler != null) {
-                    handler.post(() -> notifyLyricsChanged("", "暂无歌词", ""));
-                }
-            }
         });
+    }
+
+    /** 应用歌词加载结果到 UI（主线程） */
+    private void applyLyricResult(LyricResult result, long generation) {
+        if (generation != trackGeneration) return;
+        currentLyricLoaded = true;
+        if (result == null || result.isEmpty()) {
+            currentTimeline = LrcTimeline.EMPTY;
+            currentLyricSourceName = "";
+            notifyLyricsChanged("", "暂无歌词", "");
+            return;
+        }
+        currentTimeline = result.timeline;
+        currentLyricSourceName = result.providerName;
+        // 同步到 LrcParser（兼容 MusicActivity 三行歌词显示）
+        List<LrcParser.LrcLine> parserLines = new ArrayList<>();
+        for (LrcTimeline.Line line : result.timeline.getLines()) {
+            parserLines.add(new LrcParser.LrcLine(line.timeMs, line.text, line.translated));
+        }
+        lrcParser.setLines(parserLines);
+        // 立即刷新当前歌词行
+        long pos = currentPositionMs();
+        updateLyrics(pos);
+        Log.d(TAG, "lyrics loaded from " + result.providerName + ", lines=" + result.timeline.size());
     }
 
     /** 切换到本地播放器状态（无活跃会话时） */
@@ -652,6 +923,17 @@ public final class MusicController {
         currentIsPlaying = false;
         currentAlbumArt = null;
         currentRepeatMode = 0;
+        trackGeneration++;
+        currentTimeline = LrcTimeline.EMPTY;
+        currentLyricLoaded = false;
+        currentLyricSourceName = "";
+        currentMediaId = "";
+        currentSourceId = "";
+        currentSourceName = "音乐播放器";
+        basePositionMs = 0L;
+        positionUpdatedAtElapsedMs = SystemClock.elapsedRealtime();
+        playbackSpeed = 0.0f;
+        lrcParser.clear();
         notifyMetadataChanged(currentTitle, currentArtist, null);
         notifyProgressChanged(currentPosition, currentDuration);
         notifyPlayStateChanged(false);

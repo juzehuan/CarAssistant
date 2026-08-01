@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    黑胶唱片唱臂（导轨）— 真实唱机样式
+    - 金属拉丝渐变唱臂管
+    - 同心圆枢轴底座
+    - 圆柱配重块（带刻纹）
+    - 流线型唱头 + 唱针
+    - pivot 在右上角，唱臂斜向左下延伸到唱片中心
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="160dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- 唱臂投影（柔和阴影，增加立体感） -->
+    <path
+        android:fillColor="#40000000"
+        android:pathData="M158,46 C120,60 80,100 50,158 L42,166 L38,162 L46,154 C76,98 116,58 154,42 Z"/>
+
+    <!-- 配重块主体（圆柱体，带金属渐变） -->
+    <path
+        android:fillColor="#FF3A3A3A"
+        android:pathData="M168,18 L196,18 L196,56 L168,56 Z"/>
+    <path
+        android:fillColor="#FF525252"
+        android:pathData="M170,20 L194,20 L194,54 L170,54 Z"/>
+    <!-- 配重块顶部高光 -->
+    <path
+        android:fillColor="#FF6E6E6E"
+        android:pathData="M170,20 L194,20 L194,26 L170,26 Z"/>
+    <!-- 配重块底部阴影 -->
+    <path
+        android:fillColor="#FF2A2A2A"
+        android:pathData="M170,48 L194,48 L194,54 L170,54 Z"/>
+    <!-- 配重块刻纹（5 道环形条纹） -->
+    <path
+        android:strokeColor="#FF1F1F1F"
+        android:strokeWidth="0.8"
+        android:pathData="M170,30 L194,30 M170,36 L194,36 M170,42 L194,42"/>
+    <path
+        android:strokeColor="#FF7A7A7A"
+        android:strokeWidth="0.4"
+        android:pathData="M170,31 L194,31 M170,37 L194,37 M170,43 L194,43"/>
+
+    <!-- 枢轴底座外圈（最大圆，底盘） -->
+    <path
+        android:fillColor="#FF2A2A2A"
+        android:pathData="M156,38 m-22,0 a22,22 0 1,0 44,0 a22,22 0 1,0 -44,0"/>
+    <!-- 枢轴底座渐变（金属感） -->
+    <path
+        android:fillColor="#FF4A4A4A"
+        android:pathData="M156,38 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0"/>
+    <!-- 枢轴中圈 -->
+    <path
+        android:fillColor="#FF1F1F1F"
+        android:pathData="M156,38 m-15,0 a15,15 0 1,0 30,0 a15,15 0 1,0 -30,0"/>
+    <!-- 枢轴内圈（高亮环） -->
+    <path
+        android:fillColor="#FF5A5A5A"
+        android:pathData="M156,38 m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0"/>
+    <!-- 枢轴中心孔 -->
+    <path
+        android:fillColor="#FF0A0A0A"
+        android:pathData="M156,38 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0"/>
+    <!-- 枢轴高光点（左上，模拟金属反光） -->
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M150,32 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0"/>
+
+    <!-- 唱臂管主体（S 型曲线，从枢轴到唱头） -->
+    <!-- 用两段贝塞尔曲线模拟 S 形唱臂 -->
+    <path
+        android:fillColor="#FF3A3A3A"
+        android:pathData="M152,46 C130,70 90,90 56,150 L48,162 C44,168 40,166 38,162 L44,154 C78,92 118,68 148,42 Z"/>
+    <!-- 唱臂管高光（顶部金属反光） -->
+    <path
+        android:fillColor="#FF7A7A7A"
+        android:pathData="M150,44 C128,68 88,88 54,148 L50,156 C72,98 108,72 146,44 Z"/>
+    <!-- 唱臂管中心亮线（镜面反射） -->
+    <path
+        android:fillColor="#FFA8A8A8"
+        android:pathData="M151,45 C129,69 89,89 55,149 L53,153 C79,97 113,73 147,45 Z"/>
+    <!-- 唱臂管底部阴影 -->
+    <path
+        android:fillColor="#FF222222"
+        android:pathData="M153,48 C131,72 91,92 57,152 L56,154 C90,94 130,70 150,46 Z"/>
+
+    <!-- 唱头连接环（枢轴下方的连接件） -->
+    <path
+        android:fillColor="#FF1F1F1F"
+        android:pathData="M150,42 L160,42 L160,50 L150,50 Z"/>
+    <path
+        android:fillColor="#FF4A4A4A"
+        android:pathData="M152,44 L158,44 L158,48 L152,48 Z"/>
+
+    <!-- 唱头（headshell，流线型 cartridge） -->
+    <!-- 唱头主体（梯形 + 圆角，黑色） -->
+    <path
+        android:fillColor="#FF2A2A2A"
+        android:pathData="M40,158 L62,152 L66,166 L48,176 C44,178 40,174 42,170 Z"/>
+    <!-- 唱头主体渐变面（金属质感） -->
+    <path
+        android:fillColor="#FF424242"
+        android:pathData="M42,160 L60,154 L64,164 L48,172 C45,173 42,171 43,168 Z"/>
+    <!-- 唱头顶部高光 -->
+    <path
+        android:fillColor="#FF6E6E6E"
+        android:pathData="M44,160 L58,155 L60,158 L46,163 Z"/>
+    <!-- 唱头底部阴影 -->
+    <path
+        android:fillColor="#FF1A1A1A"
+        android:pathData="M48,172 L64,164 L66,166 L48,176 Z"/>
+    <!-- 唱头品牌色装饰条（红色，模拟标签） -->
+    <path
+        android:fillColor="#FFEE0A24"
+        android:pathData="M46,167 L60,162 L61,164 L47,169 Z"/>
+
+    <!-- 唱针（极细针尖，从唱头底部伸出） -->
+    <path
+        android:fillColor="#FFAAAAAA"
+        android:pathData="M52,174 L54,174 L53,182 Z"/>
+    <!-- 唱针尖（更亮的反光点） -->
+    <path
+        android:fillColor="#FFDDDDDD"
+        android:pathData="M52.5,180 L53.5,180 L53,182 Z"/>
+
+</vector>

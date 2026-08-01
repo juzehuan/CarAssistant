@@ -6,6 +6,24 @@ android {
     namespace 'com.carassistant'
     compileSdk 34
 
+    // ===== Release 签名配置（从 keystore.properties 读取） =====
+    def keystorePropertiesFile = rootProject.file("keystore.properties")
+    def keystoreProperties = new Properties()
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    }
+
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     defaultConfig {
         applicationId "com.carassistant"
         minSdk 26          // Android 8.0
@@ -22,6 +40,8 @@ android {
             // 启用资源压缩，移除未使用的资源
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // 使用 release 签名
+            signingConfig signingConfigs.release
         }
     }
 

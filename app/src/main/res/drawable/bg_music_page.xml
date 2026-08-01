@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    音乐伴侣页面背景（鸿启桌面风格）
-    - 深色渐变：深棕 → 暗红
-    - 营造黑胶唱片夜间氛围
+    音乐伴侣页面背景（网易云音乐风格）
+    - 纯黑渐变：深黑 → 浅黑 → 深黑（中下部稍亮，突出唱片）
 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient
-        android:startColor="#FF1A1410"
-        android:centerColor="#FF2A1A15"
-        android:endColor="#FF3D2817"
-        android:angle="135"
+        android:startColor="#FF1A1A1A"
+        android:centerColor="#FF2A2A2A"
+        android:endColor="#FF1A1A1A"
+        android:angle="90"
         android:type="linear"/>
 </shape>

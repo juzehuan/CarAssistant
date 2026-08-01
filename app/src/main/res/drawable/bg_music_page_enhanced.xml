@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    音乐伴侣页面背景（增强版）
+    - 深色渐变：深棕 → 暗红 → 深紫红
+    - 多层渐变叠加，营造黑胶唱片夜间氛围 + 微微紫调高级感
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 基础深色渐变 -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#FF1A1410"
+                android:centerColor="#FF2A1A15"
+                android:endColor="#FF3D2817"
+                android:angle="135"
+                android:type="linear"/>
+        </shape>
+    </item>
+    <!-- 顶部暗角（增强深度感） -->
+    <item android:gravity="top">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#66000000"
+                android:endColor="#00000000"
+                android:angle="270"
+                android:type="linear"/>
+            <size android:height="200dp"/>
+        </shape>
+    </item>
+    <!-- 底部暗角 -->
+    <item android:gravity="bottom">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#00000000"
+                android:endColor="#80000000"
+                android:angle="270"
+                android:type="linear"/>
+            <size android:height="240dp"/>
+        </shape>
+    </item>
+</layer-list>

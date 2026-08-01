@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    播放按钮背景（增强版）
+    - 金色径向渐变（中心亮，边缘暗）
+    - 外圈半透明光晕
+    - 播放时配合波纹动画
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 外圈光晕（半透明金色） -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#22C9A961"/>
+            <padding android:left="-12dp" android:top="-12dp" android:right="-12dp" android:bottom="-12dp"/>
+        </shape>
+    </item>
+    <!-- 主按钮渐变 -->
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:startColor="#FFE0B870"
+                android:centerColor="#FFC9A961"
+                android:endColor="#FF9D7A3D"
+                android:gradientRadius="36dp"
+                android:type="radial"/>
+        </shape>
+    </item>
+</layer-list>

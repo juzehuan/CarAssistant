@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 专辑封面圆形背景（用于 iv_album 没有封面时的占位底色） -->
+<!-- 专辑封面圆形背景（网易云音乐风格：无金色边框，纯黑底） -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="#FF0D0A08"/>
-    <stroke android:width="2dp" android:color="#FFC9A961"/>
+    <solid android:color="#FF1A1A1A"/>
 </shape>
