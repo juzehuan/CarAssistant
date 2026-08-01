@@ -16,8 +16,10 @@ package com.carassistant.ui;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Outline;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,9 +35,13 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.animation.ArgbEvaluator;
+import android.graphics.drawable.GradientDrawable;
+import android.view.ViewGroup;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-
+import androidx.palette.graphics.Palette;
 import com.carassistant.R;
 import com.carassistant.service.FloatingLyricsService;
 import com.carassistant.util.LrcParser;
@@ -78,7 +84,14 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private ImageView btnLyricsSettings;
     private ImageView btnMusicSource;
     private View btnBack, btnGrant;
-    // 特效视图
+    /** 根布局（用于动态设置背景色） */
+    private ViewGroup musicRoot;
+    /** 当前背景色（用于平滑过渡） */
+    private int currentBgColor = 0xFF0F1320;
+    /** 当前主题强调色 */
+    private int currentAccentColor = 0xFFEE0A24;
+    /** Argb 颜色求值器（平滑过渡） */
+    private final ArgbEvaluator argbEvaluator = new ArgbEvaluator();    // 特效视图
     private View vinylGlow;       // 唱片外圈呼吸光晕
     private View playBtnGlow;     // 播放按钮外圈光晕
     private View ambientGlow1;    // 背景光斑 1
@@ -112,6 +125,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     }
 
     private void bindViews() {
+        musicRoot = findViewById(R.id.music_root);
         cardPermission = findViewById(R.id.card_permission);
         cardAlbum = findViewById(R.id.card_album);
         ivVinyl = findViewById(R.id.iv_vinyl);
@@ -511,11 +525,98 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             tvArtist.setText(TextUtils.isEmpty(artist) ? getString(R.string.music_unknown_artist) : artist);
             if (albumArt != null) {
                 ivAlbum.setImageBitmap(albumArt);
+                // 从封面提取主色调，动态更新背景色
+                applyDynamicTheme(albumArt);
             } else {
                 // 无封面时显示黑胶风格的占位图
                 ivAlbum.setImageResource(R.drawable.ic_music_cover_placeholder);
+                // 恢复默认深色背景
+                applyBackgroundColor(0xFF0F1320, 0xFFEE0A24);
             }
         });
+    }
+
+    /**
+     * 从专辑封面提取主色调，动态更新界面背景色（网易云/Spotify 风格）。
+     * 在后台线程执行 Palette 提取，避免阻塞 UI。
+     */
+    private void applyDynamicTheme(Bitmap bitmap) {
+        if (bitmap == null || bitmap.isRecycled()) return;
+        // 缩小 bitmap 加速 Palette 提取（只需大致颜色，无需原始分辨率）
+        final Bitmap scaled = scaleForPalette(bitmap);
+        new Thread(() -> {
+            try {
+                Palette palette = Palette.from(scaled).maximumColorCount(16).generate();
+                // 优先使用 Vibrant，其次 DarkVibrant，再次 Muted，最后 DarkMuted
+                int dominant = palette.getDominantColor(0xFF1A1F2E);
+                int vibrant = palette.getVibrantColor(dominant);
+                int darkVibrant = palette.getDarkVibrantColor(vibrant);
+                int muted = palette.getMutedColor(darkVibrant);
+                // 选择饱和度较高的颜色作为背景（偏深，保证文字可读性）
+                int bgColor = darken(muted, 0.75f);
+                int accentColor = palette.getLightVibrantColor(0xFFEE0A24);
+                if (accentColor == 0xFFEE0A24) {
+                    accentColor = palette.getVibrantColor(0xFFEE0A24);
+                }
+                final int finalBg = bgColor;
+                final int finalAccent = accentColor;
+                runOnUiThread(() -> applyBackgroundColor(finalBg, finalAccent));
+            } catch (Exception e) {
+                Log.w(TAG, "Palette extraction failed", e);
+            } finally {
+                if (scaled != bitmap && !scaled.isRecycled()) {
+                    scaled.recycle();
+                }
+            }
+        }).start();
+    }
+
+    /** 缩放 bitmap 到 100x100 以加速 Palette 提取 */
+    private Bitmap scaleForPalette(Bitmap src) {
+        if (src == null) return null;
+        int w = src.getWidth();
+        int h = src.getHeight();
+        if (w <= 100 && h <= 100) return src;
+        float scale = Math.min(100f / w, 100f / h);
+        int nw = Math.max(1, (int) (w * scale));
+        int nh = Math.max(1, (int) (h * scale));
+        return Bitmap.createScaledBitmap(src, nw, nh, true);
+    }
+
+    /** 加深颜色（factor < 1 变深，> 1 变亮） */
+    private int darken(int color, float factor) {
+        int r = (int) (Color.red(color) * factor);
+        int g = (int) (Color.green(color) * factor);
+        int b = (int) (Color.blue(color) * factor);
+        return Color.rgb(Math.min(255, Math.max(0, r)),
+                         Math.min(255, Math.max(0, g)),
+                         Math.min(255, Math.max(0, b)));
+    }
+
+    /**
+     * 用 ValueAnimator 平滑过渡背景色（从 currentBgColor 到 targetColor）。
+     * 使用垂直渐变（顶部深、底部稍浅），营造氛围感。
+     */
+    private void applyBackgroundColor(int targetColor, int accentColor) {
+        if (musicRoot == null) return;
+        int startColor = currentBgColor;
+        // 创建渐变背景：顶部更深，底部为目标色
+        int topColor = darken(targetColor, 0.55f);
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(800);
+        animator.setInterpolator(new android.view.animation.DecelerateInterpolator());
+        animator.addUpdateListener(animation -> {
+            float fraction = animation.getAnimatedFraction();
+            int curTop = (int) argbEvaluator.evaluate(fraction, darken(startColor, 0.55f), topColor);
+            int curBot = (int) argbEvaluator.evaluate(fraction, startColor, targetColor);
+            GradientDrawable gd = new GradientDrawable(
+                    GradientDrawable.Orientation.TOP_BOTTOM,
+                    new int[]{curTop, curBot});
+            musicRoot.setBackground(gd);
+        });
+        animator.start();
+        currentBgColor = targetColor;
+        currentAccentColor = accentColor;
     }
 
     @Override

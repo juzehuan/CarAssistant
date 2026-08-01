@@ -86,4 +86,25 @@
 
     <!-- 底部导航 -->
     <dimen name="bottom_nav_text_size">16sp</dimen>
+
+    <!-- 音乐伴侣界面（≥840dp 车机大屏放大） -->
+    <dimen name="music_vinyl_size">500dp</dimen>
+    <dimen name="music_album_size">340dp</dimen>
+    <dimen name="music_tonearm_size">260dp</dimen>
+    <dimen name="music_tonearm_margin_top">-40dp</dimen>
+    <dimen name="music_tonearm_margin_end">-50dp</dimen>
+    <dimen name="music_title_size">28sp</dimen>
+    <dimen name="music_artist_size">18sp</dimen>
+    <dimen name="music_lyric_current_size">28sp</dimen>
+    <dimen name="music_lyric_near_size">23sp</dimen>
+    <dimen name="music_lyric_far_size">20sp</dimen>
+    <dimen name="music_lyric_translation_size">21sp</dimen>
+    <dimen name="music_play_btn_size">92dp</dimen>
+    <dimen name="music_prev_next_btn_size">64dp</dimen>
+    <dimen name="music_repeat_btn_size">56dp</dimen>
+    <dimen name="music_source_btn_size">56dp</dimen>
+    <dimen name="music_time_text_size">15sp</dimen>
+    <dimen name="music_content_padding">56dp</dimen>
+    <dimen name="music_title_margin_top">44dp</dimen>
+    <dimen name="music_btn_spacing">36dp</dimen>
 </resources>

@@ -156,10 +156,14 @@
     <string name="media_session_service_label">车机助手媒体会话</string>
     <string name="keymap_perm_media_session">媒体会话访问</string>
     <string name="keymap_perm_media_session_tip">用于将方向盘媒体键定向派发到指定音乐应用，请在通知访问设置中开启「车机助手媒体会话」</string>
-    <string name="media_target_app">目标应用（可选）</string>
-    <string name="media_target_app_hint">不选则由系统路由到当前播放器；选择后优先控制该应用的媒体会话</string>
+    <string name="media_target_app">目标应用（可多选）</string>
+    <string name="media_target_app_hint">不选则由系统路由到当前播放器；选择一个或多个应用后，按键将智能路由到其中正在播放的应用</string>
     <string name="media_target_any">当前播放器（系统默认）</string>
+    <string name="media_target_pick">选择应用（可多选）</string>
+    <string name="media_target_pick_subtitle">勾选要控制的应用，可多选；选好后点确定</string>
     <string name="media_target_skip">不选，用系统默认</string>
+    <string name="media_target_confirm">确定（已选 %1$d 个）</string>
+    <string name="media_target_none_selected">未选择应用，将使用系统默认路由</string>
     <string name="float_permission_title">需要悬浮窗权限</string>
     <string name="float_permission_msg">侧边栏需要"显示在其他应用上层"权限，是否立即开启？</string>
     <string name="float_grant">去开启</string>
@@ -322,6 +326,9 @@
     <string name="music_permission_desc">音乐伴侣需要「通知访问权限」来读取系统媒体会话信息（歌曲标题、歌手、播放状态、专辑封面），不会读取或上传任何通知内容。</string>
     <string name="music_permission_grant">去开启</string>
     <string name="music_permission_required">请先授予通知访问权限</string>
+    <string name="music_permission_subtitle">用于读取当前播放状态并显示歌词</string>
+    <string name="music_permission_step1">在系统「通知访问设置」中找到「车机助手媒体会话」</string>
+    <string name="music_permission_step2">开启开关，允许车机助手读取媒体信息</string>
     <string name="music_lyrics">歌词</string>
     <string name="music_lyrics_loading">歌词加载中…</string>
     <string name="music_no_lyrics">暂无歌词</string>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    权限卡片授权按钮背景（网易云风格 CTA 按钮）
+    - 红色品牌渐变
+    - 大圆角胶囊形
+    - 触摸水波纹
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#33FFFFFF">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:startColor="#FFEE0A24"
+                android:endColor="#FFFF2D55"/>
+            <corners android:radius="24dp"/>
+        </shape>
+    </item>
+</ripple>

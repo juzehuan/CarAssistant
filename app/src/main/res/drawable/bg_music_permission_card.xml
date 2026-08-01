@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 音乐伴侣权限卡片背景 -->
+<!--
+    音乐伴侣权限卡片背景（网易云风格）
+    - 半透明深色玻璃质感
+    - 细微高光边框
+    - 大圆角
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="#33F5F0E8"/>
-    <corners android:radius="20dp"/>
-    <stroke android:width="1dp" android:color="#1AF5F0E8"/>
+    <!-- 半透明深色背景（玻璃质感） -->
+    <solid android:color="#CC1A1F2E"/>
+    <!-- 大圆角 -->
+    <corners android:radius="24dp"/>
+    <!-- 细微高光边框 -->
+    <stroke android:width="1dp" android:color="#22FFFFFF"/>
 </shape>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 权限卡片图标圆形背景（品牌色渐变） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <!-- 红色品牌渐变背景 -->
+    <gradient
+        android:angle="135"
+        android:startColor="#FFEE0A24"
+        android:endColor="#FFB00D1F"/>
+    <size android:width="72dp" android:height="72dp"/>
+</shape>

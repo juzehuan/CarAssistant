@@ -65,4 +65,6 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-runtime:2.7.0'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    // Palette：从专辑封面提取主色调，实现动态主题色背景
+    implementation 'androidx.palette:palette:1.0.0'
 }
