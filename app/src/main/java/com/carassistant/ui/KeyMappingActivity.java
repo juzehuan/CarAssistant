@@ -350,11 +350,11 @@ public class KeyMappingActivity extends AppCompatActivity {
         if (KeyMappingUtil.isActionNeedApp(actionType)) {
             pickApp((pkg, label) -> cb.onActionReady(pkg, "打开 " + label, ""));
         } else if (KeyMappingUtil.isMediaAction(actionType)) {
-            // 媒体控制类动作：询问是否指定定向目标应用
+            // 媒体控制类动作：询问是否指定定向目标应用（支持多选）
             chooseMediaTarget(actionType, targetPkg -> {
                 String label = KeyMappingUtil.getActionLabel(actionType);
                 if (targetPkg != null && !targetPkg.isEmpty()) {
-                    label += " → " + getAppLabel(targetPkg);
+                    label += " → " + buildTargetAppsLabel(targetPkg);
                 }
                 cb.onActionReady("", label, targetPkg != null ? targetPkg : "");
             });
@@ -373,7 +373,10 @@ public class KeyMappingActivity extends AppCompatActivity {
      * 媒体动作目标应用选择器。
      * 弹出二选一对话框：
      * - 当前播放器（系统默认）：由系统路由到当前活跃播放器（targetPackage=""）
-     * - 选择指定应用：进入应用选择弹窗，选定后定向派发到该应用
+     * - 选择应用（可多选）：进入应用多选弹窗，选定后存储为逗号分隔的包名串
+     *
+     * 多选场景下，按键派发时会调用 TargetMediaSessionService.selectTargetPackage
+     * 智能选择最合适的目标（优先正在播放的绑定应用）。
      */
     private void chooseMediaTarget(int actionType, MediaTargetCallback cb) {
         android.util.Log.d("KeyMapping", "chooseMediaTarget: actionType=" + actionType);
@@ -398,15 +401,143 @@ public class KeyMappingActivity extends AppCompatActivity {
             cb.onTargetSelected("");
         });
         btnPick.setOnClickListener(v -> {
-            android.util.Log.d("KeyMapping", "chooseMediaTarget: 选指定应用");
+            android.util.Log.d("KeyMapping", "chooseMediaTarget: 选指定应用（多选）");
             dialog.dismiss();
-            // 可选模式：显示"不选，用系统默认"按钮，允许跳过
-            pickApp((pkg, label) -> cb.onTargetSelected(pkg),
-                    true, getString(R.string.media_target_skip));
+            // 进入多选模式：用户可勾选多个应用；点"确定"回调逗号分隔的包名串；
+            // 点"不选，用系统默认"则回调空串
+            pickAppsMulti(packages -> {
+                String joined = KeyMappingUtil.joinTargetPackages(packages);
+                cb.onTargetSelected(joined);
+            });
         });
     }
 
     interface MediaTargetCallback { void onTargetSelected(String targetPackage); }
+
+    /**
+     * 多选应用对话框。复用 dialog_pick_app 布局与 PickAppAdapter 的多选模式。
+     * - 不设置 OnAppClickListener，PickAppAdapter 自动进入多选模式（点击切换勾选）
+     * - 顶部副标题提示"可多选"
+     * - 确定按钮文字通过 OnSelectedChangeListener 动态刷新已选数量；未选时显示"不选，用系统默认"
+     * - 取消按钮：直接关闭，不回调
+     */
+    private void pickAppsMulti(AppsMultiPickedCallback cb) {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_pick_app, null);
+        RecyclerView rvPick = view.findViewById(R.id.rv_pick);
+        rvPick.setLayoutManager(new LinearLayoutManager(this));
+
+        TextView tvTitle = view.findViewById(R.id.tv_pick_title);
+        TextView tvSubtitle = view.findViewById(R.id.tv_pick_subtitle);
+        tvTitle.setText(getString(R.string.media_target_pick));
+        tvSubtitle.setText(getString(R.string.media_target_pick_subtitle));
+
+        com.carassistant.adapter.PickAppAdapter adapter = new com.carassistant.adapter.PickAppAdapter();
+        // 不设置 OnAppClickListener → PickAppAdapter 进入多选模式（点击自动切换勾选状态）
+        rvPick.setAdapter(adapter);
+
+        EditText etSearch = view.findViewById(R.id.et_pick_search);
+        ImageView ivClear = view.findViewById(R.id.iv_pick_clear);
+
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(view).create();
+        dialog.show();
+
+        view.findViewById(R.id.btn_pick_cancel).setOnClickListener(v -> dialog.dismiss());
+
+        android.widget.Button btnConfirm = view.findViewById(R.id.btn_pick_confirm);
+        btnConfirm.setVisibility(View.VISIBLE);
+        btnConfirm.setText(getString(R.string.media_target_skip));
+
+        // 确定按钮：回调已选应用列表（可能为空，表示用系统默认）
+        btnConfirm.setOnClickListener(v -> {
+            java.util.Set<String> selected = adapter.getSelected();
+            dialog.dismiss();
+            cb.onAppsPicked(new ArrayList<>(selected));
+        });
+
+        // 监听选中变化，动态刷新确定按钮文字
+        adapter.setOnSelectedChangeListener(count -> btnConfirm.setText(count == 0
+                ? getString(R.string.media_target_skip)
+                : getString(R.string.media_target_confirm, count)));
+
+        // 异步加载应用列表（复用 pickApp 的加载逻辑）
+        final Context appCtx = getApplicationContext();
+        java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            List<com.carassistant.util.AppUtil.AppInfo> result = new ArrayList<>();
+            try {
+                PackageManager pm = appCtx.getPackageManager();
+                List<ApplicationInfo> ais = pm.getInstalledApplications(0);
+                for (ApplicationInfo ai : ais) {
+                    try {
+                        if (pm.getLaunchIntentForPackage(ai.packageName) == null) continue;
+                        com.carassistant.util.AppUtil.AppInfo info = new com.carassistant.util.AppUtil.AppInfo();
+                        info.packageName = ai.packageName;
+                        info.name = pm.getApplicationLabel(ai).toString();
+                        info.icon = pm.getApplicationIcon(ai);
+                        info.launchIntent = pm.getLaunchIntentForPackage(ai.packageName);
+                        info.system = (ai.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+                        result.add(info);
+                    } catch (Exception ignored) {}
+                }
+                Collections.sort(result, (a, b) -> {
+                    if (a.system != b.system) return a.system ? 1 : -1;
+                    return a.name.compareToIgnoreCase(b.name);
+                });
+            } catch (Exception e) {
+                android.util.Log.e("KeyMapping", "pickAppsMulti: 加载应用列表失败", e);
+            }
+
+            final List<com.carassistant.util.AppUtil.AppInfo> all = result;
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                adapter.setData(all);
+                if (all.isEmpty()) {
+                    tvSubtitle.setText("未获取到应用列表，请检查权限或反馈问题");
+                }
+                etSearch.addTextChangedListener(new TextWatcher() {
+                    @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                    @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                    @Override public void afterTextChanged(Editable s) {
+                        String q = s.toString().trim().toLowerCase();
+                        ivClear.setVisibility(q.isEmpty() ? View.GONE : View.VISIBLE);
+                        List<com.carassistant.util.AppUtil.AppInfo> f = new ArrayList<>();
+                        for (com.carassistant.util.AppUtil.AppInfo info : all) {
+                            if (info.name.toLowerCase().contains(q) || info.packageName.toLowerCase().contains(q)) {
+                                f.add(info);
+                            }
+                        }
+                        adapter.setData(f);
+                    }
+                });
+                ivClear.setOnClickListener(v -> etSearch.setText(""));
+            });
+        });
+        executor.shutdown();
+    }
+
+    interface AppsMultiPickedCallback { void onAppsPicked(List<String> packages); }
+
+    /**
+     * 构建媒体目标应用的可读标签。
+     * - 单个应用：显示应用名（如"播放/暂停 → 网易云音乐"）
+     * - 多个应用：显示前两个应用名 + "等 N 个"（如"播放/暂停 → 网易云音乐、QQ音乐 等 3 个"）
+     */
+    private String buildTargetAppsLabel(String targetPackage) {
+        java.util.List<String> pkgs = KeyMappingUtil.parseTargetPackages(targetPackage);
+        if (pkgs.isEmpty()) return "";
+        if (pkgs.size() == 1) return getAppLabel(pkgs.get(0));
+        // 多选：显示前两个 + "等 N 个"
+        StringBuilder sb = new StringBuilder();
+        int showCount = Math.min(2, pkgs.size());
+        for (int i = 0; i < showCount; i++) {
+            if (i > 0) sb.append("、");
+            sb.append(getAppLabel(pkgs.get(i)));
+        }
+        if (pkgs.size() > 2) {
+            sb.append(" 等 ").append(pkgs.size()).append(" 个");
+        }
+        return sb.toString();
+    }
 
     /** 获取应用可读名称（用于动作标签展示） */
     private String getAppLabel(String pkg) {
@@ -900,6 +1031,11 @@ public class KeyMappingActivity extends AppCompatActivity {
                 }
                 return false;
             });
+            // 进入录制模式：让无障碍服务放行按键，避免已有映射消费事件导致录制失败
+            com.carassistant.service.KeyMappingAccessibilityService.setCaptureMode(true);
+            // 对话框关闭时退出录制模式（覆盖确定/取消/手动输入/外部返回键所有关闭路径）
+            setOnDismissListener(d ->
+                    com.carassistant.service.KeyMappingAccessibilityService.setCaptureMode(false));
         }
 
         private void showManualInput() {

@@ -41,14 +41,24 @@ public class PickAppAdapter extends RecyclerView.Adapter<PickAppAdapter.VH> {
     private final List<AppUtil.AppInfo> items = new ArrayList<>();
     private final Set<String> selected = new HashSet<>();
     private OnAppClickListener clickListener;
+    private OnSelectedChangeListener selectedChangeListener;
 
     /** 单选点击回调（用于单选场景） */
     public interface OnAppClickListener {
         void onAppClick(int position, AppUtil.AppInfo info);
     }
 
+    /** 多选模式下选中集合变化回调（用于刷新外部 UI，如按钮文字） */
+    public interface OnSelectedChangeListener {
+        void onSelectedChanged(int selectedCount);
+    }
+
     public void setOnAppClickListener(OnAppClickListener l) {
         this.clickListener = l;
+    }
+
+    public void setOnSelectedChangeListener(OnSelectedChangeListener l) {
+        this.selectedChangeListener = l;
     }
 
     public void setData(List<AppUtil.AppInfo> data) {
@@ -96,6 +106,10 @@ public class PickAppAdapter extends RecyclerView.Adapter<PickAppAdapter.VH> {
             holder.cb.setChecked(next);
             if (next) selected.add(info.packageName);
             else selected.remove(info.packageName);
+            // 通知外部 UI 刷新（如确定按钮文字）
+            if (selectedChangeListener != null) {
+                selectedChangeListener.onSelectedChanged(selected.size());
+            }
         });
     }
 

@@ -748,6 +748,39 @@ public final class KeyMappingUtil {
         return isMediaAction(actionType);
     }
 
+    /**
+     * 解析 targetPackage 字段为候选包名列表。
+     *
+     * 存储格式：逗号分隔的包名（兼容旧版单包名数据）。
+     * - 空串或 null → 空列表（表示由系统路由）
+     * - 单个包名 → 单元素列表
+     * - 多个包名 → 多元素列表
+     *
+     * 用于媒体按键派发时传给 {@link com.carassistant.service.TargetMediaSessionService#selectTargetPackage}
+     */
+    public static java.util.List<String> parseTargetPackages(String targetPackage) {
+        java.util.List<String> list = new java.util.ArrayList<>();
+        if (targetPackage == null) return list;
+        for (String p : targetPackage.split(",")) {
+            String t = p.trim();
+            if (!t.isEmpty()) list.add(t);
+        }
+        return list;
+    }
+
+    /** 将候选包名列表拼接为 targetPackage 存储字符串（逗号分隔） */
+    public static String joinTargetPackages(java.util.List<String> packages) {
+        if (packages == null || packages.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < packages.size(); i++) {
+            String p = packages.get(i) == null ? "" : packages.get(i).trim();
+            if (p.isEmpty()) continue;
+            if (sb.length() > 0) sb.append(",");
+            sb.append(p);
+        }
+        return sb.toString();
+    }
+
     /** 获取动作输入提示文案 */
     public static String getActionInputHint(int actionType) {
         switch (actionType) {

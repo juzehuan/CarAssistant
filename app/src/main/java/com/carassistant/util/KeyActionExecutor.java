@@ -358,26 +358,46 @@ public final class KeyActionExecutor {
     /**
      * 派发媒体按键事件。
      *
-     * 派发优先级：
-     * 1. 若 targetPackage 非空且系统 Android 5.0+，优先通过 TargetMediaSessionService
-     *    定向派发到该应用的 MediaController（需用户开启通知访问权限）
-     * 2. 定向派发失败或未指定 targetPackage，回退到 AudioManager.dispatchMediaKeyEvent
+     * 派发优先级（支持多选目标应用）：
+     * 1. 若 targetPackage 非空（可含逗号分隔的多个包名）且系统 Android 5.0+：
+     *    a. 多个候选包名 → 调用 {@link com.carassistant.service.TargetMediaSessionService#selectTargetPackage}
+     *       智能选择最合适的目标（优先正在播放的绑定应用，未绑定应用播放时旁路让系统处理）
+     *    b. 单个候选包名 → 直接定向派发
+     *    c. 选中的目标通过 dispatchToPackage 派发到其 MediaController
+     *    d. 旁路（selectTargetPackage 返回 null）或派发失败 → 回退全局派发
+     * 2. 未指定 targetPackage 或 Android 5.0 以下：AudioManager.dispatchMediaKeyEvent
      *    （由系统路由到当前活跃播放器）
      * 3. AudioManager 失败再回退到 ACTION_MEDIA_BUTTON 广播
      *
      * @param ctx           上下文
      * @param keyCode       媒体键码
-     * @param targetPackage 定向目标应用包名（空串表示由系统路由）
+     * @param targetPackage 定向目标应用包名（逗号分隔多个，空串表示由系统路由）
      */
     private static void dispatchMediaKey(Context ctx, int keyCode, String targetPackage) {
         // 优先：定向派发到指定应用的 MediaController
-        if (targetPackage != null && !targetPackage.isEmpty()
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        java.util.List<String> targets = KeyMappingUtil.parseTargetPackages(targetPackage);
+        if (!targets.isEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             try {
-                if (com.carassistant.service.TargetMediaSessionService.dispatchToPackage(
-                        targetPackage, keyCode)) {
+                String selected;
+                if (targets.size() == 1) {
+                    // 单目标：直接定向派发
+                    selected = targets.get(0);
+                } else {
+                    // 多目标：智能选择最合适的候选应用
+                    // - 未绑定的应用正在播放 → 旁路（返回 null，让系统处理原按键）
+                    // - 优先派发到正在播放的绑定应用
+                    // - 否则返回第一个绑定应用
+                    selected = com.carassistant.service.TargetMediaSessionService
+                            .selectTargetPackage(ctx, targets);
+                }
+                if (selected != null
+                        && com.carassistant.service.TargetMediaSessionService.dispatchToPackage(
+                                selected, keyCode)) {
                     return; // 定向派发成功
                 }
+                // selected == null 表示旁路（让系统处理原按键），此时不回退 AudioManager
+                // 因为旁路策略要求让原车播放器接收按键
+                if (selected == null) return;
             } catch (Exception ignored) {
                 // 定向派发异常，回退到全局派发
             }

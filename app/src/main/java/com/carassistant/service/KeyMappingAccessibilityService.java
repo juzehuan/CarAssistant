@@ -51,6 +51,19 @@ public class KeyMappingAccessibilityService extends AccessibilityService {
     @Nullable
     private static volatile KeyMappingAccessibilityService sInstance;
 
+    /**
+     * 按键录制模式标志位。
+     * 当 KeyMappingActivity 的 KeyCaptureDialog 显示时置为 true，
+     * 本服务不消费任何按键事件，让按键透传到录制对话框。
+     * 这样用户为已配置单击的按键再录制双击/长按时，按键不会被已有映射拦截。
+     */
+    private static volatile boolean sCaptureMode = false;
+
+    /** 进入/退出按键录制模式（由 KeyCaptureDialog 调用） */
+    public static void setCaptureMode(boolean enabled) {
+        sCaptureMode = enabled;
+    }
+
     private KeyTriggerDetector keyDetector;
 
     @Override
@@ -76,6 +89,8 @@ public class KeyMappingAccessibilityService extends AccessibilityService {
 
     @Override
     public boolean onKeyEvent(KeyEvent event) {
+        // 录制模式：不消费任何按键，让事件透传到 KeyCaptureDialog
+        if (sCaptureMode) return false;
         if (keyDetector == null) return false;
         int action = event.getAction();
         if (action == KeyEvent.ACTION_DOWN) {
