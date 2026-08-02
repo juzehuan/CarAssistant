@@ -16,17 +16,23 @@ package com.carassistant.service;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.service.notification.NotificationListenerService;
+import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import com.carassistant.music.MusicSessionWatcher;
 import com.carassistant.util.AppAutoStartManager;
 
 import java.util.ArrayList;
@@ -54,19 +60,66 @@ public class TargetMediaSessionService extends NotificationListenerService {
 
     private static final String TAG = "MediaSessionService";
 
+    /** 健康监测阈值：超过此时间未成功读取会话认为监听器不健康（ms） */
+    private static final long HEALTHY_THRESHOLD_MS = 3000L;
+    /** 重连请求最小间隔（ms），防频繁 */
+    private static final long RECONNECT_MIN_INTERVAL_MS = 2000L;
+    /** 组件恢复冷却（ms），禁用再启用组件后的最短间隔 */
+    private static final long COMPONENT_RECOVERY_COOLDOWN_MS = 15000L;
+    /** 组件禁用后再启用的延迟（ms） */
+    private static final long COMPONENT_RECOVERY_DELAY_MS = 6000L;
+    /** 系统断线后自动重连的延迟（ms） */
+    private static final long AUTO_RECONNECT_AFTER_DISCONNECT_MS = 500L;
+
     /** 当前活跃的媒体会话列表（static volatile 供静态方法访问） */
     private static volatile List<MediaController> sActiveSessions = Collections.emptyList();
+
+    /** 单例引用：供静态方法调用 requestReconnect / 转发通知 */
+    private static volatile TargetMediaSessionService sInstance;
+
+    /** 主线程 Handler（用于重连任务调度） */
+    private static final Handler RECONNECT_HANDLER = new Handler(Looper.getMainLooper());
+
+    /** 上次成功派发会话的时刻（elapsedRealtime） */
+    private static volatile long sLastActiveSessionsPushedElapsedMs = 0L;
+    /** 上次请求重连的时刻（用于限频） */
+    private static volatile long sLastReconnectRequestElapsedMs = 0L;
+    /** 上次组件恢复的时刻（用于冷却） */
+    private static volatile long sLastComponentRecoveryElapsedMs = 0L;
+    /** 重连起始时刻（用于判断是否需要升级到组件恢复） */
+    private static volatile long sReconnectStartedElapsedMs = 0L;
+    /** legacy 重连进行中标志（防重入） */
+    private static volatile boolean sLegacyRebindInProgress = false;
 
     private MediaSessionManager mManager;
     private final MediaSessionManager.OnActiveSessionsChangedListener mSessionsListener =
             controllers -> updateSessions(controllers);
+    /** 断线后自动重连任务 */
+    private final Runnable mReconnectAfterDisconnect = new Runnable() {
+        @Override
+        public void run() {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
+            if (sInstance == null) return;
+            if (!hasNotificationAccess(sInstance)) return;
+            // 已恢复健康（最近成功派发过会话）则不再请求重连
+            if (isHealthy()) return;
+            ComponentName cn = new ComponentName(sInstance, TargetMediaSessionService.class);
+            try {
+                requestRebind(cn);
+            } catch (Throwable t) {
+                Log.w(TAG, "auto reconnect requestRebind failed", t);
+            }
+        }
+    };
 
     @Override
     public void onListenerConnected() {
         super.onListenerConnected();
+        sInstance = this;
         Log.i(TAG, "listener connected");
         // 兜底：开机自启调度（三重保险之一）
         AppAutoStartManager.scheduleFromBoot(this);
+        RECONNECT_HANDLER.removeCallbacks(mReconnectAfterDisconnect);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
             if (mManager != null) {
@@ -79,11 +132,18 @@ public class TargetMediaSessionService extends NotificationListenerService {
                 }
             }
         }
+        // 通知 MusicSessionWatcher 重连恢复（如果已启动）
+        try {
+            MusicSessionWatcher.getInstance(this).onListenerReconnected();
+        } catch (Throwable t) {
+            Log.w(TAG, "notify watcher reconnected failed", t);
+        }
     }
 
     private void updateSessions(List<MediaController> controllers) {
         if (controllers == null) controllers = Collections.emptyList();
         sActiveSessions = controllers;
+        sLastActiveSessionsPushedElapsedMs = SystemClock.elapsedRealtime();
         Log.d(TAG, "active sessions: " + controllers.size());
     }
 
@@ -95,6 +155,149 @@ public class TargetMediaSessionService extends NotificationListenerService {
             } catch (Exception ignored) {}
         }
         super.onListenerDisconnected();
+        // 系统断线后自动尝试重连（API 24+ 通过 requestRebind）
+        RECONNECT_HANDLER.postDelayed(mReconnectAfterDisconnect, AUTO_RECONNECT_AFTER_DISCONNECT_MS);
+        Log.w(TAG, "listener disconnected, scheduled auto-reconnect");
+    }
+
+    /**
+     * 通知张贴：转发给 MusicSessionWatcher 触发 refresh。
+     *
+     * 这是音乐伴侣 1:1 对齐歌词伴侣的关键特性——利用通知变化作为媒体状态变更的即时触发源，
+     * 比 OnActiveSessionsChangedListener（仅在会话列表增减时回调）更灵敏，能捕捉到：
+     * - 同一会话内切歌（元数据变化触发的通知刷新）
+     * - 进度条更新触发的通知刷新
+     * - 播放/暂停状态切换的通知刷新
+     */
+    @Override
+    public void onNotificationPosted(StatusBarNotification sbn) {
+        if (sbn == null) return;
+        // 排除自身应用的通知，避免无谓刷新
+        if (getPackageName().equals(sbn.getPackageName())) return;
+        try {
+            MusicSessionWatcher.getInstance(this).refresh();
+        } catch (Throwable t) {
+            Log.w(TAG, "forward onNotificationPosted to watcher failed", t);
+        }
+    }
+
+    /** 通知移除：同样转发给 watcher */
+    @Override
+    public void onNotificationRemoved(StatusBarNotification sbn) {
+        if (sbn == null) return;
+        if (getPackageName().equals(sbn.getPackageName())) return;
+        try {
+            MusicSessionWatcher.getInstance(this).refresh();
+        } catch (Throwable t) {
+            Log.w(TAG, "forward onNotificationRemoved to watcher failed", t);
+        }
+    }
+
+    // ============ 静态方法：监听器健康监测与重连（1:1 对齐歌词伴侣） ============
+
+    /**
+     * 判断监听器是否健康（最近 N 秒内成功派发过会话列表）。
+     * 供外部组件（如 MusicSessionWatcher）周期性检测监听器状态。
+     *
+     * 注：不直接调用 isListenerConnected()（protected），用最近派发时间作为存活判据，
+     * 若监听器已断开则 updateSessions 不再被调用，sLastActiveSessionsPushedElapsedMs 停滞 → 不健康。
+     */
+    public static boolean isHealthy() {
+        if (sInstance == null) return false;
+        long last = sLastActiveSessionsPushedElapsedMs;
+        if (last <= 0) return false;
+        long elapsed = SystemClock.elapsedRealtime() - last;
+        return elapsed >= 0 && elapsed < HEALTHY_THRESHOLD_MS;
+    }
+
+    /**
+     * 请求重连监听器（公开 API，供 MusicSessionWatcher 在健康监测失败时调用）。
+     *
+     * 策略（移植自歌词伴侣 MusicNotificationListener.requestReconnect）：
+     * 1. 健康则直接返回
+     * 2. API 24+：先 requestRebind；超过 COMPONENT_RECOVERY_DELAY_MS 仍未恢复则升级到组件禁用/启用
+     * 3. API < 24：直接走组件禁用/启用兜底
+     * 4. 限频：RECONNECT_MIN_INTERVAL_MS
+     */
+    public static void requestReconnect(Context ctx) {
+        if (ctx == null) return;
+        if (isHealthy()) {
+            sReconnectStartedElapsedMs = 0L;
+            return;
+        }
+        if (!hasNotificationAccess(ctx)) return;
+        long now = SystemClock.elapsedRealtime();
+        if (now - sLastReconnectRequestElapsedMs < RECONNECT_MIN_INTERVAL_MS) return;
+        sLastReconnectRequestElapsedMs = now;
+
+        if (sReconnectStartedElapsedMs <= 0) {
+            sReconnectStartedElapsedMs = now;
+        }
+        Context appCtx = ctx.getApplicationContext();
+        ComponentName cn = new ComponentName(appCtx, TargetMediaSessionService.class);
+        try {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                requestLegacyRebind(appCtx, cn);
+                return;
+            }
+            // API 24+：超过冷却时间仍未恢复 → 升级到组件禁用/启用
+            if (now - sReconnectStartedElapsedMs >= COMPONENT_RECOVERY_DELAY_MS
+                    && (sLastComponentRecoveryElapsedMs <= 0
+                        || now - sLastComponentRecoveryElapsedMs >= COMPONENT_RECOVERY_COOLDOWN_MS)) {
+                sLastComponentRecoveryElapsedMs = now;
+                Log.w(TAG, "listener unhealthy, performing component recovery");
+                requestLegacyRebind(appCtx, cn);
+                return;
+            }
+            // 否则仅请求 rebind
+            requestRebind(cn);
+        } catch (Throwable t) {
+            Log.w(TAG, "requestReconnect failed", t);
+        }
+    }
+
+    /** 通过禁用再启用组件强制系统重绑 NotificationListenerService（兜底方案） */
+    private static void requestLegacyRebind(final Context ctx, final ComponentName cn) {
+        if (sLegacyRebindInProgress) return;
+        sLegacyRebindInProgress = true;
+        final PackageManager pm = ctx.getPackageManager();
+        try {
+            pm.setComponentEnabledSetting(cn, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+            RECONNECT_HANDLER.postDelayed(() -> {
+                try {
+                    pm.setComponentEnabledSetting(cn, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                            PackageManager.DONT_KILL_APP);
+                } catch (Throwable ignored) {
+                } finally {
+                    sLegacyRebindInProgress = false;
+                }
+                // API 24+ 还可以显式 requestRebind
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && hasNotificationAccess(ctx)) {
+                    try {
+                        requestRebind(cn);
+                    } catch (Throwable t) {
+                        Log.w(TAG, "rebind after component recovery failed", t);
+                    }
+                }
+            }, COMPONENT_RECOVERY_DELAY_MS);
+        } catch (Throwable t) {
+            sLegacyRebindInProgress = false;
+            Log.w(TAG, "requestLegacyRebind failed", t);
+        }
+    }
+
+    /** 判断通知访问权限是否已授予 */
+    public static boolean hasNotificationAccess(Context ctx) {
+        if (ctx == null) return false;
+        String s = Settings.Secure.getString(ctx.getContentResolver(), "enabled_notification_listeners");
+        if (s == null) return false;
+        ComponentName cn = new ComponentName(ctx, TargetMediaSessionService.class);
+        for (String token : s.split(":")) {
+            ComponentName c = ComponentName.unflattenFromString(token);
+            if (cn.equals(c)) return true;
+        }
+        return false;
     }
 
     // ============ 静态方法：供 KeyActionExecutor 调用 ============

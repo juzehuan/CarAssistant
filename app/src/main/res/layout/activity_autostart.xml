@@ -121,6 +121,78 @@
             tools:text="共 0 个"/>
     </LinearLayout>
 
+    <!-- ============ 车机助手自身自启动引导卡片 ============ -->
+    <!-- 提醒用户：车机助手自身也需要在系统中开启自启动权限，否则开机无法接收 BOOT_COMPLETED -->
+    <LinearLayout
+        android:id="@+id/card_self_autostart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_autostart_alert_card"
+        android:layout_marginStart="@dimen/page_padding"
+        android:layout_marginEnd="@dimen/page_padding"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        android:padding="14dp"
+        android:visibility="gone">
+
+        <!-- 警告图标 -->
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@android:drawable/ic_dialog_alert"
+            android:scaleType="centerInside"
+            tools:ignore="ContentDescription"/>
+
+        <!-- 文字区 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/autostart_self_title"
+                android:textColor="#FFB71C1C"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/autostart_self_desc"
+                android:textColor="#FF8D6E63"
+                android:textSize="12sp"
+                android:maxLines="2"
+                android:ellipsize="end"/>
+        </LinearLayout>
+
+        <!-- 去开启按钮 -->
+        <TextView
+            android:id="@+id/btn_self_autostart_go"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:text="@string/autostart_self_go"
+            android:textColor="#FFFFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_autostart_alert_btn"
+            android:focusable="true"
+            android:clickable="true"/>
+    </LinearLayout>
+
     <!-- ============ 系统 Tab 工具栏：搜索 + 筛选 chip ============ -->
     <LinearLayout
         android:id="@+id/system_toolbar"

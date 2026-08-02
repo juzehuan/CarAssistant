@@ -17,12 +17,14 @@ package com.carassistant.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +36,16 @@ import java.util.Map;
  * - 单击：按下立即触发
  * - 双击：500ms 内连续按下两次
  * - 长按：按住超过 600ms
+ * - 三连按：连续按下三次（参考开源 Key Mapper）
+ * - 组合键：最多 2 键组合（key1+key2）
+ * - 按键序列：依次按下若干键组成序列触发（如 音量+ → 音量- → 播放）
  *
- * 支持的组合键：最多 2 键组合（key1+key2）
+ * 支持的触发源：
+ * - 物理按键（通过无障碍服务全局捕获）
+ * - 模拟轴事件（手柄/方向盘的 X/Y/Z、油门、扳机等，经输入法转换为合成键码）
+ *
+ * 约束条件：
+ * - 可设置「仅当某应用在前台时」才触发该映射（constraintPackage）
  *
  * 动作类型：
  * - 打开应用 / 启动 Activity（自定义 Intent）
@@ -50,6 +60,7 @@ import java.util.Map;
  * 存储：SharedPreferences
  * - 单键映射 key="k:{keyCode}:{trigger}"，value=JSON
  * - 组合键映射 key="c:{key1}+{key2}"，value=JSON
+ * - 序列映射 key="seq:{hash}"，value=JSON（含 sequenceKeys 数组）
  * - 导入/导出使用 JSON 字符串
  */
 public final class KeyMappingUtil {
@@ -59,14 +70,35 @@ public final class KeyMappingUtil {
     private KeyMappingUtil() {}
 
     // ============ 触发模式 ============
-    public static final int TRIGGER_TAP = 0;      // 单击
-    public static final int TRIGGER_DOUBLE_TAP = 1; // 双击
-    public static final int TRIGGER_LONG_PRESS = 2; // 长按
+    public static final int TRIGGER_TAP = 0;          // 单击
+    public static final int TRIGGER_DOUBLE_TAP = 1;   // 双击
+    public static final int TRIGGER_LONG_PRESS = 2;   // 长按
+    public static final int TRIGGER_TRIPLE_TAP = 3;   // 三连按
+    public static final int TRIGGER_SEQUENCE = 4;     // 按键序列
 
     /** 双击间隔（毫秒） */
     public static final long DOUBLE_TAP_TIMEOUT = 500;
     /** 长按阈值（毫秒） */
     public static final long LONG_PRESS_TIMEOUT = 600;
+    /** 序列内相邻按键最大间隔（毫秒） */
+    public static final long SEQUENCE_TIMEOUT = 800;
+
+    // ============ 模拟轴合成键码 ============
+    // 手柄/方向盘的轴事件经输入法转换为「合成键码」后接入同一套检测逻辑。
+    // 编码：AXIS_KEY_BASE + axis * 2 + (正向?1:0)，与真实 keyCode（< 1000）不冲突。
+    public static final int AXIS_KEY_BASE = 10000;
+    public static boolean isAxisKey(int keyCode) {
+        return keyCode >= AXIS_KEY_BASE && keyCode < AXIS_KEY_BASE + 4096;
+    }
+    public static int encodeAxisKey(int axis, boolean positive) {
+        return AXIS_KEY_BASE + axis * 2 + (positive ? 1 : 0);
+    }
+    public static int decodeAxis(int axisKey) {
+        return (axisKey - AXIS_KEY_BASE) / 2;
+    }
+    public static boolean decodeAxisPositive(int axisKey) {
+        return (axisKey - AXIS_KEY_BASE) % 2 == 1;
+    }
 
     // ============ 动作类型 ============
     // 应用启动类
@@ -153,6 +185,17 @@ public final class KeyMappingUtil {
          * - 非空：优先通过 TargetMediaSessionService 定向派发到该应用的 MediaController
          */
         public String targetPackage = "";
+        /**
+         * 按键序列的按键数组（仅 trigger == TRIGGER_SEQUENCE 时使用，长度 >= 2）。
+         * 序列触发：依次按下这些键才触发（如 音量+ → 音量- → 播放）。
+         */
+        public int[] sequenceKeys;
+        /**
+         * 前台应用约束（可选）。
+         * 仅当该包名当前处于前台时此映射才生效；空串表示始终生效。
+         * 用于车机场景：如导航/音乐 App 前台时方控键行为不同。
+         */
+        public String constraintPackage = "";
     }
 
     /** 构造单键映射的存储 key */
@@ -168,7 +211,7 @@ public final class KeyMappingUtil {
         return "c:" + a + "+" + b;
     }
 
-    /** 获取所有按键映射 */
+    /** 获取所有按键映射（单键 / 组合键 / 序列） */
     public static List<KeyMapping> getAllMappings(Context ctx) {
         List<KeyMapping> list = new ArrayList<>();
         SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
@@ -176,13 +219,14 @@ public final class KeyMappingUtil {
         for (Map.Entry<String, ?> entry : all.entrySet()) {
             try {
                 String key = entry.getKey();
-                if (key == null || !key.startsWith("k:") && !key.startsWith("c:")) continue;
+                if (key == null) continue;
+                if (!key.startsWith("k:") && !key.startsWith("c:") && !key.startsWith("seq:")) continue;
                 JSONObject json = new JSONObject((String) entry.getValue());
                 KeyMapping m = parseFromJson(key, json);
                 if (m != null) list.add(m);
             } catch (Exception ignored) {}
         }
-        // 排序：先按主键 keyCode，再按 trigger
+        // 排序：先按主键 keyCode（序列取首键），再按 trigger
         Collections.sort(list, (a, b) -> {
             int r = Integer.compare(a.keyCode, b.keyCode);
             if (r != 0) return r;
@@ -200,6 +244,21 @@ public final class KeyMappingUtil {
                 m.keyCode = Integer.parseInt(parts[0]);
                 m.comboKeyCode = Integer.parseInt(parts[1]);
                 m.trigger = TRIGGER_TAP; // 组合键只支持单击
+            } else if (key.startsWith("seq:")) {
+                // 序列键：按键数组存于 JSON 的 sequenceKeys
+                JSONArray arr = json.optJSONArray("sequenceKeys");
+                if (arr == null || arr.length() < 2) return null;
+                m.sequenceKeys = new int[arr.length()];
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < arr.length(); i++) {
+                    m.sequenceKeys[i] = arr.getInt(i);
+                    if (i > 0) sb.append(" → ");
+                    sb.append(getKeyLabel(m.sequenceKeys[i]));
+                }
+                m.keyCode = m.sequenceKeys[0];
+                m.comboKeyCode = 0;
+                m.trigger = TRIGGER_SEQUENCE;
+                m.keyLabel = sb.toString();
             } else {
                 // 单键 k:keyCode:trigger
                 String[] parts = key.substring(2).split(":");
@@ -207,50 +266,100 @@ public final class KeyMappingUtil {
                 m.trigger = parts.length > 1 ? Integer.parseInt(parts[1]) : TRIGGER_TAP;
                 m.comboKeyCode = 0;
             }
-            m.keyLabel = m.comboKeyCode == 0
-                    ? getKeyLabel(m.keyCode)
-                    : getKeyLabel(m.keyCode) + " + " + getKeyLabel(m.comboKeyCode);
+            if (m.keyLabel == null) {
+                m.keyLabel = m.comboKeyCode == 0
+                        ? getKeyLabel(m.keyCode)
+                        : getKeyLabel(m.keyCode) + " + " + getKeyLabel(m.comboKeyCode);
+            }
             m.actionType = json.getInt("actionType");
             m.actionData = json.optString("actionData", "");
             m.actionLabel = json.optString("actionLabel", "");
             m.enabled = json.optBoolean("enabled", true);
             m.targetPackage = json.optString("targetPackage", "");
+            m.constraintPackage = json.optString("constraintPackage", "");
             return m;
         } catch (Exception e) {
             return null;
         }
     }
 
-    /** 保存单键映射 */
+    /** 保存单键映射（基础版，无媒体定向/约束） */
     public static void saveMapping(Context ctx, int keyCode, int trigger, int actionType,
                                    String actionData, String actionLabel) {
-        saveMapping(ctx, keyCode, trigger, actionType, actionData, actionLabel, "");
+        saveMapping(ctx, keyCode, trigger, actionType, actionData, actionLabel, "", "");
     }
 
     /** 保存单键映射（带媒体定向目标包名） */
     public static void saveMapping(Context ctx, int keyCode, int trigger, int actionType,
                                    String actionData, String actionLabel, String targetPackage) {
+        saveMapping(ctx, keyCode, trigger, actionType, actionData, actionLabel, targetPackage, "");
+    }
+
+    /** 保存单键映射（完整参数：含前台约束） */
+    public static void saveMapping(Context ctx, int keyCode, int trigger, int actionType,
+                                   String actionData, String actionLabel, String targetPackage,
+                                   String constraintPackage) {
         saveMappingInternal(ctx, singleKey(keyCode, trigger), 0, trigger,
-                actionType, actionData, actionLabel, true, targetPackage);
+                actionType, actionData, actionLabel, true, targetPackage, constraintPackage);
     }
 
     /** 保存组合键映射 */
     public static void saveComboMapping(Context ctx, int key1, int key2, int actionType,
                                         String actionData, String actionLabel) {
-        saveComboMapping(ctx, key1, key2, actionType, actionData, actionLabel, "");
+        saveComboMapping(ctx, key1, key2, actionType, actionData, actionLabel, "", "");
     }
 
     /** 保存组合键映射（带媒体定向目标包名） */
     public static void saveComboMapping(Context ctx, int key1, int key2, int actionType,
                                         String actionData, String actionLabel, String targetPackage) {
+        saveComboMapping(ctx, key1, key2, actionType, actionData, actionLabel, targetPackage, "");
+    }
+
+    /** 保存组合键映射（完整参数：含前台约束） */
+    public static void saveComboMapping(Context ctx, int key1, int key2, int actionType,
+                                        String actionData, String actionLabel, String targetPackage,
+                                        String constraintPackage) {
         saveMappingInternal(ctx, comboKey(key1, key2), 0, TRIGGER_TAP,
-                actionType, actionData, actionLabel, true, targetPackage);
+                actionType, actionData, actionLabel, true, targetPackage, constraintPackage);
+    }
+
+    /** 保存按键序列映射（含前台约束） */
+    public static void saveSequenceMapping(Context ctx, int[] keys, int actionType,
+                                           String actionData, String actionLabel, String targetPackage,
+                                           String constraintPackage) {
+        saveSequenceMappingInternal(ctx, keys, actionType, actionData, actionLabel,
+                targetPackage, constraintPackage, true);
+    }
+
+    private static void saveSequenceMappingInternal(Context ctx, int[] keys, int actionType,
+                                                    String actionData, String actionLabel,
+                                                    String targetPackage, String constraintPackage,
+                                                    boolean enabled) {
+        try {
+            JSONObject json = new JSONObject();
+            JSONArray seq = new JSONArray();
+            for (int k : keys) seq.put(k);
+            json.put("sequenceKeys", seq);
+            json.put("actionType", actionType);
+            json.put("actionData", actionData == null ? "" : actionData);
+            json.put("actionLabel", actionLabel == null ? "" : actionLabel);
+            json.put("enabled", enabled);
+            json.put("trigger", TRIGGER_SEQUENCE);
+            json.put("combo", 0);
+            json.put("targetPackage", targetPackage == null ? "" : targetPackage);
+            json.put("constraintPackage", constraintPackage == null ? "" : constraintPackage);
+            ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                    .edit()
+                    .putString(seqKey(keys), json.toString())
+                    .apply();
+        } catch (JSONException ignored) {}
     }
 
     private static void saveMappingInternal(Context ctx, String storeKey, int comboKeyCode,
                                             int trigger, int actionType,
                                             String actionData, String actionLabel,
-                                            boolean enabled, String targetPackage) {
+                                            boolean enabled, String targetPackage,
+                                            String constraintPackage) {
         try {
             JSONObject json = new JSONObject();
             json.put("actionType", actionType);
@@ -260,6 +369,7 @@ public final class KeyMappingUtil {
             json.put("trigger", trigger);
             json.put("combo", comboKeyCode);
             json.put("targetPackage", targetPackage == null ? "" : targetPackage);
+            json.put("constraintPackage", constraintPackage == null ? "" : constraintPackage);
             ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                     .edit()
                     .putString(storeKey, json.toString())
@@ -283,8 +393,14 @@ public final class KeyMappingUtil {
                 .apply();
     }
 
-    /** 根据 KeyMapping 对象删除（自动判断单键/组合键） */
+    /** 根据 KeyMapping 对象删除（自动判断单键/组合键/序列） */
     public static void removeMapping(Context ctx, KeyMapping m) {
+        if (m == null) return;
+        if (m.trigger == TRIGGER_SEQUENCE && m.sequenceKeys != null && m.sequenceKeys.length >= 2) {
+            ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                    .edit().remove(seqKey(m.sequenceKeys)).apply();
+            return;
+        }
         if (m.comboKeyCode != 0) {
             removeComboMapping(ctx, m.keyCode, m.comboKeyCode);
         } else {
@@ -292,14 +408,27 @@ public final class KeyMappingUtil {
         }
     }
 
-    /** 删除某个按键的所有触发模式映射 */
+    /** 删除某个按键的所有触发模式映射（含三连按、以其为元素的组合键与序列） */
     public static void removeAllMappingsForKey(Context ctx, int keyCode) {
         SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         SharedPreferences.Editor ed = sp.edit();
-        for (int trigger = 0; trigger <= 2; trigger++) {
+        for (int trigger = 0; trigger <= TRIGGER_TRIPLE_TAP; trigger++) {
             ed.remove(singleKey(keyCode, trigger));
         }
         ed.apply();
+        // 组合键 / 序列中以该键为任一元素的也一并移除
+        List<KeyMapping> all = getAllMappings(ctx);
+        for (KeyMapping m : all) {
+            if (m.trigger == TRIGGER_SEQUENCE) {
+                if (m.sequenceKeys != null) {
+                    for (int k : m.sequenceKeys) {
+                        if (k == keyCode) { removeMapping(ctx, m); break; }
+                    }
+                }
+            } else if (m.comboKeyCode != 0 && (m.keyCode == keyCode || m.comboKeyCode == keyCode)) {
+                removeComboMapping(ctx, m.keyCode, m.comboKeyCode);
+            }
+        }
     }
 
     /** 查询单键映射 */
@@ -326,14 +455,21 @@ public final class KeyMappingUtil {
         }
     }
 
-    /** 启用/禁用某个映射 */
+    /** 启用/禁用某个映射（支持单键/组合键/序列） */
     public static void setEnabled(Context ctx, KeyMapping m, boolean enabled) {
+        if (m == null) return;
+        if (m.trigger == TRIGGER_SEQUENCE && m.sequenceKeys != null && m.sequenceKeys.length >= 2) {
+            saveSequenceMappingInternal(ctx, m.sequenceKeys, m.actionType, m.actionData,
+                    m.actionLabel, m.targetPackage, m.constraintPackage, enabled);
+            m.enabled = enabled;
+            return;
+        }
         if (m.comboKeyCode != 0) {
             saveMappingInternal(ctx, comboKey(m.keyCode, m.comboKeyCode), 0, TRIGGER_TAP,
-                    m.actionType, m.actionData, m.actionLabel, enabled, m.targetPackage);
+                    m.actionType, m.actionData, m.actionLabel, enabled, m.targetPackage, m.constraintPackage);
         } else {
             saveMappingInternal(ctx, singleKey(m.keyCode, m.trigger), 0, m.trigger,
-                    m.actionType, m.actionData, m.actionLabel, enabled, m.targetPackage);
+                    m.actionType, m.actionData, m.actionLabel, enabled, m.targetPackage, m.constraintPackage);
         }
     }
 
@@ -345,22 +481,34 @@ public final class KeyMappingUtil {
                 .apply();
     }
 
-    /** 导出全部映射为 JSON 字符串 */
+    /** 导出全部映射为 JSON 字符串（version 3：含序列与约束） */
     public static String exportMappings(Context ctx) {
         try {
             JSONObject root = new JSONObject();
-            root.put("version", 1);
+            root.put("version", 3);
             JSONArray arr = new JSONArray();
             for (KeyMapping m : getAllMappings(ctx)) {
                 JSONObject item = new JSONObject();
-                item.put("keyCode", m.keyCode);
-                item.put("comboKeyCode", m.comboKeyCode);
-                item.put("trigger", m.trigger);
                 item.put("actionType", m.actionType);
                 item.put("actionData", m.actionData);
                 item.put("actionLabel", m.actionLabel);
                 item.put("enabled", m.enabled);
-                item.put("targetPackage", m.targetPackage);
+                item.put("targetPackage", m.targetPackage == null ? "" : m.targetPackage);
+                item.put("constraintPackage", m.constraintPackage == null ? "" : m.constraintPackage);
+                if (m.trigger == TRIGGER_SEQUENCE && m.sequenceKeys != null) {
+                    item.put("type", "sequence");
+                    JSONArray seq = new JSONArray();
+                    for (int k : m.sequenceKeys) seq.put(k);
+                    item.put("keys", seq);
+                } else if (m.comboKeyCode != 0) {
+                    item.put("type", "combo");
+                    item.put("key1", m.keyCode);
+                    item.put("key2", m.comboKeyCode);
+                } else {
+                    item.put("type", "single");
+                    item.put("keyCode", m.keyCode);
+                    item.put("trigger", m.trigger);
+                }
                 arr.put(item);
             }
             root.put("mappings", arr);
@@ -381,28 +529,47 @@ public final class KeyMappingUtil {
             SharedPreferences.Editor ed = sp.edit();
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject item = arr.getJSONObject(i);
-                int keyCode = item.getInt("keyCode");
-                int comboKeyCode = item.optInt("comboKeyCode", 0);
-                int trigger = item.optInt("trigger", TRIGGER_TAP);
                 int actionType = item.getInt("actionType");
                 String actionData = item.optString("actionData", "");
                 String actionLabel = item.optString("actionLabel", "");
                 boolean enabled = item.optBoolean("enabled", true);
                 String targetPackage = item.optString("targetPackage", "");
+                String constraintPackage = item.optString("constraintPackage", "");
+                String type = item.optString("type", "single");
 
                 JSONObject storeJson = new JSONObject();
                 storeJson.put("actionType", actionType);
                 storeJson.put("actionData", actionData);
                 storeJson.put("actionLabel", actionLabel);
                 storeJson.put("enabled", enabled);
-                storeJson.put("trigger", trigger);
-                storeJson.put("combo", comboKeyCode);
                 storeJson.put("targetPackage", targetPackage);
+                storeJson.put("constraintPackage", constraintPackage);
 
                 String storeKey;
-                if (comboKeyCode != 0) {
-                    storeKey = comboKey(keyCode, comboKeyCode);
+                if ("sequence".equals(type)) {
+                    JSONArray seq = item.optJSONArray("keys");
+                    if (seq == null || seq.length() < 2) continue;
+                    int[] keys = new int[seq.length()];
+                    JSONArray seqArr = new JSONArray();
+                    for (int j = 0; j < seq.length(); j++) {
+                        keys[j] = seq.getInt(j);
+                        seqArr.put(keys[j]);
+                    }
+                    storeJson.put("sequenceKeys", seqArr);
+                    storeJson.put("trigger", TRIGGER_SEQUENCE);
+                    storeJson.put("combo", 0);
+                    storeKey = seqKey(keys);
+                } else if ("combo".equals(type)) {
+                    int key1 = item.getInt("key1");
+                    int key2 = item.getInt("key2");
+                    storeJson.put("trigger", TRIGGER_TAP);
+                    storeJson.put("combo", 0);
+                    storeKey = comboKey(key1, key2);
                 } else {
+                    int keyCode = item.getInt("keyCode");
+                    int trigger = item.optInt("trigger", TRIGGER_TAP);
+                    storeJson.put("trigger", trigger);
+                    storeJson.put("combo", 0);
                     storeKey = singleKey(keyCode, trigger);
                 }
                 ed.putString(storeKey, storeJson.toString());
@@ -418,6 +585,7 @@ public final class KeyMappingUtil {
 
     /** 获取按键可读名称 */
     public static String getKeyLabel(int keyCode) {
+        if (isAxisKey(keyCode)) return getAxisLabel(keyCode);
         switch (keyCode) {
             // 媒体键
             case KeyEvent.KEYCODE_MEDIA_PLAY: return "媒体播放";
@@ -547,6 +715,8 @@ public final class KeyMappingUtil {
             case TRIGGER_TAP: return "单击";
             case TRIGGER_DOUBLE_TAP: return "双击";
             case TRIGGER_LONG_PRESS: return "长按";
+            case TRIGGER_TRIPLE_TAP: return "三连按";
+            case TRIGGER_SEQUENCE: return "按键序列";
             default: return "未知";
         }
     }
@@ -666,7 +836,6 @@ public final class KeyMappingUtil {
                 ACTION_BACK,
                 ACTION_RECENT_TASKS,
                 ACTION_POWER_DIALOG,
-                ACTION_OPEN_CONTROL_PANEL,
                 ACTION_BACK_HOME,
                 ACTION_OPEN_SETTINGS,
                 ACTION_OPEN_FILE_MANAGER,
@@ -914,5 +1083,113 @@ public final class KeyMappingUtil {
             // 再保存新的映射
             saveMapping(ctx, m.keyCode, m.trigger, m.actionType, m.actionData, m.actionLabel);
         }
+    }
+
+    // ============ 序列映射辅助 ============
+
+    /** 构造序列映射的存储 key（基于按键数组哈希，键数组本身存于 JSON） */
+    private static String seqKey(int[] keys) {
+        return "seq:" + Arrays.hashCode(keys);
+    }
+
+    /** 获取所有序列映射 */
+    public static List<KeyMapping> getSequenceMappings(Context ctx) {
+        List<KeyMapping> list = new ArrayList<>();
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        Map<String, ?> all = sp.getAll();
+        for (Map.Entry<String, ?> entry : all.entrySet()) {
+            String key = entry.getKey();
+            if (key == null || !key.startsWith("seq:")) continue;
+            try {
+                JSONObject json = new JSONObject((String) entry.getValue());
+                KeyMapping m = parseFromJson(key, json);
+                if (m != null) list.add(m);
+            } catch (Exception ignored) {}
+        }
+        return list;
+    }
+
+    /**
+     * 判断某物理按键是否参与任何「已启用」的映射。
+     *
+     * 用于无障碍服务按键拦截的放行决策：
+     * - 若该键没有任何已启用映射（单击/双击/三连按/长按/组合键成员/序列首键），
+     *   则应让事件透传给系统，避免开启无障碍后所有按键失效。
+     *
+     * 注意：仅在没有映射的情况下才放行。一旦某键参与映射（哪怕是禁用映射以外的其它模式），
+     * 仍需要消费 DOWN 以便后续判定组合键/序列/多击，否则系统会先响应该键造成双重动作。
+     */
+    public static boolean hasAnyEnabledMappingForKey(Context ctx, int keyCode) {
+        // 单键四模式
+        if (getMapping(ctx, keyCode, TRIGGER_TAP) != null) return true;
+        if (getMapping(ctx, keyCode, TRIGGER_DOUBLE_TAP) != null) return true;
+        if (getMapping(ctx, keyCode, TRIGGER_TRIPLE_TAP) != null) return true;
+        if (getMapping(ctx, keyCode, TRIGGER_LONG_PRESS) != null) return true;
+        // 组合键（作为任一成员）
+        for (KeyMapping m : getAllMappings(ctx)) {
+            if (m.enabled) {
+                if (m.comboKeyCode != 0
+                        && (m.keyCode == keyCode || m.comboKeyCode == keyCode)) {
+                    return true;
+                }
+                // 序列（首键或任意成员）
+                if (m.trigger == TRIGGER_SEQUENCE && m.sequenceKeys != null) {
+                    for (int k : m.sequenceKeys) {
+                        if (k == keyCode) { return true; }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /** 按按键数组查询序列映射 */
+    public static KeyMapping getSequenceMapping(Context ctx, int[] keys) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String val = sp.getString(seqKey(keys), null);
+        if (val == null) return null;
+        try {
+            return parseFromJson(seqKey(keys), new JSONObject(val));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // ============ 前台约束辅助 ============
+
+    /** 前台应用约束校验：constraintPackage 为空表示始终生效 */
+    public static boolean isConstraintSatisfied(Context ctx, KeyMapping m) {
+        if (m == null) return false;
+        if (m.constraintPackage == null || m.constraintPackage.isEmpty()) return true;
+        String fg = ForegroundAppUtil.getForegroundPackage(ctx);
+        return fg != null && fg.equals(m.constraintPackage);
+    }
+
+    // ============ 模拟轴标签辅助 ============
+
+    /** 获取模拟轴合成键码的可读名称 */
+    public static String getAxisLabel(int axisKey) {
+        int axis = decodeAxis(axisKey);
+        boolean positive = decodeAxisPositive(axisKey);
+        String name;
+        switch (axis) {
+            case MotionEvent.AXIS_HAT_X: name = "方向帽X"; break;
+            case MotionEvent.AXIS_HAT_Y: name = "方向帽Y"; break;
+            case MotionEvent.AXIS_X: name = "X轴"; break;
+            case MotionEvent.AXIS_Y: name = "Y轴"; break;
+            case MotionEvent.AXIS_Z: name = "Z轴"; break;
+            case MotionEvent.AXIS_RX: name = "RX轴"; break;
+            case MotionEvent.AXIS_RY: name = "RY轴"; break;
+            case MotionEvent.AXIS_RZ: name = "RZ轴"; break;
+            case MotionEvent.AXIS_THROTTLE: name = "油门"; break;
+            case MotionEvent.AXIS_BRAKE: name = "刹车"; break;
+            case MotionEvent.AXIS_GAS: name = "油门(气)"; break;
+            case MotionEvent.AXIS_LTRIGGER: name = "左扳机"; break;
+            case MotionEvent.AXIS_RTRIGGER: name = "右扳机"; break;
+            default:
+                if (axis >= 32 && axis <= 47) name = "通用" + (axis - 32 + 1) + "轴";
+                else name = "轴" + axis;
+        }
+        return name + (positive ? " 正向" : " 负向");
     }
 }

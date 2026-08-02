@@ -190,9 +190,15 @@ public final class AppAutoStartManager {
                         + " delaySec=" + delaySec + " triggerAt(elapsed)=" + triggerAt);
             } catch (SecurityException se) {
                 // Android 12+ 可能因未授予 SCHEDULE_EXACT_ALARM 而拒绝
-                Log.w(TAG, "setExactAndAllowWhileIdle denied, fallback to set", se);
+                // fallback: setAndAllowWhileIdle 不需要精确闹钟权限，仍可在 Doze 下触发
+                Log.w(TAG, "setExactAndAllowWhileIdle denied, fallback to setAndAllowWhileIdle", se);
                 try {
-                    am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pi);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        am.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pi);
+                    } else {
+                        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pi);
+                    }
+                    Log.i(TAG, "fallback scheduled: index=" + index + " delaySec=" + delaySec);
                 } catch (Exception e) {
                     Log.e(TAG, "set alarm failed", e);
                 }
@@ -209,6 +215,8 @@ public final class AppAutoStartManager {
      * 由 AppAutoStartReceiver.onReceive 调用。
      */
     public static void handleAlarm(Context ctx, Intent intent) {
+        Log.d(TAG, "handleAlarm: intent=" + intent + " index=" + intent.getIntExtra(EXTRA_INDEX, -1)
+                + " returnHome=" + intent.getBooleanExtra(EXTRA_RETURN_HOME, false));
         SharedPreferences sp = sp(ctx);
         if (!sp.getBoolean(KEY_ENABLED, true)) {
             Log.i(TAG, "auto-start disabled, abort chain");
@@ -221,6 +229,7 @@ public final class AppAutoStartManager {
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             try {
                 ctx.startActivity(home);
+                Log.i(TAG, "return home ok");
             } catch (Exception e) {
                 Log.w(TAG, "return home failed", e);
             }
@@ -228,9 +237,14 @@ public final class AppAutoStartManager {
         }
         List<String> pkgs = PrefsUtil.getBootApps(ctx);
         int index = intent.getIntExtra(EXTRA_INDEX, 0);
-        if (index < 0 || index >= pkgs.size()) return;
+        Log.d(TAG, "handleAlarm: pkgs.size=" + pkgs.size() + " index=" + index);
+        if (index < 0 || index >= pkgs.size()) {
+            Log.w(TAG, "index out of range: index=" + index + " size=" + pkgs.size());
+            return;
+        }
         String pkg = pkgs.get(index);
         Intent launch = ctx.getPackageManager().getLaunchIntentForPackage(pkg);
+        Log.d(TAG, "handleAlarm: pkg=" + pkg + " launchIntent=" + launch);
         if (launch != null) {
             launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             try {

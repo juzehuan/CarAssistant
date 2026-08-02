@@ -1230,9 +1230,33 @@ public final class LyricsPanelView extends View {
         }
         blurSource = bmp;
         int factor = Math.round(style.backgroundBlur * 0.46f) + 6;
-        blurPreview = Bitmap.createScaledBitmap(bmp,
-                Math.max(2, bmp.getWidth() / factor),
-                Math.max(2, bmp.getHeight() / factor), true);
+        // Android 8.0+ 媒体会话封面常为 HARDWARE 配置，createScaledBitmap 会抛异常，
+        // 必须先复制为软件位图再缩放；复制失败时放弃模糊，直接返回原图交给绘制方。
+        Bitmap toScale = bmp;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && bmp.getConfig() == Bitmap.Config.HARDWARE) {
+            try {
+                Bitmap copy = bmp.copy(Bitmap.Config.ARGB_8888, false);
+                if (copy != null) toScale = copy;
+            } catch (Exception ignored) {
+                toScale = bmp;
+            }
+        }
+        if (toScale.getConfig() == Bitmap.Config.HARDWARE) {
+            // 无法取得软件位图，放弃缩放模糊，直接绘制原图（HARDWARE 位图可安全绘制）
+            blurPreview = bmp;
+            return blurPreview;
+        }
+        try {
+            blurPreview = Bitmap.createScaledBitmap(toScale,
+                    Math.max(2, toScale.getWidth() / factor),
+                    Math.max(2, toScale.getHeight() / factor), true);
+        } catch (Exception e) {
+            blurPreview = bmp;
+        }
+        if (toScale != bmp && !toScale.isRecycled()) {
+            toScale.recycle();
+        }
         return blurPreview;
     }
 

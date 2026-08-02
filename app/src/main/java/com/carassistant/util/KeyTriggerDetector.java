@@ -6,10 +6,6 @@
  *
  * 本源代码受著作权法保护，未经著作权人书面许可，不得以任何形式复制、修改、
  * 分发、出售或逆向工程。违反者将承担法律责任。
- *
- * Source code protected by copyright law. Unauthorized copying, modification,
- * distribution, sale, or reverse engineering without written permission is
- * prohibited and subject to legal action.
  */
 
 package com.carassistant.util;
@@ -17,147 +13,260 @@ package com.carassistant.util;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.view.KeyEvent;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 按键触发检测器
+ * 按键触发检测器（全局）。
  *
- * 在 Activity 的 onKeyDown / onKeyLongPress 中调用本类方法，
- * 自动识别单击 / 双击 / 长按 / 组合键，并派发对应的映射动作。
+ * 能力（参考开源 Key Mapper）：
+ * - 单击 / 双击 / 长按 / 三连按（单键）
+ * - 组合键（同时按住两键）
+ * - 按键序列（依次按下若干键，如 音量+ → 音量- → 播放）
+ * - 模拟轴事件（手柄/方向盘，经 IME 转换为合成键码后接入相同检测逻辑）
+ * - 前台应用约束（映射可设置「仅某应用前台时生效」，在 fire 前校验）
  *
- * 使用：
- *   Activity onKeyDown:
- *     return keyDetector.onKeyDown(keyCode, event);
- *   Activity onKeyLongPress:
- *     return keyDetector.onKeyLongPress(keyCode);
+ * 本类实例由 KeyMappingAccessibilityService 持有，按键事件由此服务转发。
  */
 public class KeyTriggerDetector {
 
     private final Context ctx;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    /** 每个按键的上次按下时间（用于双击检测） */
-    private final Map<Integer, Long> lastTapTime = new HashMap<>();
-    /** 每个按键的长按检测 Runnable */
-    private final Map<Integer, Runnable> longPressRunnables = new HashMap<>();
-    /** 当前按下的按键集合（用于组合键检测） */
+    // 已按下的物理键集合（用于组合键判定）
     private final Set<Integer> pressedKeys = new HashSet<>();
-    /** 双击回调待执行 Runnable（用于在第二次按下时取消第一次的延迟执行） */
-    private final Map<Integer, Runnable> pendingTapRunnables = new HashMap<>();
+    // 长按待执行任务
+    private final Map<Integer, Runnable> longPressRunnables = new ConcurrentHashMap<>();
+    // 单击/双击/三连按：待判定任务与计数
+    private final Map<Integer, Runnable> pendingDecision = new ConcurrentHashMap<>();
+    private final Map<Integer, Integer> tapCounts = new ConcurrentHashMap<>();
+    // 序列检测
+    private final List<Integer> sequenceBuffer = new ArrayList<>();
+    private boolean sequenceActive = false;
+    private Runnable sequenceTimeoutRunnable;
 
     public KeyTriggerDetector(Context ctx) {
         this.ctx = ctx.getApplicationContext();
     }
 
-    /**
-     * 在 Activity.onKeyDown 中调用
-     * @return true 表示已消费事件
-     */
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (event.getRepeatCount() == 0) {
-            // 首次按下
-            pressedKeys.add(keyCode);
+        int repCount = event.getRepeatCount();
+        if (repCount != 0) return false; // 仅处理首次按下，长按由计时器判定
 
-            // 1. 检查组合键映射（当前按下键 + 任意其他已按下键）
+        pressedKeys.add(keyCode);
+
+        // 组合键判定（序列进行中时跳过，避免与序列冲突）
+        if (!sequenceActive) {
             for (int other : pressedKeys) {
-                if (other != keyCode) {
+                if (other != keyCode && other != 0) {
                     KeyMappingUtil.KeyMapping combo = KeyMappingUtil.getComboMapping(ctx, keyCode, other);
+                    if (combo == null) combo = KeyMappingUtil.getComboMapping(ctx, other, keyCode);
                     if (combo != null && combo.enabled) {
-                        // 命中组合键，取消当前键的单击/长按检测
                         cancelPending(keyCode);
-                        KeyActionExecutor.execute(ctx, combo);
+                        fire(combo);
                         return true;
                     }
                 }
             }
+        }
 
-            // 2. 检查长按映射：若存在长按映射，启动延迟检测
-            KeyMappingUtil.KeyMapping longPressMapping = KeyMappingUtil.getMapping(ctx, keyCode,
-                    KeyMappingUtil.TRIGGER_LONG_PRESS);
-            if (longPressMapping != null && longPressMapping.enabled) {
+        // 序列判定（可能消费事件）
+        if (handleSequence(keyCode)) return true;
+
+        // 长按判定：若为某序列的首键则不排程，避免与序列语义冲突
+        if (!sequenceActive && !isSequenceStart(keyCode)) {
+            KeyMappingUtil.KeyMapping longM = KeyMappingUtil.getMapping(ctx, keyCode, KeyMappingUtil.TRIGGER_LONG_PRESS);
+            if (longM != null && longM.enabled) {
                 Runnable r = () -> {
                     if (pressedKeys.contains(keyCode)) {
-                        cancelPending(keyCode);
-                        KeyActionExecutor.execute(ctx, longPressMapping);
-                        // 标记已触发，避免松开时再触发单击
-                        lastTapTime.put(keyCode, -1L);
+                        cancelTapDecision(keyCode);
+                        tapCounts.remove(keyCode);
+                        fire(longM);
                     }
                 };
                 longPressRunnables.put(keyCode, r);
                 mainHandler.postDelayed(r, KeyMappingUtil.LONG_PRESS_TIMEOUT);
             }
+        }
 
-            // 3. 检查双击映射：若存在双击映射，本次按下暂不触发单击
-            KeyMappingUtil.KeyMapping doubleTapMapping = KeyMappingUtil.getMapping(ctx, keyCode,
-                    KeyMappingUtil.TRIGGER_DOUBLE_TAP);
-            if (doubleTapMapping != null && doubleTapMapping.enabled) {
-                long now = SystemClock.uptimeMillis();
-                Long last = lastTapTime.get(keyCode);
-                if (last != null && last > 0 && now - last < KeyMappingUtil.DOUBLE_TAP_TIMEOUT) {
-                    // 双击命中
-                    cancelPending(keyCode);
-                    lastTapTime.put(keyCode, 0L);
-                    KeyActionExecutor.execute(ctx, doubleTapMapping);
-                    return true;
-                } else {
-                    // 第一次按下：延迟触发单击（若双击未命中）
-                    lastTapTime.put(keyCode, now);
-                    KeyMappingUtil.KeyMapping tapMapping = KeyMappingUtil.getMapping(ctx, keyCode,
-                            KeyMappingUtil.TRIGGER_TAP);
-                    if (tapMapping != null && tapMapping.enabled) {
-                        Runnable pending = () -> {
-                            pendingTapRunnables.remove(keyCode);
-                            KeyActionExecutor.execute(ctx, tapMapping);
-                        };
-                        pendingTapRunnables.put(keyCode, pending);
-                        mainHandler.postDelayed(pending, KeyMappingUtil.DOUBLE_TAP_TIMEOUT);
-                    }
-                    return true; // 消费事件，等待后续判断
+        // 单击/双击/三连按判定
+        scheduleTapDecision(keyCode);
+        // 只有当该键参与某个「已启用」映射时才消费 DOWN（以便后续判定组合键/序列/多击）；
+        // 否则必须放行，让系统正常处理该按键，避免开启无障碍后所有按键失效。
+        return KeyMappingUtil.hasAnyEnabledMappingForKey(ctx, keyCode);
+    }
+
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        pressedKeys.remove(keyCode);
+        Runnable r = longPressRunnables.remove(keyCode);
+        if (r != null) mainHandler.removeCallbacks(r);
+        return false;
+    }
+
+    /** 模拟轴事件触发（由 IME 转发）。无 keyup 语义，按「按下」处理，但不参与组合键 */
+    public void onAxisTrigger(int axisKeyCode) {
+        if (!KeyMappingUtil.isAxisKey(axisKeyCode)) return;
+        if (handleSequence(axisKeyCode)) return;
+        scheduleTapDecision(axisKeyCode);
+    }
+
+    // ---------- 单击/双击/三连按 ----------
+
+    private void scheduleTapDecision(int keyCode) {
+        cancelTapDecision(keyCode);
+        int count = tapCounts.getOrDefault(keyCode, 0) + 1;
+        tapCounts.put(keyCode, count);
+        Runnable decide = () -> {
+            pendingDecision.remove(keyCode);
+            int c = tapCounts.getOrDefault(keyCode, 0);
+            if (c == 0) return;
+            KeyMappingUtil.KeyMapping triple = KeyMappingUtil.getMapping(ctx, keyCode, KeyMappingUtil.TRIGGER_TRIPLE_TAP);
+            KeyMappingUtil.KeyMapping dbl = KeyMappingUtil.getMapping(ctx, keyCode, KeyMappingUtil.TRIGGER_DOUBLE_TAP);
+            KeyMappingUtil.KeyMapping tap = KeyMappingUtil.getMapping(ctx, keyCode, KeyMappingUtil.TRIGGER_TAP);
+            if (c >= 3 && triple != null && triple.enabled) {
+                fire(triple);
+            } else if (c == 2 && dbl != null && dbl.enabled) {
+                fire(dbl);
+            } else if (c == 1 && tap != null && tap.enabled) {
+                fire(tap);
+            } else if (c >= 2 && tap != null && tap.enabled) {
+                fire(tap); // 多击但仅配置单击：回落为单击
+            } else if (c >= 3 && dbl != null && dbl.enabled) {
+                fire(dbl); // 三击但仅配置双击：回落为双击
+            }
+            tapCounts.remove(keyCode);
+        };
+        pendingDecision.put(keyCode, decide);
+        mainHandler.postDelayed(decide, KeyMappingUtil.DOUBLE_TAP_TIMEOUT);
+    }
+
+    private void cancelTapDecision(int keyCode) {
+        Runnable r = pendingDecision.remove(keyCode);
+        if (r != null) mainHandler.removeCallbacks(r);
+    }
+
+    private void cancelPending(int keyCode) {
+        Runnable lr = longPressRunnables.remove(keyCode);
+        if (lr != null) mainHandler.removeCallbacks(lr);
+        cancelTapDecision(keyCode);
+    }
+
+    // ---------- 序列 ----------
+
+    private boolean handleSequence(int keyCode) {
+        List<KeyMappingUtil.KeyMapping> seqs = KeyMappingUtil.getSequenceMappings(ctx);
+        if (seqs == null || seqs.isEmpty()) return false;
+
+        if (!sequenceActive) {
+            boolean starts = false;
+            for (KeyMappingUtil.KeyMapping s : seqs) {
+                if (s.sequenceKeys != null && s.sequenceKeys.length >= 2 && s.sequenceKeys[0] == keyCode) {
+                    starts = true;
+                    break;
                 }
             }
+            if (!starts) return false;
+            sequenceBuffer.clear();
+            sequenceBuffer.add(keyCode);
+            sequenceActive = true;
+        } else {
+            sequenceBuffer.add(keyCode);
+        }
 
-            // 4. 仅单击映射：直接触发
-            KeyMappingUtil.KeyMapping tapMapping = KeyMappingUtil.getMapping(ctx, keyCode,
-                    KeyMappingUtil.TRIGGER_TAP);
-            if (tapMapping != null && tapMapping.enabled) {
-                cancelPending(keyCode);
-                KeyActionExecutor.execute(ctx, tapMapping);
+        // 完全匹配？
+        for (KeyMappingUtil.KeyMapping s : seqs) {
+            if (s.sequenceKeys != null && s.sequenceKeys.length == sequenceBuffer.size()
+                    && isPrefix(s.sequenceKeys, sequenceBuffer)) {
+                clearSequence();
+                fire(s);
+                return true;
+            }
+        }
+        // 作为前缀继续？
+        boolean isPrefix = false;
+        for (KeyMappingUtil.KeyMapping s : seqs) {
+            if (s.sequenceKeys != null && s.sequenceKeys.length > sequenceBuffer.size()
+                    && isPrefix(s.sequenceKeys, sequenceBuffer)) {
+                isPrefix = true;
+                break;
+            }
+        }
+        if (!isPrefix) {
+            // 序列中断：放弃当前缓冲，错按的键不再触发其它映射
+            clearSequence();
+            return true;
+        }
+        // 续标定，重置超时（超时未补齐则触发首键的普通映射）
+        rescheduleSequenceTimeout();
+        return true;
+    }
+
+    private void rescheduleSequenceTimeout() {
+        if (sequenceTimeoutRunnable != null) mainHandler.removeCallbacks(sequenceTimeoutRunnable);
+        sequenceTimeoutRunnable = () -> {
+            sequenceTimeoutRunnable = null;
+            if (sequenceActive) {
+                int lone = sequenceBuffer.isEmpty() ? -1 : sequenceBuffer.get(0);
+                clearSequence();
+                if (lone != -1) {
+                    // 序列未完成：将首键作为普通按键重新走单击/双击/三连按判定
+                    scheduleTapDecision(lone);
+                }
+            }
+        };
+        mainHandler.postDelayed(sequenceTimeoutRunnable, KeyMappingUtil.SEQUENCE_TIMEOUT);
+    }
+
+    private void clearSequence() {
+        sequenceActive = false;
+        sequenceBuffer.clear();
+        if (sequenceTimeoutRunnable != null) {
+            mainHandler.removeCallbacks(sequenceTimeoutRunnable);
+            sequenceTimeoutRunnable = null;
+        }
+    }
+
+    private boolean isSequenceStart(int keyCode) {
+        List<KeyMappingUtil.KeyMapping> seqs = KeyMappingUtil.getSequenceMappings(ctx);
+        if (seqs == null) return false;
+        for (KeyMappingUtil.KeyMapping s : seqs) {
+            if (s.sequenceKeys != null && s.sequenceKeys.length >= 2 && s.sequenceKeys[0] == keyCode) {
                 return true;
             }
         }
         return false;
     }
 
-    /** 在 Activity.onKeyUp 中调用 */
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        pressedKeys.remove(keyCode);
-        // 取消长按检测
-        Runnable r = longPressRunnables.remove(keyCode);
-        if (r != null) mainHandler.removeCallbacks(r);
-        return false;
+    private static boolean isPrefix(int[] full, List<Integer> buf) {
+        if (buf.size() > full.length) return false;
+        for (int i = 0; i < buf.size(); i++) {
+            if (buf.get(i) != full[i]) return false;
+        }
+        return true;
     }
 
-    /** 取消某按键所有待执行动作 */
-    private void cancelPending(int keyCode) {
-        Runnable lr = longPressRunnables.remove(keyCode);
-        if (lr != null) mainHandler.removeCallbacks(lr);
-        Runnable pr = pendingTapRunnables.remove(keyCode);
-        if (pr != null) mainHandler.removeCallbacks(pr);
+    // ---------- 执行 ----------
+
+    private void fire(KeyMappingUtil.KeyMapping m) {
+        if (m == null || !m.enabled) return;
+        if (!KeyMappingUtil.isConstraintSatisfied(ctx, m)) return;
+        KeyActionExecutor.execute(ctx, m);
     }
 
-    /** 清理所有状态（Activity 销毁时调用） */
+    /** 服务解绑/销毁时清理所有待执行任务 */
     public void cleanup() {
         for (Runnable r : longPressRunnables.values()) mainHandler.removeCallbacks(r);
-        for (Runnable r : pendingTapRunnables.values()) mainHandler.removeCallbacks(r);
+        for (Runnable r : pendingDecision.values()) mainHandler.removeCallbacks(r);
         longPressRunnables.clear();
-        pendingTapRunnables.clear();
-        lastTapTime.clear();
+        pendingDecision.clear();
+        tapCounts.clear();
         pressedKeys.clear();
+        clearSequence();
     }
 }

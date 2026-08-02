@@ -46,6 +46,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.carassistant.MainActivity;
 import com.carassistant.R;
 import com.carassistant.adapter.FloatAppAdapter;
 import com.carassistant.util.PermissionUtil;
@@ -345,66 +346,44 @@ public class SidebarService extends Service {
         }
     }
 
-    // ============ 系统快捷开关 ============
+    // ============ 模块快捷入口 ============
 
     private void setupToggles() {
-        bindToggle(R.id.toggle_wifi, R.id.iv_toggle_wifi,
-                SystemToggleHelper.isWifiOn(this),
-                v -> {
-                    boolean on = SystemToggleHelper.toggleWifi(this);
-                    updateToggleBg(v.findViewById(R.id.iv_toggle_wifi), on);
-                    Toast.makeText(this, on ? R.string.quick_on : R.string.quick_off,
-                            Toast.LENGTH_SHORT).show();
-                });
-        bindToggle(R.id.toggle_bluetooth, R.id.iv_toggle_bluetooth,
-                SystemToggleHelper.isBluetoothOn(this),
-                v -> {
-                    boolean on = SystemToggleHelper.toggleBluetooth(this);
-                    updateToggleBg(v.findViewById(R.id.iv_toggle_bluetooth), on);
-                    Toast.makeText(this, on ? R.string.quick_on : R.string.quick_off,
-                            Toast.LENGTH_SHORT).show();
-                });
-        // 亮度：点击打开系统亮度设置（车机无法直接切换自动/手动）
-        bindToggle(R.id.toggle_brightness, 0, true, v -> {
-            try {
-                Intent it = new Intent(Settings.ACTION_DISPLAY_SETTINGS);
-                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(it);
-                hidePanel();
-            } catch (Exception e) {
-                Toast.makeText(this, R.string.launch_fail, Toast.LENGTH_SHORT).show();
-            }
-        });
-        bindToggle(R.id.toggle_torch, R.id.iv_toggle_torch,
-                SystemToggleHelper.isTorchOn(this),
-                v -> {
-                    boolean on = SystemToggleHelper.toggleTorch(this);
-                    updateToggleBg(v.findViewById(R.id.iv_toggle_torch), on);
-                    Toast.makeText(this, on ? R.string.quick_on : R.string.quick_off,
-                            Toast.LENGTH_SHORT).show();
-                });
-        bindToggle(R.id.toggle_rotation, R.id.iv_toggle_rotation,
-                SystemToggleHelper.isRotationOn(this),
-                v -> {
-                    boolean on = SystemToggleHelper.toggleRotation(this);
-                    updateToggleBg(v.findViewById(R.id.iv_toggle_rotation), on);
-                    Toast.makeText(this, on ? R.string.quick_on : R.string.quick_off,
-                            Toast.LENGTH_SHORT).show();
-                });
+        // 顶部模块快捷入口：点击直接进入对应功能模块
+        bindModule(R.id.mod_clean, R.id.nav_clean);
+        bindModule(R.id.mod_app, R.id.nav_app);
+        bindModule(R.id.mod_file, R.id.nav_file);
+        bindModuleActivity(R.id.mod_music, com.carassistant.ui.MusicActivity.class);
+        bindModuleActivity(R.id.mod_monitor, com.carassistant.ui.MonitorActivity.class);
     }
 
-    private void bindToggle(int containerId, int iconId, boolean on, View.OnClickListener l) {
+    /** 打开主界面并跳转到指定底部 Tab */
+    private void bindModule(int containerId, int navId) {
         View v = sidebarPanel.findViewById(containerId);
         if (v == null) return;
-        v.setOnClickListener(l);
-        if (iconId != 0) updateToggleBg((ImageView) v.findViewById(iconId), on);
+        v.setOnClickListener(view -> {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra(MainActivity.EXTRA_NAV_ID, navId);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            try {
+                startActivity(intent);
+                hidePanel();
+            } catch (Throwable e) { /* 忽略 */ }
+        });
     }
 
-    private void updateToggleBg(ImageView iv, boolean on) {
-        if (iv == null) return;
-        iv.setBackgroundResource(on ? R.drawable.bg_quick_toggle_on : R.drawable.bg_quick_toggle_off);
-        // 关闭态图标变暗
-        iv.setAlpha(on ? 1.0f : 0.5f);
+    /** 直接启动对应功能 Activity */
+    private void bindModuleActivity(int containerId, Class<?> activityClass) {
+        View v = sidebarPanel.findViewById(containerId);
+        if (v == null) return;
+        v.setOnClickListener(view -> {
+            Intent intent = new Intent(this, activityClass);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                startActivity(intent);
+                hidePanel();
+            } catch (Throwable e) { /* 忽略 */ }
+        });
     }
 
     // ============ 导航快捷按钮 ============

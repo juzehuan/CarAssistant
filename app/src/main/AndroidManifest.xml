@@ -48,6 +48,9 @@
         tools:ignore="ProtectedPermissions" />
     <!-- 相机（侧边栏手电筒开关，Android 6+ 通过 Camera2 setTorchMode） -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 精确闹钟（Android 12+ 开机自启调度需要） -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
 
     <application
@@ -180,6 +183,20 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
+        <!-- 按键映射输入法：捕获手柄/方向盘模拟轴事件（无键盘界面） -->
+        <service
+            android:name=".service.KeyMappingInputMethod"
+            android:label="@string/keymap_ime_label"
+            android:permission="android.permission.BIND_INPUT_METHOD"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method" />
+        </service>
+
         <!-- 性能监控悬浮窗服务 -->
         <service
             android:name=".service.MonitorService"
@@ -221,8 +238,16 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="com.android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+
+        <!-- 自启动链式闹钟接收器（AlarmManager 显式广播目标，必须在 manifest 注册） -->
+        <receiver
+            android:name=".receiver.AppAutoStartReceiver"
+            android:exported="false" />
 
         <!-- U 盘插拔监听 -->
         <receiver

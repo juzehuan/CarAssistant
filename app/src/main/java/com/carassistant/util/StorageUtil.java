@@ -20,9 +20,14 @@ import android.os.StatFs;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 
+import android.util.Base64;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -80,7 +85,7 @@ public final class StorageUtil {
             Object[] volumes = (Object[]) getVolumeList.invoke(sm);
             if (volumes != null) {
                 for (Object vol : volumes) {
-                    StorageInfo info = parseStorageVolume(vol);
+                    StorageInfo info = parseStorageVolume(vol, ctx);
                     if (info != null) list.add(info);
                 }
             }
@@ -106,7 +111,7 @@ public final class StorageUtil {
     }
 
     @SuppressWarnings("Reflection")
-    private static StorageInfo parseStorageVolume(Object vol) {
+    private static StorageInfo parseStorageVolume(Object vol, Context ctx) {
         StorageInfo info = new StorageInfo();
         try {
             Class<?> clz = vol.getClass();
@@ -131,13 +136,13 @@ public final class StorageUtil {
                 info.removable = (boolean) isRemovable.invoke(vol);
             } catch (Exception ignored) {}
 
-            // description
+            // 框架卷标（部分机型对 FAT 卷标按错误编码解码，得到 ??????）
+            String fwLabel = null;
             try {
                 Method getDescription = clz.getMethod("getDescription", Context.class);
-                // 暂不传 context
-                info.label = (String) getDescription.invoke(vol, (Object) null);
+                Object r = getDescription.invoke(vol, ctx);
+                if (r instanceof String) fwLabel = (String) r;
             } catch (Exception ignored) {}
-            if (info.label == null) info.label = info.removable ? "可移动存储" : "内部存储";
 
             File f = new File(info.path);
             info.total = getTotalSize(f);
@@ -147,9 +152,136 @@ public final class StorageUtil {
             String p = info.path.toLowerCase();
             info.usb = info.removable && (p.contains("usb") || p.contains("udisk")
                     || p.contains("/mnt/media_rw/"));
+
+            // 解析最终显示名称（修复 FAT 卷标乱码 ?????）
+            info.label = resolveLabel(fwLabel, info.path, info.removable, info.usb);
         } catch (Exception e) {
             return null;
         }
         return info;
+    }
+
+    private static Boolean sRootCache = null;
+    private static boolean hasRoot() {
+        if (sRootCache == null) sRootCache = ShellUtil.hasRoot();
+        return sRootCache;
+    }
+
+    /**
+     * 解析存储卷的显示名称。
+     * 框架 getDescription() 在部分车机/国产 ROM 上会把 FAT 卷标按错误编码解码成 ?????，
+     * 此时通过 root 直接读取引导扇区的 11 字节 OEM 卷标（中文为 GBK）还原真实名称。
+     */
+    private static String resolveLabel(String fwLabel, String path,
+                                       boolean removable, boolean usb) {
+        // 框架已给出正常名称（非乱码、非通用占位）则直接使用
+        if (fwLabel != null && !fwLabel.contains("？")
+                && !fwLabel.trim().isEmpty()
+                && !"可移动存储".equals(fwLabel)
+                && !"内部存储".equals(fwLabel)) {
+            return fwLabel;
+        }
+        // 框架解码失败：尝试直接读取 FAT 引导扇区卷标（仅在确实需要时触发 root）
+        if (hasRoot()) {
+            String dev = findBlockDevice(path);
+            String raw = readFatLabel(dev);
+            if (raw != null) return raw;
+        }
+        // 框架名称虽不完整但不是乱码，保留
+        if (fwLabel != null && !fwLabel.contains("？") && !fwLabel.trim().isEmpty()) {
+            return fwLabel;
+        }
+        // 兜底：用路径中的卷 UUID 生成可读名称，避免出现 ??????
+        if (usb || removable) {
+            String seg = lastSegment(path);
+            if (seg != null && !seg.isEmpty()) return "U盘(" + seg + ")";
+            return "U盘";
+        }
+        return fwLabel != null ? fwLabel : (removable ? "可移动存储" : "内部存储");
+    }
+
+    /** 从 /proc/mounts 根据挂载路径（或其 UUID 片段）定位块设备 */
+    private static String findBlockDevice(String mountPath) {
+        if (mountPath == null) return null;
+        String seg = lastSegment(mountPath);
+        String bestDev = null;
+        int bestLen = -1;
+        try (BufferedReader br = new BufferedReader(new FileReader("/proc/mounts"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("\\s+");
+                if (parts.length < 2) continue;
+                String dev = parts[0];
+                String mp = parts[1];
+                boolean match = mountPath.equals(mp)
+                        || mp.equals(mountPath)
+                        || (seg != null && mp.endsWith("/" + seg))
+                        || (seg != null && mp.contains(seg));
+                if (match && mp.length() > bestLen) {
+                    bestLen = mp.length();
+                    bestDev = dev;
+                }
+            }
+        } catch (Exception ignored) {}
+        return bestDev;
+    }
+
+    /** 通过 root 读取块设备引导扇区，提取 FAT 卷标（11 字节，OEM 编码） */
+    private static String readFatLabel(String dev) {
+        if (dev == null) return null;
+        // dd 读取首扇区并通过 base64 输出，避免二进制经 shell 字符串传递被篡改
+        ShellUtil.Result r = ShellUtil.execRoot("dd if=" + dev + " bs=512 count=1 2>/dev/null | base64");
+        if (!r.success() || r.stdout == null || r.stdout.isEmpty()) return null;
+        byte[] sector;
+        try {
+            sector = Base64.decode(r.stdout.replaceAll("[\\r\\n]", ""), Base64.DEFAULT);
+        } catch (Exception e) {
+            return null;
+        }
+        if (sector == null || sector.length < 512) return null;
+        // FAT12/16/32：卷标位于偏移 71，共 11 字节（OEM 代码页，中文设备为 GBK）
+        String label = decodeOem(Arrays.copyOfRange(sector, 71, 82));
+        if (isValidLabel(label)) return label;
+        // exFAT：部分实现在引导扇区偏移 0x80 同样保留 11 字节卷标，作为兜底尝试
+        String label2 = decodeOem(Arrays.copyOfRange(sector, 128, 139));
+        if (isValidLabel(label2)) return label2;
+        return null;
+    }
+
+    /** 将 OEM 字节解码为中文（GBK 优先，失败后尝试 UTF-8） */
+    private static String decodeOem(byte[] bytes) {
+        if (bytes == null) return null;
+        String s;
+        try {
+            s = new String(bytes, "GBK");
+        } catch (Exception e) {
+            s = new String(bytes);
+        }
+        if (s.contains("？")) {
+            try {
+                String u = new String(bytes, "UTF-8");
+                if (!u.contains("？")) s = u;
+            } catch (Exception ignored) {}
+        }
+        return s;
+    }
+
+    private static boolean isValidLabel(String label) {
+        if (label == null) return false;
+        String t = label.trim();
+        if (t.isEmpty() || "NO NAME".equalsIgnoreCase(t)) return false;
+        for (int i = 0; i < t.length(); i++) {
+            char c = t.charAt(i);
+            if (c != ' ' && c != 0) return true;
+        }
+        return false;
+    }
+
+    private static String lastSegment(String path) {
+        if (path == null) return null;
+        String p = path.replace('\\', '/');
+        if (p.endsWith("/")) p = p.substring(0, p.length() - 1);
+        int i = p.lastIndexOf('/');
+        return i >= 0 ? p.substring(i + 1) : p;
     }
 }

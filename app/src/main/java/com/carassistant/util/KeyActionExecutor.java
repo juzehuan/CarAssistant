@@ -37,7 +37,6 @@ import com.carassistant.MainActivity;
 import com.carassistant.R;
 import com.carassistant.SettingsActivity;
 import com.carassistant.service.KeyMappingAccessibilityService;
-import com.carassistant.ui.ControlPanelActivity;
 import com.carassistant.ui.DeviceInfoActivity;
 import com.carassistant.ui.FileFragment;
 
@@ -144,7 +143,11 @@ public final class KeyActionExecutor {
 
             // ============ 车机助手内跳转 ============
             case KeyMappingUtil.ACTION_OPEN_CONTROL_PANEL:
-                startActivitySafe(ctx, new Intent(ctx, ControlPanelActivity.class));
+                // 控制面板已下架，提示用户
+                if (ctx instanceof android.app.Activity) {
+                    ((android.app.Activity) ctx).runOnUiThread(() ->
+                            Toast.makeText(ctx, "控制面板已下架", Toast.LENGTH_SHORT).show());
+                }
                 break;
             case KeyMappingUtil.ACTION_BACK_HOME:
                 if (ctx instanceof MainActivity) {
@@ -395,9 +398,9 @@ public final class KeyActionExecutor {
                                 selected, keyCode)) {
                     return; // 定向派发成功
                 }
-                // selected == null 表示旁路（让系统处理原按键），此时不回退 AudioManager
-                // 因为旁路策略要求让原车播放器接收按键
-                if (selected == null) return;
+                // selected == null（旁路：未命中定向条件）或定向派发失败，
+                // 一律回退 AudioManager 全局派发，让当前正在播放的播放器接收按键。
+                // 注意：按键已被无障碍服务消费，若此处直接 return 则等同于"按键无任何效果"。
             } catch (Exception ignored) {
                 // 定向派发异常，回退到全局派发
             }

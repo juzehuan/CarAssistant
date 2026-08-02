@@ -89,9 +89,10 @@
     <!-- 音乐伴侣界面（竖屏默认尺寸） -->
     <dimen name="music_vinyl_size">320dp</dimen>
     <dimen name="music_album_size">220dp</dimen>
-    <dimen name="music_tonearm_size">170dp</dimen>
-    <dimen name="music_tonearm_margin_top">-28dp</dimen>
-    <dimen name="music_tonearm_margin_end">-35dp</dimen>
+    <dimen name="music_tonearm_size">140dp</dimen>
+    <dimen name="music_tonearm_height">175dp</dimen>
+    <dimen name="music_tonearm_margin_top">-22dp</dimen>
+    <dimen name="music_tonearm_margin_end">-28dp</dimen>
     <dimen name="music_title_size">20sp</dimen>
     <dimen name="music_artist_size">13sp</dimen>
     <dimen name="music_lyric_current_size">20sp</dimen>

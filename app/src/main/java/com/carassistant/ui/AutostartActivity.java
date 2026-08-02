@@ -16,9 +16,11 @@ package com.carassistant.ui;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -78,6 +80,7 @@ public class AutostartActivity extends AppCompatActivity {
     private SwitchCompat swAutostartEnabled, swReturnHome;
     private EditText etFirstDelay, etInterval;
     private View btnSaveOptions;
+    private View cardSelfAutostart;
 
     private final List<AutostartUtil.AutostartApp> systemAllApps = new ArrayList<>();
     private final List<AppUtil.AppInfo> userApps = new ArrayList<>();
@@ -115,6 +118,28 @@ public class AutostartActivity extends AppCompatActivity {
         etFirstDelay = findViewById(R.id.et_first_delay);
         etInterval = findViewById(R.id.et_interval);
         btnSaveOptions = findViewById(R.id.btn_save_options);
+        cardSelfAutostart = findViewById(R.id.card_self_autostart);
+
+        // 车机助手自身自启动引导卡片
+        final SharedPreferences selfPrefs = getSharedPreferences("autostart_self_guide", MODE_PRIVATE);
+        boolean hasOpenedSelfAutostart = selfPrefs.getBoolean("self_autostart_opened", false);
+        Log.d("AutostartDebug", "onCreate: cardSelfAutostart=" + cardSelfAutostart + " hasOpened=" + hasOpenedSelfAutostart);
+        if (!hasOpenedSelfAutostart) {
+            cardSelfAutostart.setVisibility(View.VISIBLE);
+        }
+        findViewById(R.id.btn_self_autostart_go).setOnClickListener(v -> {
+            try {
+                Intent it = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                it.setData(android.net.Uri.parse("package:" + getPackageName()));
+                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(it);
+                selfPrefs.edit().putBoolean("self_autostart_opened", true).apply();
+                cardSelfAutostart.setVisibility(View.GONE);
+                Toast.makeText(this, R.string.autostart_self_toast, Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                Toast.makeText(this, R.string.launch_fail, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         rvSystem.setLayoutManager(new LinearLayoutManager(this));
         rvUser.setLayoutManager(new LinearLayoutManager(this));

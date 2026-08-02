@@ -42,6 +42,7 @@ import androidx.core.content.ContextCompat;
 import com.carassistant.R;
 import com.carassistant.lyrics.LyricsPanelView;
 import com.carassistant.service.FloatingLyricsService;
+import com.carassistant.util.PermissionUtil;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.shape.MaterialShapeDrawable;
 
@@ -151,6 +152,9 @@ public final class LyricsSettingsActivity extends AppCompatActivity {
         toolbar.setNavigationIcon(android.R.drawable.ic_menu_close_clear_cancel);
         toolbar.setNavigationOnClickListener(v -> finish());
         root.addView(toolbar, new LinearLayout.LayoutParams(-1, dp(70)));
+
+        // ===== 桌面歌词开关 =====
+        setupLyricsEnable(root);
 
         // ===== 实时预览 =====
         preview = new LyricsPanelView(this, buildStyleFromPrefs());
@@ -515,6 +519,54 @@ public final class LyricsSettingsActivity extends AppCompatActivity {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
         lp.topMargin = dp(14);
         parent.addView(card, lp);
+    }
+
+    /** 桌面歌词总开关：开启启动 FloatingLyricsService，关闭停止服务（含权限校验） */
+    private void setupLyricsEnable(LinearLayout parent) {
+        LinearLayout enableCard = card(R.string.floating_lyrics_enable_card);
+        enableCard.addView(tipText(getString(R.string.floating_lyrics_enable_tip)));
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(0, dp(14), 0, dp(4));
+
+        TextView label = new TextView(this);
+        label.setText(R.string.floating_lyrics_enable_switch);
+        label.setTextSize(15f);
+        label.setTextColor(COLOR_TEXT_PRIMARY);
+        label.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        row.addView(label, new LinearLayout.LayoutParams(0, -2, 1f));
+
+        final ToggleIndicator toggle = new ToggleIndicator(FloatingLyricsService.isRunning());
+        row.addView(toggle);
+
+        row.setOnClickListener(v -> {
+            boolean want = !toggle.isChecked();
+            if (want) {
+                if (!PermissionUtil.isNotificationListenerEnabled(this)) {
+                    toggle.setChecked(false);
+                    android.widget.Toast.makeText(this, R.string.music_permission_required, android.widget.Toast.LENGTH_SHORT).show();
+                    PermissionUtil.requestNotificationListenerAccess(this);
+                    return;
+                }
+                if (!PermissionUtil.canDrawOverlays(this)) {
+                    toggle.setChecked(false);
+                    android.widget.Toast.makeText(this, R.string.floating_lyrics_no_overlay_perm, android.widget.Toast.LENGTH_SHORT).show();
+                    PermissionUtil.requestOverlayPermission(this, 0x2102);
+                    return;
+                }
+                ContextCompat.startForegroundService(this, new Intent(this, FloatingLyricsService.class));
+                toggle.setChecked(true);
+                android.widget.Toast.makeText(this, R.string.floating_lyrics_enabled, android.widget.Toast.LENGTH_SHORT).show();
+            } else {
+                stopService(new Intent(this, FloatingLyricsService.class));
+                toggle.setChecked(false);
+                android.widget.Toast.makeText(this, R.string.floating_lyrics_disabled, android.widget.Toast.LENGTH_SHORT).show();
+            }
+        });
+        enableCard.addView(row);
+        addCard(parent, enableCard);
     }
 
     private TextView cardTitle(int resId) {

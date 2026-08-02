@@ -64,6 +64,19 @@ public class KeyMappingAccessibilityService extends AccessibilityService {
         sCaptureMode = enabled;
     }
 
+    public static boolean isCaptureMode() {
+        return sCaptureMode;
+    }
+
+    /**
+     * 供输入法（KeyMappingInputMethod）转发模拟轴合成键码，接入全局触发检测。
+     */
+    public static void feedAxisEvent(int syntheticKeyCode) {
+        if (sInstance != null && sInstance.keyDetector != null) {
+            sInstance.keyDetector.onAxisTrigger(syntheticKeyCode);
+        }
+    }
+
     private KeyTriggerDetector keyDetector;
 
     @Override
@@ -248,5 +261,159 @@ public class KeyMappingAccessibilityService extends AccessibilityService {
     /** 服务是否已连接（即用户已在系统设置中开启） */
     public static boolean isConnected() {
         return sInstance != null;
+    }
+
+    /**
+     * 模拟"清除全部最近任务"：非 Root 设备下最有效的内存释放方式。
+     *
+     * 适配策略（覆盖主流国产 ROM + 原生 Android）：
+     * 1. 打开最近任务界面，等待 UI 渲染
+     * 2. 点击右下角「清除全部」按钮（vivo/MIUI/EMUI/MagicUI 等国产 ROM 通用位置）
+     * 3. 回退：多次向上滑动清除卡片（原生 Android / Pixel 系列）
+     * 4. 按 Home 键退出
+     *
+     * 经实测：vivo 车机（BBK Launcher）的「清除全部」按钮位于屏幕 (W*0.62, H*0.90)，
+     * 不接受向上滑动清除手势，必须点击按钮才有效。
+     *
+     * @param callback 完成回调（success=true 表示已执行清理动作）
+     */
+    public void cleanRecentTasks(final CleanCallback callback) {
+        new Thread(() -> {
+            try {
+                // 1. 打开最近任务
+                performGlobalAction(GLOBAL_ACTION_RECENTS);
+                sleep(800);
+
+                // 2. 获取屏幕尺寸，计算「清除全部」按钮坐标
+                android.graphics.Point screen = getScreenSize();
+
+                // 3. 点击右下角「清除全部」按钮（国产 ROM 通用位置）
+                //    vivo BBK Launcher 实测：(W*0.62, H*0.90)
+                //    MIUI/EMUI 略有差异，多点击几个候选位置提高命中率
+                clickClearAllButton(screen);
+
+                // 等待系统清除动画
+                sleep(800);
+
+                // 4. 回退方案：向上滑动清除（原生 Android / 未命中按钮时）
+                //    仅点击 2 次，避免在已清空的界面上无效滑动
+                for (int i = 0; i < 2; i++) {
+                    swipeUpToClearTask(screen);
+                    sleep(300);
+                }
+
+                // 5. 退回桌面
+                performGlobalAction(GLOBAL_ACTION_HOME);
+                sleep(300);
+                performGlobalAction(GLOBAL_ACTION_HOME);
+
+                if (callback != null) {
+                    callback.onDone(true);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "cleanRecentTasks failed", e);
+                try { performGlobalAction(GLOBAL_ACTION_HOME); } catch (Exception ignored) {}
+                if (callback != null) {
+                    callback.onDone(false);
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * 点击右下角「清除全部」按钮。
+     * 适配多 ROM：
+     * - vivo BBK Launcher：屏幕 (W*0.62, H*0.90)
+     * - MIUI：屏幕 (W*0.50, H*0.92)
+     * - EMUI/MagicUI：屏幕 (W*0.85, H*0.92)
+     * - 原生 Android 12+：屏幕 (W*0.50, H*0.92)（底部居中 Clear all）
+     *
+     * 多点几次提高命中率，点击无效时由后续向上滑动兜底。
+     */
+    private void clickClearAllButton(android.graphics.Point screen) {
+        if (screen.x <= 0 || screen.y <= 0) {
+            screen.x = 1920;
+            screen.y = 1080;
+        }
+        // 候选坐标：覆盖主流 ROM 的「清除全部」按钮位置
+        float[][] candidates = {
+                {0.62f, 0.90f},  // vivo BBK Launcher（实测）
+                {0.50f, 0.92f},  // 原生 Android 12+ / MIUI
+                {0.85f, 0.92f},  // EMUI/MagicUI 右下角
+                {0.50f, 0.85f},  // 部分 ROM 底部居中
+        };
+        for (float[] c : candidates) {
+            int x = (int) (screen.x * c[0]);
+            int y = (int) (screen.y * c[1]);
+            tapAt(x, y);
+            sleep(150);
+        }
+    }
+
+    /** 在指定坐标执行点击手势 */
+    private void tapAt(int x, int y) {
+        try {
+            Path path = new Path();
+            path.moveTo(x, y);
+            GestureDescription.StrokeDescription stroke =
+                    new GestureDescription.StrokeDescription(path, 0, 60);
+            GestureDescription.Builder builder = new GestureDescription.Builder();
+            builder.addStroke(stroke);
+            dispatchGesture(builder.build(), null, null);
+        } catch (Exception e) {
+            Log.w(TAG, "tapAt failed", e);
+        }
+    }
+
+    /** 获取屏幕真实尺寸 */
+    private android.graphics.Point getScreenSize() {
+        android.graphics.Point screen = new android.graphics.Point();
+        try {
+            android.view.WindowManager wm = (android.view.WindowManager)
+                    getSystemService(android.content.Context.WINDOW_SERVICE);
+            if (wm != null) {
+                android.view.Display display = wm.getDefaultDisplay();
+                if (display != null) display.getRealSize(screen);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "getScreenSize failed", e);
+        }
+        if (screen.x <= 0 || screen.y <= 0) {
+            screen.x = 1920;
+            screen.y = 1080;
+        }
+        return screen;
+    }
+
+    /** 向上快速滑动，清除当前最近任务卡片（原生 Android 兜底） */
+    private void swipeUpToClearTask(android.graphics.Point screen) {
+        try {
+            if (screen.x <= 0 || screen.y <= 0) {
+                screen.x = 1920;
+                screen.y = 1080;
+            }
+            int startX = screen.x / 2;
+            int startY = (int) (screen.y * 0.75);
+            int endY = (int) (screen.y * 0.10);
+            Path path = new Path();
+            path.moveTo(startX, startY);
+            path.lineTo(startX, endY);
+            GestureDescription.StrokeDescription stroke =
+                    new GestureDescription.StrokeDescription(path, 0, 250);
+            GestureDescription.Builder builder = new GestureDescription.Builder();
+            builder.addStroke(stroke);
+            dispatchGesture(builder.build(), null, null);
+        } catch (Exception e) {
+            Log.w(TAG, "swipeUpToClearTask failed", e);
+        }
+    }
+
+    /** 清理回调 */
+    public interface CleanCallback {
+        void onDone(boolean success);
+    }
+
+    private static void sleep(long ms) {
+        try { Thread.sleep(ms); } catch (InterruptedException ignored) {}
     }
 }

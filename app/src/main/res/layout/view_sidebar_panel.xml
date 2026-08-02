@@ -7,6 +7,7 @@
     - 不使用 ?attr 主题属性（Service 上下文 inflate 兼容）
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/sidebar_root"
     android:layout_width="240dp"
@@ -59,9 +60,9 @@
         android:layout_marginEnd="14dp"
         android:background="@color/divider"/>
 
-    <!-- 系统快捷开关区：WiFi/蓝牙/亮度/手电筒/旋转 -->
+    <!-- 模块快捷入口：清理优化 / 应用管理 / 文件管理 / 音乐伴侣 / 性能监控 -->
     <LinearLayout
-        android:id="@+id/ll_sidebar_toggles"
+        android:id="@+id/ll_sidebar_modules"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -72,7 +73,7 @@
         android:paddingBottom="8dp">
 
         <LinearLayout
-            android:id="@+id/toggle_wifi"
+            android:id="@+id/mod_clean"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -80,25 +81,27 @@
             android:gravity="center"
             android:padding="4dp">
             <ImageView
-                android:id="@+id/iv_toggle_wifi"
+                android:id="@+id/iv_mod_clean"
                 android:layout_width="34dp"
                 android:layout_height="34dp"
-                android:src="@drawable/ic_quick_wifi"
+                android:src="@drawable/ic_feature_clean"
                 android:padding="8dp"
                 android:background="@drawable/bg_quick_toggle_on"
+                android:tint="#FFFFFF"
                 tools:ignore="UseAppTint,ContentDescription"/>
             <TextView
-                android:id="@+id/tv_toggle_wifi"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="@string/quick_wifi"
+                android:maxLines="1"
+                android:gravity="center"
+                android:text="@string/home_feature_clean"
                 android:textColor="@color/text_secondary"
-                android:textSize="10sp"/>
+                android:textSize="9sp"/>
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/toggle_bluetooth"
+            android:id="@+id/mod_app"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -106,25 +109,27 @@
             android:gravity="center"
             android:padding="4dp">
             <ImageView
-                android:id="@+id/iv_toggle_bluetooth"
+                android:id="@+id/iv_mod_app"
                 android:layout_width="34dp"
                 android:layout_height="34dp"
-                android:src="@drawable/ic_quick_bluetooth"
+                android:src="@drawable/ic_feature_app"
                 android:padding="8dp"
                 android:background="@drawable/bg_quick_toggle_on"
+                android:tint="#FFFFFF"
                 tools:ignore="UseAppTint,ContentDescription"/>
             <TextView
-                android:id="@+id/tv_toggle_bluetooth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="@string/quick_bluetooth"
+                android:maxLines="1"
+                android:gravity="center"
+                android:text="@string/home_feature_app"
                 android:textColor="@color/text_secondary"
-                android:textSize="10sp"/>
+                android:textSize="9sp"/>
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/toggle_brightness"
+            android:id="@+id/mod_file"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -132,23 +137,27 @@
             android:gravity="center"
             android:padding="4dp">
             <ImageView
+                android:id="@+id/iv_mod_file"
                 android:layout_width="34dp"
                 android:layout_height="34dp"
-                android:src="@drawable/ic_quick_brightness"
+                android:src="@drawable/ic_feature_file"
                 android:padding="8dp"
                 android:background="@drawable/bg_quick_toggle_on"
+                android:tint="#FFFFFF"
                 tools:ignore="UseAppTint,ContentDescription"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="@string/quick_brightness"
+                android:maxLines="1"
+                android:gravity="center"
+                android:text="@string/home_feature_file"
                 android:textColor="@color/text_secondary"
-                android:textSize="10sp"/>
+                android:textSize="9sp"/>
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/toggle_torch"
+            android:id="@+id/mod_music"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -156,24 +165,27 @@
             android:gravity="center"
             android:padding="4dp">
             <ImageView
-                android:id="@+id/iv_toggle_torch"
+                android:id="@+id/iv_mod_music"
                 android:layout_width="34dp"
                 android:layout_height="34dp"
-                android:src="@drawable/ic_quick_torch"
+                android:src="@drawable/ic_feature_music"
                 android:padding="8dp"
-                android:background="@drawable/bg_quick_toggle_off"
+                android:background="@drawable/bg_quick_toggle_on"
+                android:tint="#FFFFFF"
                 tools:ignore="UseAppTint,ContentDescription"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="@string/quick_torch"
+                android:maxLines="1"
+                android:gravity="center"
+                android:text="@string/home_feature_music"
                 android:textColor="@color/text_secondary"
-                android:textSize="10sp"/>
+                android:textSize="9sp"/>
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/toggle_rotation"
+            android:id="@+id/mod_monitor"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -181,20 +193,23 @@
             android:gravity="center"
             android:padding="4dp">
             <ImageView
-                android:id="@+id/iv_toggle_rotation"
+                android:id="@+id/iv_mod_monitor"
                 android:layout_width="34dp"
                 android:layout_height="34dp"
-                android:src="@drawable/ic_quick_rotation"
+                android:src="@drawable/ic_feature_monitor"
                 android:padding="8dp"
-                android:background="@drawable/bg_quick_toggle_off"
+                android:background="@drawable/bg_quick_toggle_on"
+                android:tint="#FFFFFF"
                 tools:ignore="UseAppTint,ContentDescription"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="@string/quick_rotation"
+                android:maxLines="1"
+                android:gravity="center"
+                android:text="@string/home_feature_monitor"
                 android:textColor="@color/text_secondary"
-                android:textSize="10sp"/>
+                android:textSize="9sp"/>
         </LinearLayout>
     </LinearLayout>
 

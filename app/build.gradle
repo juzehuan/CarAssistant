@@ -28,8 +28,12 @@ android {
         applicationId "com.carassistant"
         minSdk 26          // Android 8.0
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        // ===== 版本号方案（对齐规则）=====
+        // versionCode 采用构建日期 YYYYMMDD（单调递增，保证升级兼容、防止版本回退）
+        // versionName 采用语义化版本 x.y.z，与 versionCode 通过文档约定保持一致
+        //   例：versionName "1.0.0" 对应 versionCode 20260802
+        versionCode 20260802
+        versionName "1.0.0"
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -42,6 +46,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // 使用 release 签名
             signingConfig signingConfigs.release
+        }
+    }
+
+    // ===== AAB（Android App Bundle）配置 =====
+    // bundleRelease 会复用 buildTypes.release 的 minifyEnabled + signingConfig，
+    // 因此产出的 .aab 同样经过 R8 混淆并已用 release keystore 签名。
+    bundle {
+        // 关闭语言拆分，所有语言资源打进同一个 AAB（如需按语言分发改为 true）
+        language {
+            enableSplit = false
         }
     }
 

@@ -46,6 +46,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  */
 public class MainActivity extends AppCompatActivity {
 
+    /** 通过 Intent 启动并直接跳转到指定底部 Tab */
+    public static final String EXTRA_NAV_ID = "com.carassistant.extra.NAV_ID";
+
     private BottomNavigationView bottomNav;
 
     @Override
@@ -78,9 +81,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.main_container, new HomeFragment())
-                    .commit();
+            int navId = getIntent().getIntExtra(EXTRA_NAV_ID, 0);
+            if (navId != 0) {
+                bottomNav.setSelectedItemId(navId);
+            } else {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.main_container, new HomeFragment())
+                        .commit();
+            }
         }
 
         // 请求通知权限（用于悬浮球服务的前台通知）
@@ -90,6 +98,16 @@ public class MainActivity extends AppCompatActivity {
 
         // 初始化按键触发检测器（支持单击/双击/长按/组合键）
         keyDetector = new KeyTriggerDetector(this);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        int navId = intent.getIntExtra(EXTRA_NAV_ID, 0);
+        if (navId != 0 && bottomNav != null) {
+            bottomNav.setSelectedItemId(navId);
+        }
     }
 
     @Override

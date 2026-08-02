@@ -88,6 +88,7 @@
     <color name="icon_bg_music">#FFE3F2</color>
     <color name="icon_bg_music_start">#F8BBD0</color>
     <color name="icon_bg_music_end">#E91E63</color>
+    <color name="icon_bg_lyrics">#E8EAF6</color>
 
     <!-- 图标前景色 -->
     <color name="icon_fg_clean">#FF4D4F</color>

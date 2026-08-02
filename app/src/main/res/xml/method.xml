@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 按键映射输入法描述：无软键盘界面，仅用于捕获手柄/方向盘模拟轴事件 -->
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:settingsActivity="com.carassistant.ui.KeyMappingActivity" />

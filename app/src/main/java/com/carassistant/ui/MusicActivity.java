@@ -29,6 +29,7 @@ import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -75,6 +76,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private View cardAlbum;
     private ImageView ivVinyl;
     private ImageView ivAlbum;
+    private ImageView ivTonearm;   // 唱臂（导轨），网易云风格：播放落下、暂停抬起
     private TextView tvTitle, tvArtist;
     private TextView tvLyricPrev2, tvLyricPrev, tvLyricCurrent, tvLyricTranslation, tvLyricNext, tvLyricNext2;
     private TextView tvCurrent, tvDuration;
@@ -83,6 +85,8 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private ImageView btnFloatingLyrics;
     private ImageView btnLyricsSettings;
     private ImageView btnMusicSource;
+    private ImageView btnLyricsToggle, btnPlaylist;
+    private View lyricsContainer;
     private View btnBack, btnGrant;
     /** 根布局（用于动态设置背景色） */
     private ViewGroup musicRoot;
@@ -130,6 +134,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         cardAlbum = findViewById(R.id.card_album);
         ivVinyl = findViewById(R.id.iv_vinyl);
         ivAlbum = findViewById(R.id.iv_album);
+        ivTonearm = findViewById(R.id.iv_tonearm);
         tvTitle = findViewById(R.id.tv_title);
         tvArtist = findViewById(R.id.tv_artist);
         tvLyricPrev2 = findViewById(R.id.tv_lyric_prev2);
@@ -150,6 +155,9 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         btnBack = findViewById(R.id.btn_back);
         btnGrant = findViewById(R.id.btn_grant);
         btnMusicSource = findViewById(R.id.btn_music_source);
+        btnLyricsToggle = findViewById(R.id.btn_lyrics_toggle);
+        btnPlaylist = findViewById(R.id.btn_playlist);
+        lyricsContainer = findViewById(R.id.lyrics_container);
         // 特效视图
         vinylGlow = findViewById(R.id.vinyl_glow);
         playBtnGlow = findViewById(R.id.play_btn_glow);
@@ -216,34 +224,59 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         ambientGlow2Anim.setRepeatCount(ObjectAnimator.INFINITE);
         ambientGlow2Anim.setRepeatMode(ObjectAnimator.REVERSE);
         ambientGlow2Anim.start();
+
+        // 唱臂（导轨）：初始为“抬起”状态。枢轴位于矢量图右上角 (170,46)/viewBox(200,250)，
+        // 映射到 ImageView 即 pivotX≈85%、pivotY≈18.4%。抬起时绕枢轴逆时针旋转离开唱片。
+        if (ivTonearm != null) {
+            ivTonearm.post(() -> {
+                ivTonearm.setPivotX(ivTonearm.getWidth() * 0.85f);
+                ivTonearm.setPivotY(ivTonearm.getHeight() * 0.184f);
+                ivTonearm.setRotation(TONEARM_LIFT_ANGLE);
+            });
+        }
+    }
+
+    /** 唱臂抬起角度（暂停/未播放时绕枢轴逆时针抬起，离开唱片） */
+    private static final float TONEARM_LIFT_ANGLE = -25f;
+
+    /** 网易云风格唱臂动画：播放时落下压片、暂停时抬起 */
+    private void animateTonearm(boolean playing) {
+        if (ivTonearm == null || ivTonearm.getWidth() == 0) return;
+        // 确保枢轴正确（布局尺寸已确定）
+        ivTonearm.setPivotX(ivTonearm.getWidth() * 0.85f);
+        ivTonearm.setPivotY(ivTonearm.getHeight() * 0.184f);
+        float target = playing ? 0f : TONEARM_LIFT_ANGLE;
+        ivTonearm.animate()
+                .rotation(target)
+                .setDuration(450)
+                .setInterpolator(new AccelerateDecelerateInterpolator())
+                .start();
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
-        btnGrant.setOnClickListener(v -> controller.openNotificationListenerSettings(this));
-        btnFloatingLyrics.setOnClickListener(v -> toggleFloatingLyrics());
-        btnLyricsSettings.setOnClickListener(v -> {
-            Intent intent = new Intent(this, LyricsSettingsActivity.class);
-            startActivity(intent);
-        });
+        // 所有视图绑定都做了空值保护：横屏布局（layout-land）与竖屏布局的控件集合不同，
+        // 缺失的控件 findViewById 会返回 null，直接调用 setOnClickListener 会 NPE 闪退。
+        // 因此这里对每个可能为 null 的视图都先判空，保证任意布局下打开界面都不会崩溃。
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
+        if (btnGrant != null) btnGrant.setOnClickListener(v -> controller.openNotificationListenerSettings(this));
 
-        btnPlay.setOnClickListener(v -> {
+        if (btnPlay != null) btnPlay.setOnClickListener(v -> {
             playBtnPop(v);
             if (!ensurePermissionAndConnected()) return;
             if (controller.isPlaying()) controller.pause();
             else controller.play();
         });
-        btnPrev.setOnClickListener(v -> {
+        if (btnPrev != null) btnPrev.setOnClickListener(v -> {
             playBtnPop(v);
             if (!ensurePermissionAndConnected()) return;
             controller.playPrevious();
         });
-        btnNext.setOnClickListener(v -> {
+        if (btnNext != null) btnNext.setOnClickListener(v -> {
             playBtnPop(v);
             if (!ensurePermissionAndConnected()) return;
             controller.playNext();
         });
-        btnRepeat.setOnClickListener(v -> {
+        if (btnRepeat != null) btnRepeat.setOnClickListener(v -> {
             playBtnPop(v);
             // 切换循环模式：0 关闭 → 1 单曲 → 2 列表 → 0
             int next = (controller.getRepeatMode() + 1) % 3;
@@ -251,8 +284,24 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             Toast.makeText(this, repeatModeName(next), Toast.LENGTH_SHORT).show();
         });
 
-        // 音乐来源图标：点击跳转到对应音乐 app
-        btnMusicSource.setOnClickListener(v -> {
+        // “词”按钮：展开 / 收起歌词区（横屏布局可能无此按钮 / 无歌词容器）
+        if (btnLyricsToggle != null) btnLyricsToggle.setOnClickListener(v -> {
+            playBtnPop(v);
+            if (lyricsContainer != null) {
+                if (lyricsContainer.getVisibility() == View.VISIBLE) {
+                    lyricsContainer.setVisibility(View.GONE);
+                    updateLyricsToggleButton(false);
+                } else {
+                    lyricsContainer.setVisibility(View.VISIBLE);
+                    updateLyricsToggleButton(true);
+                    ensurePermissionAndConnected();
+                }
+            }
+        });
+
+        // 列表按钮：打开当前音乐源 app
+        if (btnPlaylist != null) btnPlaylist.setOnClickListener(v -> {
+            playBtnPop(v);
             String pkg = controller.getMusicPackageName();
             if (pkg != null && !pkg.isEmpty()) {
                 Intent launchIntent = getPackageManager().getLaunchIntentForPackage(pkg);
@@ -265,13 +314,23 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             }
         });
 
-        sbProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        // 旧按钮保留监听（已隐藏，无影响）
+        if (btnFloatingLyrics != null) btnFloatingLyrics.setOnClickListener(v -> toggleFloatingLyrics());
+        if (btnLyricsSettings != null) btnLyricsSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(this, LyricsSettingsActivity.class);
+            startActivity(intent);
+        });
+        if (btnMusicSource != null) btnMusicSource.setOnClickListener(v -> {
+            // 已迁移到 btnPlaylist
+        });
+
+        if (sbProgress != null) sbProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
                 if (fromUser) {
                     long dur = controller.getDuration();
                     long target = dur > 0 ? progress * dur / 100 : 0;
-                    tvCurrent.setText(formatTime(target));
+                    if (tvCurrent != null) tvCurrent.setText(formatTime(target));
                 }
             }
 
@@ -290,23 +349,25 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         });
 
         // 点击专辑卡片：未连接时尝试打开音乐应用
-        cardAlbum.setOnClickListener(v -> {
-            if (controller.isConnected()) {
-                if (!controller.launchMusicApp(this)) {
-                    Toast.makeText(this, R.string.music_no_active_session, Toast.LENGTH_SHORT).show();
+        if (cardAlbum != null) {
+            cardAlbum.setOnClickListener(v -> {
+                if (controller.isConnected()) {
+                    if (!controller.launchMusicApp(this)) {
+                        Toast.makeText(this, R.string.music_no_active_session, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    controller.findActiveMusicSession();
+                    if (!controller.isConnected()) {
+                        Toast.makeText(this, R.string.music_open_app_first, Toast.LENGTH_SHORT).show();
+                    }
                 }
-            } else {
-                controller.findActiveMusicSession();
-                if (!controller.isConnected()) {
-                    Toast.makeText(this, R.string.music_open_app_first, Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+            });
 
-        cardAlbum.setOnLongClickListener(v -> {
-            showLyricOffsetDialog();
-            return true;
-        });
+            cardAlbum.setOnLongClickListener(v -> {
+                showLyricOffsetDialog();
+                return true;
+            });
+        }
     }
 
     /** 切换桌面歌词悬浮窗开关 */
@@ -339,6 +400,13 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         if (btnFloatingLyrics == null) return;
         int colorRes = running ? R.color.music_accent : R.color.music_text_hint;
         btnFloatingLyrics.setColorFilter(ContextCompat.getColor(this, colorRes));
+    }
+
+    /** 同步“词”按钮视觉状态（歌词显示=网易云红高亮，隐藏=灰色） */
+    private void updateLyricsToggleButton(boolean on) {
+        if (btnLyricsToggle == null) return;
+        int colorRes = on ? R.color.music_accent : R.color.music_text_hint;
+        btnLyricsToggle.setColorFilter(ContextCompat.getColor(this, colorRes));
     }
 
     @Override
@@ -426,6 +494,9 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         showPermissionCard(!permGranted);
         // 同步桌面歌词按钮状态（服务可能已被用户在悬浮窗长按关闭）
         updateFloatingLyricsButton(FloatingLyricsService.isRunning());
+        // 同步“词”按钮与音乐来源图标状态
+        updateLyricsToggleButton(lyricsContainer != null && lyricsContainer.getVisibility() == View.VISIBLE);
+        updateMusicSourceIcon();
         // 注册回调并初始化（幂等）
         controller.initialize(this, this);
     }
@@ -462,24 +533,24 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             if (vinylAnimator != null && vinylAnimator.isStarted()) {
                 vinylAnimator.pause();
             }
-            // 断开连接时隐藏音乐来源图标
-            btnMusicSource.setVisibility(View.GONE);
+            // 断开连接时恢复右侧按钮为默认列表图标
+            if (btnPlaylist != null) btnPlaylist.setImageResource(R.drawable.ic_music_list);
         });
     }
 
-    /** 更新音乐来源图标：显示当前播放音乐 app 的图标 */
+    /** 更新最右侧按钮图标：显示当前播放音乐 app 的图标（无则为列表图标） */
     private void updateMusicSourceIcon() {
+        if (btnPlaylist == null) return;
         String pkg = controller.getMusicPackageName();
         if (pkg != null && !pkg.isEmpty()) {
             try {
                 android.graphics.drawable.Drawable icon = getPackageManager().getApplicationIcon(pkg);
-                btnMusicSource.setImageDrawable(icon);
-                btnMusicSource.setVisibility(View.VISIBLE);
+                btnPlaylist.setImageDrawable(icon);
             } catch (android.content.pm.PackageManager.NameNotFoundException e) {
-                btnMusicSource.setVisibility(View.GONE);
+                btnPlaylist.setImageResource(R.drawable.ic_music_list);
             }
         } else {
-            btnMusicSource.setVisibility(View.GONE);
+            btnPlaylist.setImageResource(R.drawable.ic_music_list);
         }
     }
 
@@ -542,10 +613,14 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
      */
     private void applyDynamicTheme(Bitmap bitmap) {
         if (bitmap == null || bitmap.isRecycled()) return;
-        // 缩小 bitmap 加速 Palette 提取（只需大致颜色，无需原始分辨率）
-        final Bitmap scaled = scaleForPalette(bitmap);
+        // 注意：必须在后台线程执行，且对 Android 8.0+ 的 HARDWARE 位图（媒体会话封面常见）
+        // 做兼容处理——createScaledBitmap/getPixels 在硬件位图上会抛 IllegalArgumentException。
+        // 原先 scaleForPalette 在主线程、且在 try 之外调用，封面为硬件位图时会直接闪退本界面。
         new Thread(() -> {
+            Bitmap scaled = null;
             try {
+                scaled = scaleForPalette(bitmap);
+                if (scaled == null) return;
                 Palette palette = Palette.from(scaled).maximumColorCount(16).generate();
                 // 优先使用 Vibrant，其次 DarkVibrant，再次 Muted，最后 DarkMuted
                 int dominant = palette.getDominantColor(0xFF1A1F2E);
@@ -564,23 +639,44 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             } catch (Exception e) {
                 Log.w(TAG, "Palette extraction failed", e);
             } finally {
-                if (scaled != bitmap && !scaled.isRecycled()) {
+                // 仅回收我们新创建的缩放副本，绝不回收原始 albumArt（仍在 ImageView 使用）
+                if (scaled != null && scaled != bitmap && !scaled.isRecycled()) {
                     scaled.recycle();
                 }
             }
         }).start();
     }
 
-    /** 缩放 bitmap 到 100x100 以加速 Palette 提取 */
+    /**
+     * 缩放 bitmap 到约 100px 以加速 Palette 提取。
+     * 兼容 Android 8.0+ 的 HARDWARE 位图：媒体会话返回的专辑封面常为 HARDWARE 配置，
+     * 必须先复制为 ARGB_8888 软件位图才能缩放/取像素，否则 createScaledBitmap 会抛异常。
+     */
     private Bitmap scaleForPalette(Bitmap src) {
         if (src == null) return null;
-        int w = src.getWidth();
-        int h = src.getHeight();
-        if (w <= 100 && h <= 100) return src;
+        Bitmap working = src;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && src.getConfig() == Bitmap.Config.HARDWARE) {
+            try {
+                Bitmap copy = src.copy(Bitmap.Config.ARGB_8888, false);
+                if (copy != null) working = copy;
+            } catch (Exception ignored) {
+                // 复制失败则退回原始位图，交给上层 catch 处理
+            }
+        }
+        int w = working.getWidth();
+        int h = working.getHeight();
+        if (w <= 0 || h <= 0) return working;
+        if (w <= 100 && h <= 100) return working;
         float scale = Math.min(100f / w, 100f / h);
         int nw = Math.max(1, (int) (w * scale));
         int nh = Math.max(1, (int) (h * scale));
-        return Bitmap.createScaledBitmap(src, nw, nh, true);
+        try {
+            return Bitmap.createScaledBitmap(working, nw, nh, true);
+        } catch (Exception e) {
+            // 极端情况下缩放失败，退回原始位图（已在 try 内，不会闪退）
+            return working;
+        }
     }
 
     /** 加深颜色（factor < 1 变深，> 1 变亮） */
@@ -674,6 +770,8 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
                     }
                 }
             }
+            // 唱臂：播放时落下压片，暂停/未播放时抬起（网易云经典效果）
+            animateTonearm(isPlaying);
         });
     }
 

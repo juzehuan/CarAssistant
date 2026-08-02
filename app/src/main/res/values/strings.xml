@@ -61,8 +61,18 @@
     <string name="memory_done">加速完成，释放 %1$s 内存</string>
     <!-- 内存-Root 模式 -->
     <string name="memory_root_done">加速完成，强制结束 %1$d 个后台应用，释放 %2$s 内存</string>
+    <string name="memory_root_drop_caches">加速完成，已清理系统缓存，释放 %1$s 内存</string>
+    <string name="memory_accessibility_done">加速完成，已清除最近任务，释放 %1$s 内存</string>
     <string name="memory_no_root_done">加速完成，释放 %1$s 内存（无 Root，效果有限，建议开启 Root）</string>
+    <string name="memory_normal_done">普通模式清理完成，释放 %1$s 内存\n开启无障碍服务可释放更多内存</string>
+    <string name="memory_no_method_enabled">需要开启无障碍服务或 Root 权限才能有效清理内存</string>
+    <string name="memory_failed">内存加速失败，请重试</string>
     <string name="memory_no_apps_to_kill">没有可清理的后台应用</string>
+    <string name="memory_suggest_accessibility_title">清理效果受限</string>
+    <string name="memory_suggest_accessibility_msg">当前为普通清理模式（未检测到 Root，未开启无障碍服务），系统 API 限制下仅能释放少量内存。\n\n开启无障碍服务后，可模拟「清除全部最近任务」，释放 100~500 MB 内存，效果显著提升。</string>
+    <string name="memory_suggest_root_msg">当前为普通清理模式，系统 API 限制下仅能释放少量内存。\n\n开启 Root 权限后，可强制结束后台应用并清理系统缓存，释放数百 MB 内存。</string>
+    <string name="memory_go_enable">去开启</string>
+    <string name="memory_clean_anyway">仍清理</string>
 
     <!-- 应用管理 -->
     <string name="app_title">应用管理</string>
@@ -241,6 +251,10 @@
 
     <!-- 自启管理 -->
     <string name="autostart_title">自启管理</string>
+    <string name="autostart_self_title">车机助手自身需开启自启</string>
+    <string name="autostart_self_desc">若车机助手本身被系统限制自启动，开机后无法自动拉起侧边栏和配置的自启应用。请在系统设置中允许车机助手自启动。</string>
+    <string name="autostart_self_go">去开启</string>
+    <string name="autostart_self_toast">请在应用详情页中开启「自启动」开关</string>
     <string name="autostart_scanning">正在扫描自启应用…</string>
     <string name="autostart_empty">未发现自启应用</string>
     <string name="autostart_disable">禁用自启</string>
@@ -310,11 +324,14 @@
     <string name="keymap_title">按键映射</string>
     <string name="home_feature_keymap">按键映射</string>
     <string name="keymap_usage">使用说明</string>
-    <string name="keymap_usage_desc">1. 点击右上角 + 号添加映射，按下物理按键（方向盘键/音量键等）\n2. 支持触发模式：单击 / 双击 / 长按 / 组合键（按住一键再按另一键）\n3. 支持动作：应用启动、音量、媒体、开关、亮度、系统操作、设置子页、常用应用、URL、广播等\n4. 长按列表项可编辑动作，点击播放按钮可立即测试\n5. 菜单支持导入/导出配置和应用预设模板\n6. 如无法捕获按键，可点击「手动输入」输入 keyCode\n7. 映射生效范围：车机助手在前台运行时</string>
+    <string name="keymap_usage_desc">1. 点击右上角 + 号添加映射，按下物理按键（方向盘键/音量键等）\n2. 支持触发模式：单击 / 双击 / 长按 / 三连按 / 组合键（按住一键再按另一键）\n3. 支持「按键序列」：依次按下若干键组成序列触发（如 音量+ → 音量- → 播放）\n4. 支持「模拟轴」：手柄/方向盘的方向、油门等模拟轴事件也可映射（需在系统输入法中启用本应用输入法）\n5. 支持「仅前台应用生效」：可设置仅当某应用处于前台时才触发该映射（车机很实用，如导航/音乐前台时方控键行为不同）\n6. 支持动作：应用启动、音量、媒体、开关、亮度、系统操作、设置子页、常用应用、URL、广播等\n7. 长按列表项可编辑动作，点击播放按钮可立即测试\n8. 菜单支持导入/导出配置和应用预设模板\n9. 如无法捕获按键，可点击「手动输入」输入 keyCode\n10. 映射生效范围：车机助手在前台运行时</string>
     <string name="keymap_empty">暂无按键映射\n点击右上角 + 号添加\n或通过菜单应用预设模板</string>
 
     <!-- 音乐伴侣 -->
     <string name="home_feature_music">音乐伴侣</string>
+    <string name="home_lyrics_title">歌词伴侣</string>
+    <string name="home_lyrics_desktop">桌面歌词</string>
+    <string name="home_lyrics_settings">歌词设置</string>
     <string name="music_title">音乐伴侣</string>
     <string name="music_source">音乐来源</string>
     <string name="music_no_song">暂无歌曲</string>
@@ -356,6 +373,9 @@
     <string name="floating_lyrics_drag_hint">拖动可移动位置，单击切换歌曲信息，长按关闭</string>
     <string name="floating_lyrics_settings">桌面歌词设置</string>
     <string name="floating_lyrics_settings_subtitle">实时预览，调整后立即生效</string>
+    <string name="floating_lyrics_enable_card">桌面歌词开关</string>
+    <string name="floating_lyrics_enable_switch">开启桌面歌词</string>
+    <string name="floating_lyrics_enable_tip">开启后将在其他应用上方悬浮显示当前播放歌词，需要通知访问与悬浮窗权限</string>
     <string name="floating_lyrics_style_default">经典</string>
     <string name="floating_lyrics_style_refined">精致</string>
     <string name="floating_lyrics_style_compact">紧凑</string>
@@ -516,4 +536,18 @@
     <string name="permission_skip_yes">跳过</string>
     <string name="permission_skip_no">继续授权</string>
     <string name="permission_runtime_required_toast">请先授予所有必需权限</string>
+    <!-- 按键映射：新增能力文案 -->
+    <string name="keymap_ime_label">车机助手按键映射输入法</string>
+    <string name="keymap_trigger_triple">三连按</string>
+    <string name="keymap_trigger_sequence">按键序列</string>
+    <string name="keymap_sequence_hint">请依次按下若干键组成序列（例如：音量+ → 音量- → 播放）。\n至少需 2 个键，按「确定」完成录制。</string>
+    <string name="keymap_axis_hint">请拨动手柄 / 方向盘的模拟轴（方向、油门等）。\n本功能需先在系统「语言与输入法 → 当前输入法」中启用「车机助手按键映射输入法」。</string>
+    <string name="keymap_ime_tip">模拟轴捕获需要启用「车机助手按键映射输入法」。\n请到系统「语言与输入法 → 当前输入法」开启；本输入法无键盘界面、不干扰文字输入。</string>
+    <string name="keymap_constraint_hint">可设置「仅当某个应用在前台时」才触发该映射。\n留空表示始终生效；当前前台应用会被实时检测。</string>
+    <string name="keymap_constraint_none">无约束（始终生效）</string>
+    <string name="keymap_btn_sequence">录制序列</string>
+    <string name="keymap_btn_axis">模拟轴</string>
+    <string name="keymap_btn_single_combo">单键/组合</string>
+    <string name="keymap_seq_prefix">序列：</string>
+    <string name="keymap_axis_prefix">模拟轴：</string>
 </resources>

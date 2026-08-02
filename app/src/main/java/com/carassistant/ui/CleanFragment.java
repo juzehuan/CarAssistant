@@ -14,6 +14,7 @@
 
 package com.carassistant.ui;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -34,6 +35,7 @@ import com.carassistant.R;
 import com.carassistant.adapter.JunkAdapter;
 import com.carassistant.util.CleanUtil;
 import com.carassistant.util.FormatUtil;
+import com.carassistant.util.MemoryCleaner;
 import com.carassistant.util.MemoryUtil;
 import com.carassistant.util.PrefsUtil;
 import com.carassistant.util.ShellUtil;
@@ -144,46 +146,79 @@ public class CleanFragment extends Fragment {
     }
 
     private void doBoost() {
+        // 前置检查：无 Root 且无障碍未开启时，弹窗引导用户开启其中之一
+        if (!hasRoot && !com.carassistant.service.KeyMappingAccessibilityService.isConnected()) {
+            showSuggestEnableDialog();
+            return;
+        }
+
+        executeBoost();
+    }
+
+    /**
+     * 引导用户开启无障碍服务或 Root 权限的对话框。
+     * 提供「去开启」（跳转无障碍设置）和「仍清理」（普通模式执行）两个选项。
+     */
+    private void showSuggestEnableDialog() {
+        String msg = hasRoot
+                ? getString(R.string.memory_suggest_root_msg)
+                : getString(R.string.memory_suggest_accessibility_msg);
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle(R.string.memory_suggest_accessibility_title)
+                .setMessage(msg)
+                .setPositiveButton(R.string.memory_go_enable, (d, w) -> {
+                    // 跳转到无障碍设置（车机助手按键映射）
+                    try {
+                        Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        Toast.makeText(requireContext(),
+                                "请在列表中找到「车机助手按键映射」并开启",
+                                Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(requireContext(),
+                                "无法打开无障碍设置，请手动进入系统设置",
+                                Toast.LENGTH_LONG).show();
+                    }
+                })
+                .setNegativeButton(R.string.memory_clean_anyway, (d, w) -> executeBoost())
+                .setCancelable(true)
+                .show();
+    }
+
+    /** 实际执行内存清理（已有 Root 或无障碍服务） */
+    private void executeBoost() {
         btnBoost.setText(R.string.memory_boosting);
         btnBoost.setEnabled(false);
-        new Thread(() -> {
-            long before = MemoryUtil.getAvailableMemory(requireContext());
-            java.util.Set<String> whitelist = PrefsUtil.getWhitelist(requireContext());
+        java.util.Set<String> whitelist = PrefsUtil.getWhitelist(requireContext());
 
-            int stoppedCount = 0;
-            if (hasRoot) {
-                // Root 模式：仅强制结束正在运行的第三方后台应用（避免无差别 force-stop 全部已安装应用）
-                List<String> runningPkgs = MemoryUtil.getRunningKillablePackages(requireContext(), whitelist);
-                if (!runningPkgs.isEmpty()) {
-                    stoppedCount = MemoryUtil.forceStopPackages(runningPkgs);
-                }
-            } else {
-                // 非 Root：系统 API 受限，仅作尽力而为的清理
-                List<String> pkgs = MemoryUtil.getKillablePackages(requireContext(), whitelist);
-                MemoryUtil.killBackgroundProcesses(requireContext(), pkgs);
-            }
-            // 等待系统回收内存
-            try { Thread.sleep(800); } catch (InterruptedException ignored) {}
-            long after = MemoryUtil.getAvailableMemory(requireContext());
-            long released = Math.max(0, after - before);
-            final int finalStopped = stoppedCount;
+        MemoryCleaner.clean(requireContext(), whitelist, result -> {
             requireActivity().runOnUiThread(() -> {
                 btnBoost.setText(R.string.memory_boost);
                 btnBoost.setEnabled(true);
                 refreshMemory();
                 String msg;
-                if (hasRoot) {
-                    if (finalStopped > 0) {
-                        msg = getString(R.string.memory_root_done, finalStopped, FormatUtil.formatSize(released));
+                if (!result.success) {
+                    msg = getString(R.string.memory_failed);
+                } else if ("root".equals(result.mode)) {
+                    if (result.stoppedApps > 0) {
+                        msg = getString(R.string.memory_root_done,
+                                result.stoppedApps, FormatUtil.formatSize(result.releasedBytes));
                     } else {
-                        msg = getString(R.string.memory_no_apps_to_kill);
+                        msg = getString(R.string.memory_root_drop_caches,
+                                FormatUtil.formatSize(result.releasedBytes));
                     }
+                } else if ("accessibility".equals(result.mode)) {
+                    msg = getString(R.string.memory_accessibility_done,
+                            FormatUtil.formatSize(result.releasedBytes));
                 } else {
-                    msg = getString(R.string.memory_no_root_done, FormatUtil.formatSize(released));
+                    // 普通模式
+                    msg = getString(R.string.memory_normal_done,
+                            FormatUtil.formatSize(result.releasedBytes));
                 }
                 Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show();
             });
-        }).start();
+        });
     }
 
     private void doClean() {

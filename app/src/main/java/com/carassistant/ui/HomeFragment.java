@@ -41,6 +41,9 @@ import com.carassistant.util.MemoryUtil;
 import com.carassistant.util.PermissionUtil;
 import com.carassistant.util.StorageUtil;
 
+import android.content.Intent;
+import com.carassistant.ui.LyricsSettingsActivity;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,7 +74,6 @@ public class HomeFragment extends Fragment {
         swFloat = view.findViewById(R.id.sw_float);
         rowFloatApps = view.findViewById(R.id.row_float_apps);
         tvFloatAppsCount = view.findViewById(R.id.tv_float_apps_count);
-
         setupFeatureGrid(view);
         setupFloatSwitch();
 
@@ -105,9 +107,6 @@ public class HomeFragment extends Fragment {
                 R.drawable.ic_feature_file, R.string.home_feature_file, R.color.icon_bg_file,
                 v -> switchTab(R.id.nav_file)));
         items.add(new FeatureAdapter.FeatureItem(
-                R.drawable.ic_feature_control, R.string.home_feature_control, R.color.icon_bg_control,
-                v -> startActivity(new android.content.Intent(requireContext(), com.carassistant.ui.ControlPanelActivity.class))));
-        items.add(new FeatureAdapter.FeatureItem(
                 R.drawable.ic_feature_monitor, R.string.home_feature_monitor, R.color.icon_bg_monitor,
                 v -> startActivity(new android.content.Intent(requireContext(), com.carassistant.ui.MonitorActivity.class))));
         items.add(new FeatureAdapter.FeatureItem(
@@ -119,6 +118,9 @@ public class HomeFragment extends Fragment {
         items.add(new FeatureAdapter.FeatureItem(
                 R.drawable.ic_feature_music, R.string.home_feature_music, R.color.icon_bg_music,
                 v -> startActivity(new android.content.Intent(requireContext(), com.carassistant.ui.MusicActivity.class))));
+        items.add(new FeatureAdapter.FeatureItem(
+                R.drawable.ic_music_lyrics_hongqi, R.string.home_lyrics_title, R.color.icon_bg_lyrics,
+                v -> startActivity(new android.content.Intent(requireContext(), com.carassistant.ui.LyricsSettingsActivity.class))));
         items.add(new FeatureAdapter.FeatureItem(
                 R.drawable.ic_feature_device, R.string.home_feature_device, R.color.icon_bg_device,
                 v -> startActivity(new android.content.Intent(requireContext(), com.carassistant.ui.DeviceInfoActivity.class))));

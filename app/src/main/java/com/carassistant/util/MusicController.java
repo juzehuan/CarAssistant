@@ -21,7 +21,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
-import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Handler;
@@ -32,20 +31,20 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.carassistant.lyrics.LrcTimeline;
 import com.carassistant.lyrics.LyricResult;
 import com.carassistant.lyrics.MultiSourceLyricClient;
 import com.carassistant.lyrics.MusicSnapshot;
+import com.carassistant.music.MusicAppRegistry;
+import com.carassistant.music.MusicSessionWatcher;
 import com.carassistant.service.TargetMediaSessionService;
 
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -54,17 +53,17 @@ import java.util.concurrent.Future;
  * 音乐伴侣控制器（Java 重写自鸿启桌面 Kotlin 版 MusicController）
  *
  * 核心职责：
- * 1. 监听活跃媒体会话变化（复用已有 {@link TargetMediaSessionService}，不重复创建 NotificationListener）
- * 2. 注册 MediaController.Callback 接收播放状态/元数据变更
- * 3. 异步获取歌词（{@link LyricsApi}）并按位置推送三行歌词（上一行/当前行/下一行）
+ * 1. 通过 {@link MusicSessionWatcher} 监听活跃媒体会话变化（1:1 对齐歌词伴侣监听逻辑）
+ * 2. 在 watcher 回调中读取播放状态/元数据，触发歌词加载/封面获取
+ * 3. 异步获取歌词（{@link MultiSourceLyricClient}）并按位置推送三行歌词
  * 4. 提供播放/暂停/上一首/下一首/拖动进度等控制接口
  * 5. 维护最近播放列表（最多 20 条）
  *
- * 与鸿启桌面版本的差异：
- * - 用 {@link Handler} + {@link Runnable} 替代 Kotlin 协程
- * - 不再单独创建 NotificationListenerService，复用 {@link TargetMediaSessionService}
- *   的静态 sActiveSessions，避免双重声明服务与权限冲突
- * - 通过 {@link MediaSessionManager#addOnActiveSessionsChangedListener} 监听会话变化
+ * 与歌词伴侣监听架构的对齐：
+ * - watcher 监听会话列表增减 + 全会话 callback + 600ms 轮询 + 通知触发
+ * - TargetMediaSessionService.onNotificationPosted/Removed 转发给 watcher.refresh
+ * - 健康监测：watcher 周期检测，不健康时调 TargetMediaSessionService.requestReconnect
+ * - 打分选择：MusicAppRegistry.selectionScore 综合播放状态/元数据/控制能力
  */
 public final class MusicController {
 
@@ -72,33 +71,8 @@ public final class MusicController {
 
     /** 进度轮询间隔（ms） */
     private static final long PROGRESS_INTERVAL = 1000L;
-    /** 寻找活跃会话轮询间隔（ms） */
-    private static final long POLL_INTERVAL = 5000L;
     /** 最近歌曲上限 */
     private static final int MAX_RECENT_SONGS = 20;
-
-    /** 已知音乐应用包名（用于识别音乐媒体会话） */
-    private static final List<String> KNOWN_MUSIC_APPS = Collections.unmodifiableList(Arrays.asList(
-            "com.netease.cloudmusic", "com.netease.cloudmusic.car",
-            "com.tencent.qqmusic", "com.tencent.qqmusiccar",
-            "com.kugou.android", "com.kugou.android.car",
-            "com.kuwo.kwmusic", "cn.kuwo.kwmusicandroid", "cn.kuwo.player",
-            "cn.kuwo.kwmusiccar", "cn.kuwo.kwmusic_car",
-            "com.android.music", "com.google.android.music",
-            "com.sonyericsson.music", "com.gd.music",
-            "com.rdio.android", "com.pandora.android",
-            "com.spotify.music", "com.apple.android.music",
-            "com.android.car.media", "com.android.bluetooth", "com.android.systemui"
-    ));
-
-    /** 排除非音乐应用（电话/相机/录音/输入法等） */
-    private static final List<String> NON_MUSIC_APPS = Collections.unmodifiableList(Arrays.asList(
-            "com.android.dialer", "com.android.phone", "com.google.android.dialer",
-            "com.android.incallui", "com.android.camera", "com.android.camera2",
-            "com.google.android.camera", "com.android.soundrecorder",
-            "com.android.voicedialer", "com.android.voicerecorder",
-            "com.iflytek.inputmethod", "com.baidu.input", "com.sohu.inputmethod"
-    ));
 
     /** 单例 */
     private static volatile MusicController INSTANCE;
@@ -109,10 +83,28 @@ public final class MusicController {
 
     private Context context;
     private Handler handler;
-    private MediaSessionManager sessionManager;
     private MediaController mediaController;
-    private MediaController.Callback controllerCallback;
-    private MediaSessionManager.OnActiveSessionsChangedListener sessionsListener;
+    /** watcher 监听者：接收会话选择/状态变化回调 */
+    private final MusicSessionWatcher.Listener watcherListener = new MusicSessionWatcher.Listener() {
+        @Override
+        public void onSessionSelected(@NonNull MediaController controller,
+                                      @Nullable MediaController oldController) {
+            connectToController(controller);
+        }
+
+        @Override
+        public void onSessionData(@NonNull MediaController controller,
+                                  @Nullable MediaMetadata metadata,
+                                  @Nullable PlaybackState playbackState) {
+            // 同一会话内更新（切歌/暂停/播放等）
+            onSessionDataUpdate(controller, metadata, playbackState);
+        }
+
+        @Override
+        public void onSessionLost() {
+            initLocalPlayer();
+        }
+    };
 
     private final LrcParser lrcParser = new LrcParser();
 
@@ -157,8 +149,7 @@ public final class MusicController {
     private boolean isConnected = false;
     private long lyricOffsetMs = 0L;
 
-    // 轮询任务
-    private Runnable pollRunnable;
+    // 进度轮询任务
     private Runnable progressRunnable;
 
     private MusicController() {}
@@ -179,25 +170,18 @@ public final class MusicController {
         if (context == null) {
             context = ctx.getApplicationContext();
             handler = new Handler(Looper.getMainLooper());
-            try {
-                sessionManager = (MediaSessionManager) context.getSystemService(Context.MEDIA_SESSION_SERVICE);
-            } catch (Exception e) {
-                Log.w(TAG, "get MediaSessionManager failed", e);
-            }
             if (lyricClient == null) {
                 lyricClient = new MultiSourceLyricClient(context);
             }
-            registerActiveSessionsListener();
-            startPolling();
+            // 启动 watcher（替代原 registerActiveSessionsListener + startPolling）
+            // watcher 内部完成：sessionsChanged + 600ms 轮询 + 全会话 callback + 健康监测
+            MusicSessionWatcher.getInstance(context).start(watcherListener);
+            // 立即触发一次刷新（watcher 内部 start 已会 refresh，这里冗余一次确保最快响应）
             try {
-                if (!findActiveMusicSession()) {
-                    initLocalPlayer();
-                }
-            } catch (SecurityException e) {
-                Log.w(TAG, "SecurityException in findActiveMusicSession", e);
-                initLocalPlayer();
-            } catch (Exception e) {
-                Log.w(TAG, "findActiveMusicSession failed", e);
+                MusicSessionWatcher.getInstance(context).refresh();
+            } catch (Exception ignored) {}
+            // 若 watcher 选中失败（无可用会话），走本地播放器兜底
+            if (mediaController == null) {
                 initLocalPlayer();
             }
         }
@@ -217,7 +201,6 @@ public final class MusicController {
     /** 释放资源（应用退出时调用） */
     public void release() {
         stopProgressUpdate();
-        stopPolling();
         if (lyricLoadTask != null) {
             lyricLoadTask.cancel(true);
             lyricLoadTask = null;
@@ -225,19 +208,12 @@ public final class MusicController {
         try {
             lyricExecutor.shutdownNow();
         } catch (Exception ignored) {}
-        if (sessionsListener != null && sessionManager != null) {
-            try {
-                sessionManager.removeOnActiveSessionsChangedListener(sessionsListener);
-            } catch (Exception ignored) {}
-        }
-        sessionsListener = null;
-        if (mediaController != null && controllerCallback != null) {
-            try {
-                mediaController.unregisterCallback(controllerCallback);
-            } catch (Exception ignored) {}
+        // watcher 是应用级单例，release 时不 stop（避免影响其他调用方）
+        // 仅解除当前 controller 的 listener 关联
+        if (mediaController != null) {
+            // watcher 会自动管理 callback 注销，这里只需清理本地引用
         }
         mediaController = null;
-        controllerCallback = null;
         isConnected = false;
         currentTimeline = LrcTimeline.EMPTY;
         currentLyricLoaded = false;
@@ -246,7 +222,6 @@ public final class MusicController {
             callbacks.clear();
         }
         context = null;
-        sessionManager = null;
     }
 
     // ============ 控制接口 ============
@@ -441,31 +416,6 @@ public final class MusicController {
         );
     }
 
-    /** 根据媒体控制器包名推断播放器源 ID（用于多源歌词优先级） */
-    private static String sourceIdFromPackage(String pkg) {
-        if (TextUtils.isEmpty(pkg)) return "";
-        if (pkg.contains("netease.cloudmusic")) return "netease";
-        if (pkg.contains("qqmusic")) return "qqmusic";
-        if (pkg.contains("kugou")) return "kugou";
-        if (pkg.contains("kuwo")) return "kuwo";
-        if (pkg.contains("soda") || pkg.contains("gdmusic")) return "soda";
-        return "";
-    }
-
-    /** 根据媒体控制器包名推断播放器友好名称 */
-    private static String sourceNameFromPackage(String pkg) {
-        if (TextUtils.isEmpty(pkg)) return "音乐播放器";
-        if (pkg.contains("netease.cloudmusic")) return "网易云音乐";
-        if (pkg.contains("qqmusic")) return "QQ音乐";
-        if (pkg.contains("kugou")) return "酷狗音乐";
-        if (pkg.contains("kuwo")) return "酷我音乐";
-        if (pkg.contains("soda") || pkg.contains("gdmusic")) return "汽水音乐";
-        if (pkg.contains("bilibili")) return "哔哩哔哩";
-        if (pkg.contains("spotify")) return "Spotify";
-        if (pkg.contains("ytmusic") || pkg.contains("youtube")) return "YouTube Music";
-        return "音乐播放器";
-    }
-
     public synchronized long getLyricOffsetMs() { return lyricOffsetMs; }
 
     public synchronized void setLyricOffsetMs(long ms) { lyricOffsetMs = ms; }
@@ -537,260 +487,229 @@ public final class MusicController {
         cb.onLyricsChanged(l.prev, l.current, l.next);
     }
 
-    private void registerActiveSessionsListener() {
-        if (sessionManager == null) return;
-        sessionsListener = controllers -> {
-            Log.d(TAG, "onActiveSessionsChanged: " + (controllers == null ? 0 : controllers.size()));
-            findActiveMusicSession();
-        };
-        ComponentName cn = new ComponentName(context, TargetMediaSessionService.class);
+    /**
+     * 触发会话刷新（外部 API，兼容旧调用方）。
+     *
+     * 1:1 对齐歌词伴侣：实际由 {@link MusicSessionWatcher#refresh()} 处理，
+     * watcher 内部完成打分选择，结果通过 {@link #watcherListener} 回调。
+     *
+     * @return true 表示当前已连接到有效会话
+     */
+    public boolean findActiveMusicSession() {
+        if (context == null) return false;
         try {
-            sessionManager.addOnActiveSessionsChangedListener(sessionsListener, cn);
-        } catch (SecurityException e) {
-            Log.w(TAG, "no permission to register sessions listener", e);
-        }
-    }
-
-    private void startPolling() {
-        stopPolling();
-        pollRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (!isConnected) {
-                    try {
-                        findActiveMusicSession();
-                    } catch (SecurityException e) {
-                        Log.w(TAG, "polling SecurityException", e);
-                    }
-                }
-                if (handler != null) handler.postDelayed(this, POLL_INTERVAL);
-            }
-        };
-        if (handler != null) handler.postDelayed(pollRunnable, POLL_INTERVAL);
-    }
-
-    private void stopPolling() {
-        if (pollRunnable != null && handler != null) {
-            handler.removeCallbacks(pollRunnable);
-        }
-        pollRunnable = null;
+            MusicSessionWatcher.getInstance(context).refresh();
+        } catch (Exception ignored) {}
+        return isConnected && mediaController != null;
     }
 
     /**
-     * 查找活跃的音乐媒体会话并连接
-     * @return true 表示已连接到一个有效会话
+     * 连接到指定 MediaController（由 watcher.onSessionSelected 触发）。
+     *
+     * 与旧实现的差异：
+     * - 不再注册单个 MediaController.Callback（callback 由 watcher 统一管理所有会话）
+     * - 元数据/状态更新改为通过 {@link #onSessionDataUpdate} 接收 watcher 派发
+     * - 仍负责：读取初始元数据、派发连接/元数据/播放状态、启动进度轮询、加载歌词
      */
-    public boolean findActiveMusicSession() {
-        if (sessionManager == null || context == null) return false;
-        ComponentName cn = new ComponentName(context, TargetMediaSessionService.class);
-        List<MediaController> controllers;
-        try {
-            controllers = sessionManager.getActiveSessions(cn);
-        } catch (SecurityException e) {
-            Log.w(TAG, "getActiveSessions denied", e);
-            return false;
-        }
-        if (controllers == null || controllers.isEmpty()) return false;
-
-        // 优先：正在播放的音乐会话
-        MediaController candidate = null;
-        for (MediaController mc : controllers) {
-            if (!isMusicApp(mc.getPackageName())) continue;
-            PlaybackState st = mc.getPlaybackState();
-            if (st != null && st.getState() == PlaybackState.STATE_PLAYING) {
-                candidate = mc;
-                break;
-            }
-            if (candidate == null && hasValidMusicMetadata(mc)) {
-                candidate = mc;
-            }
-        }
-        if (candidate != null) {
-            connectToController(candidate);
-            return true;
-        }
-        return false;
-    }
-
-    /** 连接到指定 MediaController */
     private void connectToController(MediaController controller) {
+        if (controller == null) {
+            return;
+        }
+        // 同一会话：不重复初始化（watcher 已通过 onSessionData 派发增量更新）
         if (mediaController == controller) {
             dispatchCurrentStateToAll();
             return;
         }
-        Log.d(TAG, "connectToController: " + controller.getPackageName());
-        if (mediaController != null && controllerCallback != null) {
-            try {
-                mediaController.unregisterCallback(controllerCallback);
-            } catch (Exception ignored) {}
-        }
+        // 切换会话前停止旧会话的进度轮询
+        stopProgressUpdate();
+
         mediaController = controller;
-        controllerCallback = new MediaController.Callback() {
-            @Override
-            public void onPlaybackStateChanged(PlaybackState state) {
-                if (state == null) return;
-                boolean playing = state.getState() == PlaybackState.STATE_PLAYING;
-                int repeatMode = readRepeatMode(state);
-                float speed = state.getPlaybackSpeed();
-                if (speed <= 0f) speed = 1.0f;
-                long duration = currentDuration;
-                if (mediaController != null) {
-                    MediaMetadata md = mediaController.getMetadata();
-                    if (md != null) {
-                        duration = md.getLong(MediaMetadata.METADATA_KEY_DURATION);
-                    }
-                }
-                // 更新实时位置推算基准
-                basePositionMs = Math.max(0L, state.getPosition());
-                positionUpdatedAtElapsedMs = SystemClock.elapsedRealtime();
-                playbackSpeed = playing ? speed : 0.0f;
-                notifyPlayStateChanged(playing);
-                notifyRepeatModeChanged(repeatMode);
-                notifyProgressChanged(state.getPosition(), duration);
-            }
-
-            @Override
-            public void onMetadataChanged(MediaMetadata metadata) {
-                if (metadata == null) return;
-                String title = metadata.getString(MediaMetadata.METADATA_KEY_TITLE);
-                if (TextUtils.isEmpty(title)) title = "未知歌曲";
-                String artist = metadata.getString(MediaMetadata.METADATA_KEY_ARTIST);
-                if (TextUtils.isEmpty(artist)) {
-                    artist = metadata.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST);
-                }
-                if (TextUtils.isEmpty(artist)) artist = "未知歌手";
-                Bitmap art = metadata.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
-                if (art == null) art = metadata.getBitmap(MediaMetadata.METADATA_KEY_ART);
-                if (art == null) art = metadata.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON);
-                if (art == null) {
-                    String uri = metadata.getString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI);
-                    if (!TextUtils.isEmpty(uri)) {
-                        art = loadBitmapFromUri(Uri.parse(uri));
-                    }
-                }
-                long duration = metadata.getLong(MediaMetadata.METADATA_KEY_DURATION);
-                // 提取媒体 ID 与播放器源信息
-                String mediaId = metadata.getString(MediaMetadata.METADATA_KEY_MEDIA_ID);
-                String pkg = mediaController != null ? mediaController.getPackageName() : "";
-                currentMediaId = mediaId == null ? "" : mediaId;
-                currentSourceId = sourceIdFromPackage(pkg);
-                currentSourceName = sourceNameFromPackage(pkg);
-                // 重置歌词时间线（切歌）
-                trackGeneration++;
-                currentTimeline = LrcTimeline.EMPTY;
-                currentLyricLoaded = false;
-                currentLyricSourceName = "";
-                lrcParser.clear();
-                notifyMetadataChanged(title, artist, art);
-                addRecentSong(title, artist, art);
-                if (duration > 0) currentDuration = duration;
-                // 封面回退：MediaMetadata 未提供封面时，异步从 QQ/酷狗搜索
-                if (art == null) {
-                    final String fTitle = title;
-                    final String fArtist = artist;
-                    final long fDuration = duration;
-                    final long gen = trackGeneration;
-                    lyricExecutor.submit(() -> {
-                        try {
-                            String coverUrl = com.carassistant.lyrics.CoverArtSearchClient.find(
-                                    fTitle, fArtist, fDuration);
-                            if (coverUrl.isEmpty()) return;
-                            Bitmap cover = com.carassistant.lyrics.HttpCompat.downloadBitmap(coverUrl);
-                            if (cover == null) return;
-                            // 防止切歌后回灌旧封面
-                            if (gen != trackGeneration) return;
-                            android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
-                            h.post(() -> {
-                                if (gen != trackGeneration) return;
-                                if (fTitle.equals(currentTitle) && fArtist.equals(currentArtist)) {
-                                    notifyMetadataChanged(currentTitle, currentArtist, cover);
-                                }
-                            });
-                        } catch (Throwable t) {
-                            android.util.Log.w("MusicController", "cover fallback failed", t);
-                        }
-                    });
-                }
-                if (mediaController != null) {
-                    PlaybackState st = mediaController.getPlaybackState();
-                    if (st != null) {
-                        basePositionMs = Math.max(0L, st.getPosition());
-                        positionUpdatedAtElapsedMs = SystemClock.elapsedRealtime();
-                        float sp = st.getPlaybackSpeed();
-                        playbackSpeed = (st.getState() == PlaybackState.STATE_PLAYING && sp > 0) ? sp : 0.0f;
-                        notifyProgressChanged(st.getPosition(), currentDuration);
-                    }
-                }
-                fetchLyricsAsync(title, artist);
-            }
-
-            @Override
-            public void onSessionDestroyed() {
-                isConnected = false;
-                stopProgressUpdate();
-                notifyDisconnected();
-                initLocalPlayer();
-            }
-        };
-        try {
-            controller.registerCallback(controllerCallback);
-        } catch (Exception e) {
-            Log.w(TAG, "registerCallback failed", e);
-        }
         isConnected = true;
 
-        // 设置播放器源信息并重置歌词状态（切到新会话）
+        // 设置播放器源信息（基于包名识别，1:1 对齐歌词伴侣 MusicAppRegistry）
         String pkg = controller.getPackageName();
-        currentSourceId = sourceIdFromPackage(pkg);
-        currentSourceName = sourceNameFromPackage(pkg);
+        MusicAppRegistry.App app = MusicAppRegistry.resolve(pkg, applicationLabel(pkg));
+        currentSourceId = app.sourceId;
+        currentSourceName = app.displayName;
+        Log.i(TAG, "connectToController: pkg=" + pkg + " source=" + currentSourceName + " title=" + currentTitle);
+
+        // 切歌：重置歌词时间线
         trackGeneration++;
         currentTimeline = LrcTimeline.EMPTY;
         currentLyricLoaded = false;
         currentLyricSourceName = "";
         lrcParser.clear();
-        // 立即派发当前元数据
+
+        // 读取初始元数据
         MediaMetadata md = controller.getMetadata();
         if (md != null) {
-            String title = md.getString(MediaMetadata.METADATA_KEY_TITLE);
-            if (TextUtils.isEmpty(title)) title = "未知歌曲";
-            String artist = md.getString(MediaMetadata.METADATA_KEY_ARTIST);
-            if (TextUtils.isEmpty(artist)) {
-                artist = md.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST);
-            }
-            if (TextUtils.isEmpty(artist)) artist = "未知歌手";
-            Bitmap art = md.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
-            if (art == null) art = md.getBitmap(MediaMetadata.METADATA_KEY_ART);
-            if (art == null) art = md.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON);
-            if (art == null) {
-                String uri = md.getString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI);
-                if (!TextUtils.isEmpty(uri)) art = loadBitmapFromUri(Uri.parse(uri));
-            }
-            long duration = md.getLong(MediaMetadata.METADATA_KEY_DURATION);
-            if (duration <= 0) duration = 240_000L;
-            currentDuration = duration;
-            String mediaId = md.getString(MediaMetadata.METADATA_KEY_MEDIA_ID);
-            currentMediaId = mediaId == null ? "" : mediaId;
-            notifyMetadataChanged(title, artist, art);
-            addRecentSong(title, artist, art);
+            applyMetadata(md);
         }
+        // 读取初始播放状态
         PlaybackState st = controller.getPlaybackState();
         if (st != null) {
-            boolean playing = st.getState() == PlaybackState.STATE_PLAYING;
-            currentIsPlaying = playing;
-            currentPosition = st.getPosition();
-            currentRepeatMode = readRepeatMode(st);
-            basePositionMs = Math.max(0L, st.getPosition());
-            positionUpdatedAtElapsedMs = SystemClock.elapsedRealtime();
-            float sp = st.getPlaybackSpeed();
-            playbackSpeed = (playing && sp > 0) ? sp : 0.0f;
-            notifyPlayStateChanged(playing);
-            notifyProgressChanged(currentPosition, currentDuration);
-            notifyRepeatModeChanged(currentRepeatMode);
+            applyPlaybackState(st);
         }
         notifyConnected();
         startProgressUpdate();
         if (!TextUtils.isEmpty(currentTitle)) {
             fetchLyricsAsync(currentTitle, currentArtist);
+        }
+    }
+
+    /** 判断两个 MediaController 是否对应同一会话（按 token 比较，而非对象引用） */
+    private static boolean isSameToken(MediaController a, MediaController b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+        try {
+            return a.getSessionToken().equals(b.getSessionToken());
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /**
+     * 同一会话内的元数据/状态刷新（由 watcher.onSessionData 触发）。
+     *
+     * 判断 title 是否变化来决定行为：
+     * - title 变化（切歌）：重置歌词时间线 + 重新加载歌词 + 重新获取封面
+     * - title 不变：仅更新播放状态/进度
+     */
+    private void onSessionDataUpdate(MediaController controller, MediaMetadata md, PlaybackState st) {
+        if (controller == null) {
+            return;
+        }
+        // 关键修复：getActiveSessions() 每次返回新的 MediaController 实例，同一会话的 token
+        // 不变但对象引用不同。若用引用比较（mediaController != controller）会误判为"会话已切换"
+        // 从而丢弃同一会话内的切歌更新，导致歌词/封面不刷新。必须用 token 比较。
+        if (mediaController == null || !isSameToken(mediaController, controller)) {
+            return;
+        }
+        // 用最新实例替换本地引用，保证后续 isPlaying()/getMetadata() 等读取到最新数据
+        mediaController = controller;
+        // 1. 元数据变化（切歌检测）
+        if (md != null) {
+            String newTitle = md.getString(MediaMetadata.METADATA_KEY_TITLE);
+            if (TextUtils.isEmpty(newTitle)) {
+                newTitle = md.getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE);
+            }
+            if (TextUtils.isEmpty(newTitle)) newTitle = "未知歌曲";
+            // 切歌判断：title 变化时重置歌词
+            boolean songChanged = !TextUtils.equals(newTitle, currentTitle);
+            if (songChanged) {
+                // 切歌：重置歌词时间线
+                trackGeneration++;
+                currentTimeline = LrcTimeline.EMPTY;
+                currentLyricLoaded = false;
+                currentLyricSourceName = "";
+                lrcParser.clear();
+            }
+            // 应用元数据（无论是否切歌，封面/歌手等都可能更新）
+            applyMetadata(md);
+            if (songChanged) {
+                fetchLyricsAsync(currentTitle, currentArtist);
+            }
+        }
+        // 2. 播放状态变化
+        if (st != null) {
+            applyPlaybackState(st);
+        }
+    }
+
+    /**
+     * 应用元数据（提取标题/歌手/封面/时长，派发 UI 更新，触发封面兜底）。
+     * connectToController 和 onSessionDataUpdate 共用。
+     */
+    private void applyMetadata(MediaMetadata md) {
+        if (md == null) return;
+        // 标题（1:1 对齐歌词伴侣：TITLE → DISPLAY_TITLE 回退）
+        String title = md.getString(MediaMetadata.METADATA_KEY_TITLE);
+        if (TextUtils.isEmpty(title)) title = md.getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE);
+        if (TextUtils.isEmpty(title)) title = "未知歌曲";
+        // 歌手（ARTIST → ALBUM_ARTIST → DISPLAY_SUBTITLE）
+        String artist = md.getString(MediaMetadata.METADATA_KEY_ARTIST);
+        if (TextUtils.isEmpty(artist)) artist = md.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST);
+        if (TextUtils.isEmpty(artist)) artist = md.getString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE);
+        if (TextUtils.isEmpty(artist)) artist = "未知歌手";
+        // 封面（ALBUM_ART → ART → DISPLAY_ICON → URI 回退）
+        Bitmap art = md.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
+        if (art == null) art = md.getBitmap(MediaMetadata.METADATA_KEY_ART);
+        if (art == null) art = md.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON);
+        if (art == null) {
+            String uri = md.getString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI);
+            if (TextUtils.isEmpty(uri)) uri = md.getString(MediaMetadata.METADATA_KEY_ART_URI);
+            if (!TextUtils.isEmpty(uri)) art = loadBitmapFromUri(Uri.parse(uri));
+        }
+        long duration = md.getLong(MediaMetadata.METADATA_KEY_DURATION);
+        String mediaId = md.getString(MediaMetadata.METADATA_KEY_MEDIA_ID);
+        currentMediaId = mediaId == null ? "" : mediaId;
+        if (duration > 0) currentDuration = duration;
+        notifyMetadataChanged(title, artist, art);
+        addRecentSong(title, artist, art);
+        // 封面回退：MediaMetadata 未提供封面时，异步从 QQ/酷狗搜索
+        if (art == null) {
+            fetchCoverFallback(title, artist, duration);
+        }
+    }
+
+    /**
+     * 应用播放状态（更新播放/暂停/位置/速度/循环模式，派发 UI）。
+     * connectToController 和 onSessionDataUpdate 共用。
+     */
+    private void applyPlaybackState(PlaybackState state) {
+        if (state == null) return;
+        boolean playing = state.getState() == PlaybackState.STATE_PLAYING;
+        int repeatMode = readRepeatMode(state);
+        float speed = state.getPlaybackSpeed();
+        if (speed <= 0f) speed = 1.0f;
+        long duration = currentDuration;
+        // 更新实时位置推算基准
+        basePositionMs = Math.max(0L, state.getPosition());
+        positionUpdatedAtElapsedMs = SystemClock.elapsedRealtime();
+        playbackSpeed = playing ? speed : 0.0f;
+        notifyPlayStateChanged(playing);
+        notifyRepeatModeChanged(repeatMode);
+        notifyProgressChanged(state.getPosition(), duration);
+    }
+
+    /** 异步获取封面兜底（QQ/酷狗搜索） */
+    private void fetchCoverFallback(String title, String artist, long duration) {
+        final String fTitle = title;
+        final String fArtist = artist;
+        final long fDuration = duration;
+        final long gen = trackGeneration;
+        lyricExecutor.submit(() -> {
+            try {
+                String coverUrl = com.carassistant.lyrics.CoverArtSearchClient.find(
+                        fTitle, fArtist, fDuration);
+                if (coverUrl.isEmpty()) return;
+                Bitmap cover = com.carassistant.lyrics.HttpCompat.downloadBitmap(coverUrl);
+                if (cover == null) return;
+                // 防止切歌后回灌旧封面
+                if (gen != trackGeneration) return;
+                if (handler != null) {
+                    handler.post(() -> {
+                        if (gen != trackGeneration) return;
+                        if (fTitle.equals(currentTitle) && fArtist.equals(currentArtist)) {
+                            notifyMetadataChanged(currentTitle, currentArtist, cover);
+                        }
+                    });
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "cover fallback failed", t);
+            }
+        });
+    }
+
+    /** 通过 PackageManager 获取应用友好名称（1:1 对齐歌词伴侣 applicationLabel） */
+    private String applicationLabel(String pkg) {
+        if (context == null || TextUtils.isEmpty(pkg)) return "";
+        try {
+            android.content.pm.PackageManager pm = context.getPackageManager();
+            CharSequence label = pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0));
+            return label == null ? "" : label.toString().trim();
+        } catch (Exception e) {
+            return "";
         }
     }
 
@@ -967,25 +886,6 @@ public final class MusicController {
         } finally {
             if (is != null) try { is.close(); } catch (Exception ignored) {}
         }
-    }
-
-    private boolean isMusicApp(String pkg) {
-        if (TextUtils.isEmpty(pkg) || NON_MUSIC_APPS.contains(pkg)) return false;
-        if (KNOWN_MUSIC_APPS.contains(pkg)) return true;
-        String lower = pkg.toLowerCase(Locale.ROOT);
-        return lower.contains("music") || lower.contains("kugou") || lower.contains("kuwo")
-                || lower.contains("audio") || lower.contains("media") || lower.contains("player")
-                || lower.contains("spotify") || lower.contains("qqmusic")
-                || lower.contains("cloudmusic") || lower.contains("bilibili")
-                || lower.contains("ytmusic") || lower.contains("youtube");
-    }
-
-    private boolean hasValidMusicMetadata(MediaController mc) {
-        if (mc == null) return false;
-        MediaMetadata md = mc.getMetadata();
-        if (md == null) return false;
-        String title = md.getString(MediaMetadata.METADATA_KEY_TITLE);
-        return !TextUtils.isEmpty(title);
     }
 
     // ============ 状态派发 ============

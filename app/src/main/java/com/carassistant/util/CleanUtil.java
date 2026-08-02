@@ -67,6 +67,8 @@ public final class CleanUtil {
         // 1. 本应用缓存（诚实标注）
         groups.add(scanDir("本应用缓存", ctx.getCacheDir()));
         groups.add(scanDir("本应用外部缓存", ctx.getExternalCacheDir()));
+        // code_cache：编译码缓存（可安全删除）
+        groups.add(scanDir("编译码缓存", ctx.getCodeCacheDir()));
 
         // 2. 公共下载目录中的多余 APK
         groups.add(scanApk());
@@ -77,18 +79,79 @@ public final class CleanUtil {
         File picturesThumb = new File(Environment.getExternalStorageDirectory(), "Pictures/.thumbnails");
         groups.add(scanDir("图片缩略图", picturesThumb));
 
-        // 4. 临时文件 .tmp
+        // 4. 临时文件 .tmp / .log
         groups.add(scanExt("临时文件", Environment.getExternalStorageDirectory(), ".tmp"));
+        groups.add(scanExt("日志文件", Environment.getExternalStorageDirectory(), ".log"));
 
-        // 5. Root 模式：扫描其他应用缓存
+        // 5. 本应用数据库临时文件（WAL/SHM，可安全删除但会丢失未提交事务）
+        groups.add(scanAppDbTemp(ctx));
+
+        // 6. Root 模式：扫描其他应用缓存
         if (hasRoot) {
             JunkGroup otherCache = scanRootAppsCache(ctx);
             if (otherCache.size > 0) {
                 groups.add(otherCache);
             }
+            // 扫描系统崩溃日志
+            JunkGroup sysLogs = scanRootSystemLogs();
+            if (sysLogs.size > 0) {
+                groups.add(sysLogs);
+            }
         }
 
         return groups;
+    }
+
+    /** 扫描本应用数据库临时文件（.db-wal/.db-shm） */
+    private static JunkGroup scanAppDbTemp(Context ctx) {
+        JunkGroup g = new JunkGroup();
+        g.name = "数据库临时文件";
+        File dbDir = ctx.getDatabasePath("dummy").getParentFile();
+        if (dbDir != null && dbDir.exists()) {
+            File[] files = dbDir.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    String name = f.getName().toLowerCase();
+                    if (f.isFile() && (name.endsWith(".db-wal") || name.endsWith(".db-shm")
+                            || name.endsWith(".db-journal"))) {
+                        g.files.add(f);
+                    }
+                }
+            }
+        }
+        g.size = sumSize(g.files);
+        g.desc = g.files.size() + " 项 / " + FormatUtil.formatSize(g.size);
+        return g;
+    }
+
+    /** Root 模式扫描系统崩溃日志（dropbox/anr/tombstones） */
+    private static JunkGroup scanRootSystemLogs() {
+        JunkGroup g = new JunkGroup();
+        g.name = "系统崩溃日志";
+        g.rootOnly = true;
+        String[] logDirs = {"/data/system/dropbox/", "/data/anr/",
+                            "/data/tombstones/", "/data/logs/"};
+        long total = 0;
+        int fileCount = 0;
+        for (String dir : logDirs) {
+            ShellUtil.Result r = ShellUtil.execRoot("du -sb '" + dir + "' 2>/dev/null");
+            if (r.success() && !TextUtils.isEmpty(r.stdout)) {
+                String[] parts = r.stdout.trim().split("\t");
+                if (parts.length >= 1) {
+                    try {
+                        long size = Long.parseLong(parts[0].trim());
+                        if (size > 0) {
+                            g.rootPaths.add(dir);
+                            total += size;
+                            fileCount++;
+                        }
+                    } catch (Exception ignored) {}
+                }
+            }
+        }
+        g.size = total;
+        g.desc = fileCount + " 类日志 / " + FormatUtil.formatSize(total);
+        return g;
     }
 
     private static JunkGroup scanDir(String name, File dir) {

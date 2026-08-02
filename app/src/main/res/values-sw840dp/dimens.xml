@@ -90,9 +90,10 @@
     <!-- 音乐伴侣界面（≥840dp 车机大屏放大） -->
     <dimen name="music_vinyl_size">500dp</dimen>
     <dimen name="music_album_size">340dp</dimen>
-    <dimen name="music_tonearm_size">260dp</dimen>
-    <dimen name="music_tonearm_margin_top">-40dp</dimen>
-    <dimen name="music_tonearm_margin_end">-50dp</dimen>
+    <dimen name="music_tonearm_size">200dp</dimen>
+    <dimen name="music_tonearm_height">250dp</dimen>
+    <dimen name="music_tonearm_margin_top">-34dp</dimen>
+    <dimen name="music_tonearm_margin_end">-40dp</dimen>
     <dimen name="music_title_size">28sp</dimen>
     <dimen name="music_artist_size">18sp</dimen>
     <dimen name="music_lyric_current_size">28sp</dimen>

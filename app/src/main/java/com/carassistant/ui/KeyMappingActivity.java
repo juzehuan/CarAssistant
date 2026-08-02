@@ -296,7 +296,7 @@ public class KeyMappingActivity extends AppCompatActivity {
 
     /** 添加映射：先录制按键 */
     private void startAddMapping() {
-        KeyCaptureDialog dialog = new KeyCaptureDialog(this, new KeyCaptureDialog.Callback() {
+        new KeyCaptureDialog(this, new KeyCaptureListener() {
             @Override public void onSingleKeyCaptured(int keyCode) {
                 // 选触发模式
                 chooseTrigger(keyCode, 0);
@@ -305,19 +305,28 @@ public class KeyMappingActivity extends AppCompatActivity {
                 // 组合键：直接选动作
                 chooseActionForCombo(key1, key2);
             }
-        });
-        dialog.show();
+            @Override public void onSequenceCaptured(int[] keys) {
+                // 序列：选动作
+                chooseActionForSequence(keys);
+            }
+            @Override public void onAxisCaptured(int axisKeyCode) {
+                // 模拟轴：作为单键选触发模式
+                chooseTrigger(axisKeyCode, 0);
+            }
+        }, false).show();
     }
 
     /** 选择触发模式 */
     private void chooseTrigger(int keyCode, int comboKey) {
-        String[] triggers = {"单击", "双击", "长按"};
+        String[] triggers = {"单击", "双击", "长按", "三连按"};
         new AlertDialog.Builder(this)
                 .setTitle("触发模式：" + KeyMappingUtil.getKeyLabel(keyCode))
                 .setItems(triggers, (d, w) -> {
-                    int trigger = w == 0 ? KeyMappingUtil.TRIGGER_TAP
-                            : w == 1 ? KeyMappingUtil.TRIGGER_DOUBLE_TAP
-                            : KeyMappingUtil.TRIGGER_LONG_PRESS;
+                    int trigger;
+                    if (w == 0) trigger = KeyMappingUtil.TRIGGER_TAP;
+                    else if (w == 1) trigger = KeyMappingUtil.TRIGGER_DOUBLE_TAP;
+                    else if (w == 2) trigger = KeyMappingUtil.TRIGGER_LONG_PRESS;
+                    else trigger = KeyMappingUtil.TRIGGER_TRIPLE_TAP;
                     // 检查是否已存在
                     if (KeyMappingUtil.getMapping(this, keyCode, trigger) != null) {
                         Toast.makeText(this, "该按键的此触发模式已存在映射", Toast.LENGTH_SHORT).show();
@@ -332,14 +341,29 @@ public class KeyMappingActivity extends AppCompatActivity {
     /** 选择动作（单键） */
     private void chooseAction(int keyCode, int trigger) {
         showActionPicker("选择动作", actionType -> handleActionInput(actionType,
-                (data, label, targetPkg) -> saveSingle(keyCode, trigger, actionType, data, label, targetPkg)));
+                (data, label, targetPkg, constraintPkg) ->
+                        saveSingle(keyCode, trigger, actionType, data, label, targetPkg, constraintPkg)));
     }
 
     /** 选择动作（组合键） */
     private void chooseActionForCombo(int key1, int key2) {
         showActionPicker("选择动作（" + KeyMappingUtil.getKeyLabel(key1) + " + " + KeyMappingUtil.getKeyLabel(key2) + "）",
                 actionType -> handleActionInput(actionType,
-                        (data, label, targetPkg) -> saveCombo(key1, key2, actionType, data, label, targetPkg)));
+                        (data, label, targetPkg, constraintPkg) ->
+                                saveCombo(key1, key2, actionType, data, label, targetPkg, constraintPkg)));
+    }
+
+    /** 选择动作（序列） */
+    private void chooseActionForSequence(int[] keys) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < keys.length; i++) {
+            if (i > 0) sb.append(" → ");
+            sb.append(KeyMappingUtil.getKeyLabel(keys[i]));
+        }
+        showActionPicker("选择动作（序列：" + sb + "）", actionType ->
+                handleActionInput(actionType,
+                        (data, label, targetPkg, constraintPkg) ->
+                                saveSequence(keys, actionType, data, label, targetPkg, constraintPkg)));
     }
 
     /** 根据动作类型决定后续输入流程 */
@@ -347,8 +371,19 @@ public class KeyMappingActivity extends AppCompatActivity {
         android.util.Log.d("KeyMapping", "handleActionInput: actionType=" + actionType
                 + " isMedia=" + KeyMappingUtil.isMediaAction(actionType)
                 + " isNeedApp=" + KeyMappingUtil.isActionNeedApp(actionType));
+        // 收尾：拿到动作数据后，询问「仅前台应用生效」约束，再交给最终保存回调
+        ActionSaveCallback finish = (data, label, targetPkg, ignored) -> {
+            if (KeyMappingUtil.isMediaAction(actionType)) {
+                // 媒体控制已通过目标应用定向派发，无需"仅前台应用生效"约束，
+                // 否则多选应用确认后会误弹第二个"选择应用"框，且误加约束会让
+                // 音乐 App 前台时按键直接失效。
+                cb.onActionReady(data, label, targetPkg, "");
+            } else {
+                chooseConstraint(constraintPkg -> cb.onActionReady(data, label, targetPkg, constraintPkg));
+            }
+        };
         if (KeyMappingUtil.isActionNeedApp(actionType)) {
-            pickApp((pkg, label) -> cb.onActionReady(pkg, "打开 " + label, ""));
+            pickApp((pkg, label) -> finish.onActionReady(pkg, "打开 " + label, "", ""));
         } else if (KeyMappingUtil.isMediaAction(actionType)) {
             // 媒体控制类动作：询问是否指定定向目标应用（支持多选）
             chooseMediaTarget(actionType, targetPkg -> {
@@ -356,16 +391,16 @@ public class KeyMappingActivity extends AppCompatActivity {
                 if (targetPkg != null && !targetPkg.isEmpty()) {
                     label += " → " + buildTargetAppsLabel(targetPkg);
                 }
-                cb.onActionReady("", label, targetPkg != null ? targetPkg : "");
+                finish.onActionReady("", label, targetPkg != null ? targetPkg : "", "");
             });
         } else if (KeyMappingUtil.isActionNeedIntent(actionType)
                 || KeyMappingUtil.isActionNeedUrl(actionType)
                 || KeyMappingUtil.isActionNeedBroadcast(actionType)) {
-            inputActionData(actionType, data -> cb.onActionReady(data, buildActionLabel(actionType, data), ""));
+            inputActionData(actionType, data -> finish.onActionReady(data, buildActionLabel(actionType, data), "", ""));
         } else if (KeyMappingUtil.isActionNeedNumber(actionType)) {
-            inputNumber(actionType, num -> cb.onActionReady(num, buildActionLabel(actionType, num), ""));
+            inputNumber(actionType, num -> finish.onActionReady(num, buildActionLabel(actionType, num), "", ""));
         } else {
-            cb.onActionReady("", KeyMappingUtil.getActionLabel(actionType), "");
+            finish.onActionReady("", KeyMappingUtil.getActionLabel(actionType), "", "");
         }
     }
 
@@ -561,7 +596,14 @@ public class KeyMappingActivity extends AppCompatActivity {
         }
     }
 
-    interface ActionSaveCallback { void onActionReady(String data, String label, String targetPackage); }
+    interface ActionSaveCallback { void onActionReady(String data, String label, String targetPackage, String constraintPackage); }
+
+    interface ConstraintCallback { void onConstraint(String constraintPackage); }
+
+    /** 选择「仅前台应用生效」约束（可选：可跳过表示始终生效） */
+    private void chooseConstraint(ConstraintCallback cb) {
+        pickApp((pkg, label) -> cb.onConstraint(pkg), true, getString(R.string.keymap_constraint_none));
+    }
 
     /** 动作选择器（按分类分组） */
     private void showActionPicker(String title, ActionSelectedCallback cb) {
@@ -759,33 +801,43 @@ public class KeyMappingActivity extends AppCompatActivity {
 
     interface ActionDataCallback { void onDataInput(String data); }
 
-    private void saveSingle(int keyCode, int trigger, int actionType, String data, String label, String targetPackage) {
-        KeyMappingUtil.saveMapping(this, keyCode, trigger, actionType, data, label, targetPackage);
+    private void saveSingle(int keyCode, int trigger, int actionType, String data, String label, String targetPackage, String constraintPackage) {
+        KeyMappingUtil.saveMapping(this, keyCode, trigger, actionType, data, label, targetPackage, constraintPackage);
         loadMappings();
         Toast.makeText(this, "映射已添加", Toast.LENGTH_SHORT).show();
     }
 
-    private void saveCombo(int key1, int key2, int actionType, String data, String label, String targetPackage) {
-        KeyMappingUtil.saveComboMapping(this, key1, key2, actionType, data, label, targetPackage);
+    private void saveCombo(int key1, int key2, int actionType, String data, String label, String targetPackage, String constraintPackage) {
+        KeyMappingUtil.saveComboMapping(this, key1, key2, actionType, data, label, targetPackage, constraintPackage);
         loadMappings();
         Toast.makeText(this, "组合键映射已添加", Toast.LENGTH_SHORT).show();
     }
 
+    private void saveSequence(int[] keys, int actionType, String data, String label, String targetPackage, String constraintPackage) {
+        KeyMappingUtil.saveSequenceMapping(this, keys, actionType, data, label, targetPackage, constraintPackage);
+        loadMappings();
+        Toast.makeText(this, "序列映射已添加", Toast.LENGTH_SHORT).show();
+    }
+
     // ============ 编辑流程 ============
 
-    /** 编辑现有映射的动作（保留原按键和触发模式） */
+    /** 编辑现有映射的动作（保留原按键、触发模式与前台约束） */
     private void startEditAction(KeyMappingUtil.KeyMapping m) {
+        final String constraint = m.constraintPackage == null ? "" : m.constraintPackage;
         showActionPicker("修改动作：" + m.keyLabel, actionType ->
-                handleActionInput(actionType, (data, label, targetPkg) -> {
+                handleActionInput(actionType, (data, label, targetPkg, constraintPkg) -> {
                     // 删除旧映射
                     KeyMappingUtil.removeMapping(this, m);
-                    // 保存新映射（保留原按键和触发模式）
-                    if (m.comboKeyCode != 0) {
+                    // 保存新映射（保留原按键、触发模式与前台约束）
+                    if (m.trigger == KeyMappingUtil.TRIGGER_SEQUENCE && m.sequenceKeys != null) {
+                        KeyMappingUtil.saveSequenceMapping(this, m.sequenceKeys,
+                                actionType, data, label, targetPkg, constraint);
+                    } else if (m.comboKeyCode != 0) {
                         KeyMappingUtil.saveComboMapping(this, m.keyCode, m.comboKeyCode,
-                                actionType, data, label, targetPkg);
+                                actionType, data, label, targetPkg, constraint);
                     } else {
                         KeyMappingUtil.saveMapping(this, m.keyCode, m.trigger,
-                                actionType, data, label, targetPkg);
+                                actionType, data, label, targetPkg, constraint);
                     }
                     loadMappings();
                     Toast.makeText(this, "动作已更新", Toast.LENGTH_SHORT).show();
@@ -896,7 +948,11 @@ public class KeyMappingActivity extends AppCompatActivity {
         public void onBindViewHolder(VH holder, int position) {
             KeyMappingUtil.KeyMapping m = items.get(position);
             holder.tvKey.setText(m.keyLabel);
-            holder.tvAction.setText(m.actionLabel);
+            if (m.constraintPackage != null && !m.constraintPackage.isEmpty()) {
+                holder.tvAction.setText(m.actionLabel + "  · 仅" + getAppName(holder.itemView.getContext(), m.constraintPackage) + "前台");
+            } else {
+                holder.tvAction.setText(m.actionLabel);
+            }
 
             // 显示触发模式标签
             if (m.comboKeyCode == 0 && m.trigger != KeyMappingUtil.TRIGGER_TAP) {
@@ -957,6 +1013,15 @@ public class KeyMappingActivity extends AppCompatActivity {
         @Override
         public int getItemCount() { return items.size(); }
 
+        private static String getAppName(android.content.Context c, String pkg) {
+            try {
+                android.content.pm.PackageManager pm = c.getPackageManager();
+                return pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString();
+            } catch (Exception e) {
+                return pkg;
+            }
+        }
+
         static class VH extends RecyclerView.ViewHolder {
             TextView tvKey, tvAction, tvTrigger, tvCategory, tvData;
             View llMeta, btnDelete, btnTest, itemView;
@@ -977,84 +1042,5 @@ public class KeyMappingActivity extends AppCompatActivity {
         }
     }
 
-    // ---------------- 按键录制对话框 ----------------
-
-    private static class KeyCaptureDialog extends AlertDialog {
-        interface Callback {
-            void onSingleKeyCaptured(int keyCode);
-            void onComboCaptured(int key1, int key2);
-        }
-
-        private final Callback callback;
-        private int firstKey = -1;
-        private int secondKey = -1;
-        private final List<Integer> pressed = new ArrayList<>();
-
-        KeyCaptureDialog(KeyMappingActivity act, Callback cb) {
-            super(act);
-            this.callback = cb;
-            setTitle("按键录制");
-            setMessage("请按下要映射的物理按键...\n\n"
-                    + "• 单键：按一次后点击「确定」\n"
-                    + "• 组合键：按住一个键的同时按另一个键，然后点击「确定」\n\n"
-                    + "支持的按键：媒体键 / 音量键 / F1-F12 / 数字键 / 方向键 / 字母键 / 手柄键等");
-            setButton(BUTTON_POSITIVE, "确定", (d, w) -> {
-                if (secondKey != -1) {
-                    callback.onComboCaptured(firstKey, secondKey);
-                } else if (firstKey != -1) {
-                    callback.onSingleKeyCaptured(firstKey);
-                }
-                dismiss();
-            });
-            setButton(BUTTON_NEUTRAL, "手动输入", (d, w) -> showManualInput());
-            setButton(BUTTON_NEGATIVE, "取消", (d, w) -> dismiss());
-            setOnKeyListener((d, keyCode, event) -> {
-                if (event.getAction() == android.view.KeyEvent.ACTION_DOWN) {
-                    if (!pressed.contains(keyCode)) {
-                        pressed.add(keyCode);
-                        if (firstKey == -1) {
-                            firstKey = keyCode;
-                            setMessage("已捕获按键：" + KeyMappingUtil.getKeyLabel(keyCode)
-                                    + "\n\n可继续按其他按键组合，或点击「确定」。");
-                        } else if (secondKey == -1 && keyCode != firstKey) {
-                            secondKey = keyCode;
-                            setMessage("已捕获组合键：\n"
-                                    + KeyMappingUtil.getKeyLabel(firstKey) + " + "
-                                    + KeyMappingUtil.getKeyLabel(secondKey)
-                                    + "\n\n点击「确定」保存，或继续按其他键重新捕获。");
-                        }
-                    }
-                    return true;
-                } else if (event.getAction() == android.view.KeyEvent.ACTION_UP) {
-                    pressed.remove(Integer.valueOf(keyCode));
-                    return true;
-                }
-                return false;
-            });
-            // 进入录制模式：让无障碍服务放行按键，避免已有映射消费事件导致录制失败
-            com.carassistant.service.KeyMappingAccessibilityService.setCaptureMode(true);
-            // 对话框关闭时退出录制模式（覆盖确定/取消/手动输入/外部返回键所有关闭路径）
-            setOnDismissListener(d ->
-                    com.carassistant.service.KeyMappingAccessibilityService.setCaptureMode(false));
-        }
-
-        private void showManualInput() {
-            final EditText et = new EditText(getContext());
-            et.setHint("输入 keyCode 数字（如 79=媒体播放）");
-            new AlertDialog.Builder(getContext())
-                    .setTitle("手动输入 keyCode")
-                    .setView(et)
-                    .setPositiveButton("确定", (d, w) -> {
-                        try {
-                            int code = Integer.parseInt(et.getText().toString().trim());
-                            callback.onSingleKeyCaptured(code);
-                            dismiss();
-                        } catch (NumberFormatException e) {
-                            Toast.makeText(getContext(), "请输入有效数字", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNegativeButton("取消", null)
-                    .show();
-        }
-    }
+    // 按键录制对话框已抽取为顶层类 com.carassistant.ui.KeyCaptureDialog
 }

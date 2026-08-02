@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    自启动引导卡片按钮背景
+    - 橙色渐变（与卡片警告色一致）
+    - 圆角胶囊形
+    - 触摸水波纹
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#33FFFFFF">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:startColor="#FFFF9800"
+                android:endColor="#FFFF6F00"/>
+            <corners android:radius="20dp"/>
+        </shape>
+    </item>
+</ripple>

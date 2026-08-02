@@ -1,15 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 歌词图标（移植自鸿启桌面 ic_lyrics.xml） -->
+<!-- 歌词伴侣图标：会话气泡（歌词显示框）+ 八分音符，表达"歌词/跟唱"语义 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:height="32dp"
     android:width="32dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
+
+    <!-- 会话气泡（歌词显示框） -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#FFF5F0E8"
-        android:strokeWidth="1.8"
+        android:strokeColor="#5B4BDB"
+        android:strokeWidth="1.6"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M21 15a2 2 0 0 1 -2 2H7l-4 4V5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2z"/>
+        android:pathData="M5 4 h14 a2 2 0 0 1 2 2 v8 a2 2 0 0 1 -2 2 h-7 l-4 4 v-4 h-3 a2 2 0 0 1 -2 -2 V6 a2 2 0 0 1 2 -2 z" />
+
+    <!-- 音符：符头填充 -->
+    <path
+        android:fillColor="#5B4BDB"
+        android:strokeColor="#00000000"
+        android:strokeWidth="0"
+        android:pathData="M7.8 11.6 a 2.2 1.7 0 1 0 4.4 0 a 2.2 1.7 0 1 0 -4.4 0 z" />
+
+    <!-- 音符：符干 + 符尾 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#5B4BDB"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12.1 11.4 L12.1 6 C14.2 6.6 15 8.2 14.6 9.8" />
 </vector>
