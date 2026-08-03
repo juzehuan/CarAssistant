@@ -80,6 +80,11 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private ImageView ivAlbum;
     private ImageView ivTonearm;   // 唱臂（导轨），网易云风格：播放落下、暂停抬起
     private TextView tvTitle, tvArtist;
+    // 封面/元数据去重：避免本地音乐监听轮询反复重设封面与背景导致闪烁
+    private String lastMetaTitle;
+    private String lastMetaArtist;
+    private Bitmap lastMetaArt;
+    private android.animation.ValueAnimator bgColorAnimator;
     private TextView tvLyricPrev2, tvLyricPrev, tvLyricCurrent, tvLyricTranslation, tvLyricNext, tvLyricNext2;
     private TextView tvCurrent, tvDuration;
     private SeekBar sbProgress;
@@ -679,6 +684,17 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     @Override
     public void onMetadataChanged(String title, String artist, Bitmap albumArt) {
         runOnUiThread(() -> {
+            // 去重：标题/歌手与封面内容均未变化时跳过刷新，避免监听本地音乐时
+            // 轮询反复重设封面图与背景色造成闪烁。
+            boolean metaSame = TextUtils.equals(lastMetaTitle, title)
+                    && TextUtils.equals(lastMetaArtist, artist);
+            if (metaSame && sameAlbumArt(albumArt, lastMetaArt)) {
+                return;
+            }
+            lastMetaTitle = title;
+            lastMetaArtist = artist;
+            lastMetaArt = albumArt;
+
             tvTitle.setText(TextUtils.isEmpty(title) ? getString(R.string.music_no_song) : title);
             tvArtist.setText(TextUtils.isEmpty(artist) ? getString(R.string.music_unknown_artist) : artist);
             if (albumArt != null) {
@@ -692,6 +708,19 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
                 applyBackgroundColor(0xFF0F1320, 0xFFEE0A24);
             }
         });
+    }
+
+    /** 判断两张封面内容是否一致（同一对象或像素完全相同） */
+    private boolean sameAlbumArt(Bitmap a, Bitmap b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+        if (a.isRecycled() || b.isRecycled()) return false;
+        if (a.getWidth() != b.getWidth() || a.getHeight() != b.getHeight()) return false;
+        try {
+            return a.sameAs(b);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
@@ -787,6 +816,10 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
      */
     private void applyBackgroundColor(int targetColor, int accentColor) {
         if (musicRoot == null) return;
+        // 取消上一次仍在进行的背景过渡，避免多次动画叠加导致闪烁
+        if (bgColorAnimator != null && bgColorAnimator.isRunning()) {
+            bgColorAnimator.cancel();
+        }
         int startColor = currentBgColor;
         // 创建渐变背景：顶部更深，底部为目标色
         int topColor = darken(targetColor, 0.55f);
@@ -802,6 +835,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
                     new int[]{curTop, curBot});
             musicRoot.setBackground(gd);
         });
+        bgColorAnimator = animator;
         animator.start();
         currentBgColor = targetColor;
         currentAccentColor = accentColor;
