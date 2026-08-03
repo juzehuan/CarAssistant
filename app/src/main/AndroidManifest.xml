@@ -135,6 +135,13 @@
             android:parentActivityName=".ui.MusicActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"/>
 
+        <activity
+            android:name=".ui.MusicSettingsActivity"
+            android:exported="false"
+            android:label="@string/music_settings"
+            android:parentActivityName=".ui.MusicActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"/>
+
         <!--
             悬浮按钮服务
             - foregroundServiceType="specialUse"：Android 14+ 必需，否则 startForeground(type) 会抛 IllegalArgumentException

@@ -18,6 +18,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Outline;
@@ -43,6 +44,7 @@ import android.view.ViewGroup;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.palette.graphics.Palette;
+import com.carassistant.MainActivity;
 import com.carassistant.R;
 import com.carassistant.service.FloatingLyricsService;
 import com.carassistant.util.LrcParser;
@@ -81,7 +83,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private TextView tvLyricPrev2, tvLyricPrev, tvLyricCurrent, tvLyricTranslation, tvLyricNext, tvLyricNext2;
     private TextView tvCurrent, tvDuration;
     private SeekBar sbProgress;
-    private ImageView btnPlay, btnPrev, btnNext, btnRepeat;
+    private ImageView btnPlay, btnPrev, btnNext, btnSettings;
     private ImageView btnFloatingLyrics;
     private ImageView btnLyricsSettings;
     private ImageView btnMusicSource;
@@ -116,6 +118,14 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     /** 上一次歌词文本，用于判断是否需要播放切换动画 */
     private String lastLyric = "";
 
+    // ===== 设置页：UI 微调开关（由 applyMusicUiSettings 读取）=====
+    private boolean uiDynamicTheme = true;     // 动态主题色（封面取色）
+    private boolean uiVinylRotate = true;      // 黑胶旋转动画
+    private boolean uiShowTranslation = true;  // 显示翻译歌词
+    private boolean uiShowArm = true;          // 显示唱臂
+    private boolean uiShowPrev = true;         // 显示上一首按钮
+    private boolean uiShowNext = true;         // 显示下一首按钮
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -149,7 +159,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         btnPlay = findViewById(R.id.btn_play);
         btnPrev = findViewById(R.id.btn_prev);
         btnNext = findViewById(R.id.btn_next);
-        btnRepeat = findViewById(R.id.btn_repeat);
+        btnSettings = findViewById(R.id.btn_settings);
         btnFloatingLyrics = findViewById(R.id.btn_floating_lyrics);
         btnLyricsSettings = findViewById(R.id.btn_lyrics_settings);
         btnBack = findViewById(R.id.btn_back);
@@ -257,7 +267,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         // 所有视图绑定都做了空值保护：横屏布局（layout-land）与竖屏布局的控件集合不同，
         // 缺失的控件 findViewById 会返回 null，直接调用 setOnClickListener 会 NPE 闪退。
         // 因此这里对每个可能为 null 的视图都先判空，保证任意布局下打开界面都不会崩溃。
-        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
+        if (btnBack != null) btnBack.setOnClickListener(v -> handleBack());
         if (btnGrant != null) btnGrant.setOnClickListener(v -> controller.openNotificationListenerSettings(this));
 
         if (btnPlay != null) btnPlay.setOnClickListener(v -> {
@@ -276,12 +286,10 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             if (!ensurePermissionAndConnected()) return;
             controller.playNext();
         });
-        if (btnRepeat != null) btnRepeat.setOnClickListener(v -> {
+        // 设置按钮：打开音乐伴侣设置
+        if (btnSettings != null) btnSettings.setOnClickListener(v -> {
             playBtnPop(v);
-            // 切换循环模式：0 关闭 → 1 单曲 → 2 列表 → 0
-            int next = (controller.getRepeatMode() + 1) % 3;
-            controller.setRepeatMode(next);
-            Toast.makeText(this, repeatModeName(next), Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, MusicSettingsActivity.class));
         });
 
         // “词”按钮：展开 / 收起歌词区（横屏布局可能无此按钮 / 无歌词容器）
@@ -370,6 +378,18 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         }
     }
 
+    /** 左上角返回：回到应用主页（MainActivity），而不是退回桌面 */
+    private void handleBack() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        handleBack();
+    }
+
     /** 切换桌面歌词悬浮窗开关 */
     private void toggleFloatingLyrics() {
         if (FloatingLyricsService.isRunning()) {
@@ -429,19 +449,28 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
                 .setMessage(buildOffsetMessage(offset[0]))
                 .setPositiveButton("提前 0.5s", (d, w) -> {
                     controller.adjustLyricOffset(-500);
+                    persistLyricOffset();
                     Toast.makeText(this, "歌词提前 0.5s", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("延后 0.5s", (d, w) -> {
                     controller.adjustLyricOffset(500);
+                    persistLyricOffset();
                     Toast.makeText(this, "歌词延后 0.5s", Toast.LENGTH_SHORT).show();
                 })
                 .setNeutralButton("重置", (d, w) -> {
                     controller.setLyricOffsetMs(0);
                     controller.adjustLyricOffset(0);
+                    persistLyricOffset();
                     Toast.makeText(this, "歌词偏移已重置", Toast.LENGTH_SHORT).show();
                 })
                 .create();
         dialog.show();
+    }
+
+    /** 把当前歌词偏移同步保存到设置偏好，与设置页保持一致 */
+    private void persistLyricOffset() {
+        getSharedPreferences("music_settings", MODE_PRIVATE)
+                .edit().putInt("music_lyric_offset_ms", (int) controller.getLyricOffsetMs()).apply();
     }
 
     private String buildOffsetMessage(long offsetMs) {
@@ -478,14 +507,6 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         cardPermission.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
-    private String repeatModeName(int mode) {
-        switch (mode) {
-            case 1: return getString(R.string.music_repeat_one);
-            case 2: return getString(R.string.music_repeat_all);
-            default: return getString(R.string.music_repeat_off);
-        }
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -497,8 +518,64 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         // 同步“词”按钮与音乐来源图标状态
         updateLyricsToggleButton(lyricsContainer != null && lyricsContainer.getVisibility() == View.VISIBLE);
         updateMusicSourceIcon();
+        // 应用设置：UI 微调（外观/字号/翻译/唱臂/按钮显隐）
+        applyMusicUiSettings();
+        // 应用设置：默认显示桌面歌词、歌词偏移、自动打开应用等
+        applyMusicSettingsOnResume();
         // 注册回调并初始化（幂等）
         controller.initialize(this, this);
+    }
+
+    /** 进入音乐伴侣时按设置应用各项偏好 */
+    private void applyMusicSettingsOnResume() {
+        SharedPreferences sp = getSharedPreferences("music_settings", MODE_PRIVATE);
+        // 默认显示歌词：控制音乐伴侣自身的歌词区，而非拉起歌词伴侣的悬浮窗
+        boolean showLyrics = sp.getBoolean("music_default_show_lyrics", true);
+        if (lyricsContainer != null) {
+            lyricsContainer.setVisibility(showLyrics ? View.VISIBLE : View.GONE);
+            updateLyricsToggleButton(showLyrics);
+        }
+        // 歌词时间校正：把设置页保存的偏移写入控制器，立即影响歌词显示
+        controller.setLyricOffsetMs(sp.getInt("music_lyric_offset_ms", 0));
+        // 自动打开音乐应用：未连接时拉起上次使用的音乐 App
+        if (sp.getBoolean("music_auto_open_app", false)
+                && controller.isNotificationListenerEnabled(this)
+                && !controller.isConnected()) {
+            String last = sp.getString("music_last_package", "");
+            if (!last.isEmpty()) {
+                android.content.Intent i = getPackageManager().getLaunchIntentForPackage(last);
+                if (i != null) {
+                    i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(i);
+                }
+            }
+        }
+    }
+
+    /** 应用音乐伴侣的 UI 微调设置（外观/字号/翻译/唱臂/按钮显隐），由 onResume 调用 */
+    private void applyMusicUiSettings() {
+        SharedPreferences sp = getSharedPreferences("music_settings", MODE_PRIVATE);
+        uiDynamicTheme = sp.getBoolean("music_dynamic_theme", true);
+        uiVinylRotate = sp.getBoolean("music_vinyl_rotate", true);
+        uiShowTranslation = sp.getBoolean("music_show_translation", true);
+        uiShowArm = sp.getBoolean("music_show_arm", true);
+        uiShowPrev = sp.getBoolean("music_show_prev", true);
+        uiShowNext = sp.getBoolean("music_show_next", true);
+
+        // 歌词字号（基于原始 sp 尺寸按比例缩放）
+        float scale = sp.getInt("music_lyric_font_scale", 100) / 100f;
+        if (tvLyricCurrent != null) tvLyricCurrent.setTextSize(20 * scale);
+        if (tvLyricPrev != null) tvLyricPrev.setTextSize(16 * scale);
+        if (tvLyricNext != null) tvLyricNext.setTextSize(16 * scale);
+        if (tvLyricPrev2 != null) tvLyricPrev2.setTextSize(14 * scale);
+        if (tvLyricNext2 != null) tvLyricNext2.setTextSize(14 * scale);
+        if (tvLyricTranslation != null) tvLyricTranslation.setTextSize(13 * scale);
+
+        // 唱臂显隐
+        if (ivTonearm != null) ivTonearm.setVisibility(uiShowArm ? View.VISIBLE : View.GONE);
+        // 上一首 / 下一首显隐
+        if (btnPrev != null) btnPrev.setVisibility(uiShowPrev ? View.VISIBLE : View.GONE);
+        if (btnNext != null) btnNext.setVisibility(uiShowNext ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -523,6 +600,15 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     public void onConnected() {
         runOnUiThread(() -> {
             updateMusicSourceIcon();
+            // 记录最近使用的音乐 App，供"自动打开音乐应用"使用
+            String pkg = controller.getMusicPackageName();
+            if (pkg != null && !pkg.isEmpty()) {
+                getSharedPreferences("music_settings", MODE_PRIVATE)
+                        .edit().putString("music_last_package", pkg).apply();
+            }
+            // 应用设置：默认循环模式
+            SharedPreferences sp = getSharedPreferences("music_settings", MODE_PRIVATE);
+            controller.setRepeatMode(sp.getInt("music_default_repeat", 0));
         });
     }
 
@@ -580,11 +666,12 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             } else {
                 tvLyricCurrent.setText(newLyric);
             }
-            // 显示翻译（如果有，紧跟当前行）
+            // 显示翻译（如果有且设置开启，紧跟当前行）
             if (tvLyricTranslation != null) {
                 String trans = (currLine != null) ? currLine.translation : "";
                 tvLyricTranslation.setText(trans);
-                tvLyricTranslation.setVisibility(trans.isEmpty() ? View.GONE : View.VISIBLE);
+                tvLyricTranslation.setVisibility(
+                        uiShowTranslation && !trans.isEmpty() ? View.VISIBLE : View.GONE);
             }
         });
     }
@@ -612,6 +699,11 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
      * 在后台线程执行 Palette 提取，避免阻塞 UI。
      */
     private void applyDynamicTheme(Bitmap bitmap) {
+        if (!uiDynamicTheme) {
+            // 关闭动态主题色：使用默认深蓝背景 + 网易云红强调色
+            applyBackgroundColor(0xFF0F1320, 0xFFEE0A24);
+            return;
+        }
         if (bitmap == null || bitmap.isRecycled()) return;
         // 注意：必须在后台线程执行，且对 Android 8.0+ 的 HARDWARE 位图（媒体会话封面常见）
         // 做兼容处理——createScaledBitmap/getPixels 在硬件位图上会抛 IllegalArgumentException。
@@ -720,9 +812,9 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         runOnUiThread(() -> {
             btnPlay.setImageResource(
                     isPlaying ? R.drawable.ic_music_pause_hongqi : R.drawable.ic_music_play_hongqi);
-            // 播放时启动黑胶旋转 + 光晕呼吸，暂停时停止
+            // 播放时启动黑胶旋转 + 光晕呼吸，暂停时停止（受设置开关控制）
             if (vinylAnimator != null) {
-                if (isPlaying) {
+                if (isPlaying && uiVinylRotate) {
                     if (vinylAnimator.isPaused()) {
                         vinylAnimator.resume();
                     } else if (!vinylAnimator.isStarted()) {
@@ -790,20 +882,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
 
     @Override
     public void onRepeatModeChanged(int repeatMode) {
-        runOnUiThread(() -> {
-            int color;
-            switch (repeatMode) {
-                case 1: case 2:
-                    // 循环开启：网易云红高亮
-                    color = R.color.music_accent;
-                    break;
-                default:
-                    // 循环关闭：浅色
-                    color = R.color.music_lyric_other;
-                    break;
-            }
-            btnRepeat.setColorFilter(ContextCompat.getColor(this, color));
-        });
+        // 循环模式已移入设置页，这里无需更新按钮状态
     }
 
     // ============ 工具 ============
