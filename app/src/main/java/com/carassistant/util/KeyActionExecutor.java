@@ -398,13 +398,17 @@ public final class KeyActionExecutor {
                                 selected, keyCode)) {
                     return; // 定向派发成功
                 }
-                // selected == null（旁路：未命中定向条件）或定向派发失败，
-                // 一律回退 AudioManager 全局派发，让当前正在播放的播放器接收按键。
-                // 注意：按键已被无障碍服务消费，若此处直接 return 则等同于"按键无任何效果"。
+                // 已指定目标应用，但定向派发失败或被旁路：
+                // 不再回退 AudioManager 全局派发，否则会把按键误派发给其它正在播放的
+                // 音乐 App（即"只绑了 A 却也控制了 B"的 bug）。
+                // 按键已被无障碍服务消费，此处直接结束，对未绑定的应用无副作用。
+                return;
             } catch (Exception ignored) {
-                // 定向派发异常，回退到全局派发
+                // 定向派发异常：同样不回退全局，避免误控其它应用
+                return;
             }
         }
+        // 未指定目标应用（targetPackage 为空）：由系统路由到当前活跃播放器
         // 回退1：AudioManager 全局派发
         try {
             AudioManager am = (AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
