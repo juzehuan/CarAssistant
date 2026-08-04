@@ -392,6 +392,10 @@
     <string name="music_settings_show_next">显示下一首按钮</string>
     <string name="music_settings_show_next_tip">关闭后隐藏底部“下一首”</string>
     <string name="music_settings_percent">%1$d%%</string>
+    <string name="music_settings_vinyl_size">唱片大小</string>
+    <string name="music_settings_vinyl_size_small">小</string>
+    <string name="music_settings_vinyl_size_medium">中</string>
+    <string name="music_settings_vinyl_size_large">大</string>
 
     <!-- 桌面歌词悬浮窗 -->
     <string name="floating_lyrics_title">桌面歌词</string>

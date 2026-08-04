@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -371,37 +372,37 @@ public class KeyMappingActivity extends AppCompatActivity {
         android.util.Log.d("KeyMapping", "handleActionInput: actionType=" + actionType
                 + " isMedia=" + KeyMappingUtil.isMediaAction(actionType)
                 + " isNeedApp=" + KeyMappingUtil.isActionNeedApp(actionType));
-        // 收尾：拿到动作数据后，询问「仅前台应用生效」约束，再交给最终保存回调
-        ActionSaveCallback finish = (data, label, targetPkg, ignored) -> {
-            if (KeyMappingUtil.isMediaAction(actionType)) {
-                // 媒体控制已通过目标应用定向派发，无需"仅前台应用生效"约束，
-                // 否则多选应用确认后会误弹第二个"选择应用"框，且误加约束会让
-                // 音乐 App 前台时按键直接失效。
-                cb.onActionReady(data, label, targetPkg, "");
-            } else {
-                chooseConstraint(constraintPkg -> cb.onActionReady(data, label, targetPkg, constraintPkg));
-            }
-        };
-        if (KeyMappingUtil.isActionNeedApp(actionType)) {
-            pickApp((pkg, label) -> finish.onActionReady(pkg, "打开 " + label, "", ""));
-        } else if (KeyMappingUtil.isMediaAction(actionType)) {
-            // 媒体控制类动作：询问是否指定定向目标应用（支持多选）
+        // 仅以下动作允许弹出「应用选择」类弹窗，其余动作直接保存，避免误弹：
+        //   1) 媒体控制：选定向目标应用（pickAppsMulti 已自动筛选音乐类）
+        //   2) 打开应用：选要启动的目标应用（仅一次；不再追加「仅前台生效」约束弹窗，
+        //      否则会弹两次，且误选约束后导致启动应用条件永不满足，表现为「没效果」）
+        if (KeyMappingUtil.isMediaAction(actionType)) {
             chooseMediaTarget(actionType, targetPkg -> {
                 String label = KeyMappingUtil.getActionLabel(actionType);
                 if (targetPkg != null && !targetPkg.isEmpty()) {
                     label += " → " + buildTargetAppsLabel(targetPkg);
                 }
-                finish.onActionReady("", label, targetPkg != null ? targetPkg : "", "");
+                cb.onActionReady("", label, targetPkg != null ? targetPkg : "", "");
             });
-        } else if (KeyMappingUtil.isActionNeedIntent(actionType)
+            return;
+        }
+        if (KeyMappingUtil.isActionNeedApp(actionType)) {
+            pickApp((pkg, label) -> cb.onActionReady(pkg, "打开 " + label, "", ""));
+            return;
+        }
+        if (KeyMappingUtil.isActionNeedIntent(actionType)
                 || KeyMappingUtil.isActionNeedUrl(actionType)
                 || KeyMappingUtil.isActionNeedBroadcast(actionType)) {
-            inputActionData(actionType, data -> finish.onActionReady(data, buildActionLabel(actionType, data), "", ""));
-        } else if (KeyMappingUtil.isActionNeedNumber(actionType)) {
-            inputNumber(actionType, num -> finish.onActionReady(num, buildActionLabel(actionType, num), "", ""));
-        } else {
-            finish.onActionReady("", KeyMappingUtil.getActionLabel(actionType), "", "");
+            inputActionData(actionType, data -> cb.onActionReady(data, buildActionLabel(actionType, data), "", ""));
+            return;
         }
+        if (KeyMappingUtil.isActionNeedNumber(actionType)) {
+            inputNumber(actionType, num -> cb.onActionReady(num, buildActionLabel(actionType, num), "", ""));
+            return;
+        }
+        // 其余动作（音量/开关/亮度/系统操作/车机助手内跳转/系统设置/常用应用/高级动作）：
+        // 不涉及应用，直接保存，不再弹任何「选择应用」弹窗。
+        cb.onActionReady("", KeyMappingUtil.getActionLabel(actionType), "", "");
     }
 
     /**
@@ -499,12 +500,24 @@ public class KeyMappingActivity extends AppCompatActivity {
         java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             List<com.carassistant.util.AppUtil.AppInfo> result = new ArrayList<>();
+            boolean filterMusic = false;
             try {
                 PackageManager pm = appCtx.getPackageManager();
+                // 预先收集能接收 MEDIA_BUTTON 广播的应用（即音乐播放器），用于自动筛选
+                final java.util.List<ResolveInfo> ris =
+                        pm.queryBroadcastReceivers(new Intent(Intent.ACTION_MEDIA_BUTTON), 0);
+                final java.util.Set<String> musicPkgs = new java.util.HashSet<>();
+                for (ResolveInfo ri : ris) {
+                    if (ri.activityInfo != null) musicPkgs.add(ri.activityInfo.packageName);
+                }
+                filterMusic = !musicPkgs.isEmpty();
+
                 List<ApplicationInfo> ais = pm.getInstalledApplications(0);
                 for (ApplicationInfo ai : ais) {
                     try {
                         if (pm.getLaunchIntentForPackage(ai.packageName) == null) continue;
+                        // 仅保留音乐类应用（可接收媒体按键的播放器）；无候选时不过滤，避免白屏
+                        if (filterMusic && !musicPkgs.contains(ai.packageName)) continue;
                         com.carassistant.util.AppUtil.AppInfo info = new com.carassistant.util.AppUtil.AppInfo();
                         info.packageName = ai.packageName;
                         info.name = pm.getApplicationLabel(ai).toString();
@@ -522,12 +535,15 @@ public class KeyMappingActivity extends AppCompatActivity {
                 android.util.Log.e("KeyMapping", "pickAppsMulti: 加载应用列表失败", e);
             }
 
+            final boolean fMusic = filterMusic;
             final List<com.carassistant.util.AppUtil.AppInfo> all = result;
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed()) return;
                 adapter.setData(all);
                 if (all.isEmpty()) {
                     tvSubtitle.setText("未获取到应用列表，请检查权限或反馈问题");
+                } else if (fMusic) {
+                    tvSubtitle.setText("已自动筛选为音乐类应用，可多选");
                 }
                 etSearch.addTextChangedListener(new TextWatcher() {
                     @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}

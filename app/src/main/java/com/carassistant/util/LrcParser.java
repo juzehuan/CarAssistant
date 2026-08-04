@@ -243,6 +243,8 @@ public final class LrcParser {
     public int getCurrentLineIndex(long position) {
         synchronized (lock) {
             if (lrcLines.isEmpty()) return -1;
+            // 歌曲开头（在第一行歌词时间点之前）显示第一句，避免空白期误显示“暂无歌词”
+            if (lrcLines.get(0).time > position) return 0;
             int currentIndex = -1;
             for (int i = 0; i < lrcLines.size(); i++) {
                 if (lrcLines.get(i).time > position) break;
@@ -273,6 +275,12 @@ public final class LrcParser {
                     nextLine = line;
                     break;
                 }
+            }
+            // 歌曲开头（在第一行歌词时间点之前）：当前行显示第一句歌词，
+            // 避免切歌后空白期把第一句误显示成“暂无歌词”。
+            if (currentLine == null) {
+                currentLine = snapshot.get(0);
+                nextLine = snapshot.size() > 1 ? snapshot.get(1) : null;
             }
             String prev = prevLine != null ? prevLine.text : "";
             String current = currentLine != null ? currentLine.text : "";

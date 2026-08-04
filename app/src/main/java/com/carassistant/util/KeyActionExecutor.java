@@ -23,11 +23,15 @@ import android.content.Intent;
 import android.hardware.camera2.CameraManager;
 import android.media.AudioManager;
 import android.net.Uri;
+
+import java.util.ArrayList;
+import java.util.List;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.util.Log;
 import android.provider.AlarmClock;
 import android.provider.MediaStore;
 import android.provider.Settings;
@@ -351,11 +355,107 @@ public final class KeyActionExecutor {
         }
     }
 
+    /**
+     * 调整音乐音量（自诊断版）。
+     *
+     * 策略：优先通过当前媒体会话（MediaController.adjustVolume）调整，等同用户与播放器交互，
+     * 不受 Android 12+ 对后台第三方应用 adjustStreamVolume(STREAM_MUSIC) 的静默限制；
+     * 若媒体会话方式未真正改变 STREAM_MUSIC 音量，再回退 AudioManager。
+     * 每一步都写入 /sdcard/carassist_vol.log，便于事后排查"为什么没效果"。
+     */
     private static void adjustVolume(Context ctx, int direction) {
+        AudioManager am = (AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
+        int before = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        boolean changed = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            List<android.media.session.MediaController> sessions = listVolumeSessions(ctx);
+            android.media.session.MediaController target = null;
+            for (android.media.session.MediaController mc : sessions) {
+                if (isSessionPlaying(mc)) { target = mc; break; }
+            }
+            if (target == null && !sessions.isEmpty()) target = sessions.get(0);
+            logVol("adjustVolume dir=" + direction + " sessions=" + describeSessions(sessions)
+                    + " target=" + (target == null ? "none" : target.getPackageName()));
+            if (target != null) {
+                try {
+                    // 会话自身的 adjustVolume 既覆盖本地音量会话（会改变系统 STREAM_MUSIC），
+                    // 也覆盖远程音量会话（如 QQ音乐，改变的是会话自身音量，即用户实际听到的音量）。
+                    // 两种情况都应视为已生效，不要再回退到被 Android 12+ 后台限制的 AudioManager。
+                    target.adjustVolume(direction, 0);
+                    SystemClock.sleep(80);
+                    changed = true;
+                    logVol("session adjust done, currentVolume=" + currentSessionVolume(target)
+                            + " streamVol=" + am.getStreamVolume(AudioManager.STREAM_MUSIC));
+                } catch (Exception e) {
+                    logVol("session adjust failed: " + e);
+                }
+            }
+        }
+        if (!changed) {
+            try {
+                am.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction,
+                        AudioManager.FLAG_SHOW_UI | AudioManager.FLAG_ALLOW_RINGER_MODES);
+                logVol("AudioManager fallback before=" + before
+                        + " after=" + am.getStreamVolume(AudioManager.STREAM_MUSIC));
+            } catch (Exception e) {
+                logVol("AudioManager fallback failed: " + e);
+            }
+        } else {
+            logVol("session adjusted OK, before=" + before
+                    + " after=" + am.getStreamVolume(AudioManager.STREAM_MUSIC));
+        }
+    }
+
+    /** 实时枚举本应用通过通知访问权限可见的媒体会话（不依赖服务内部缓存） */
+    private static List<android.media.session.MediaController> listVolumeSessions(Context ctx) {
         try {
-            AudioManager am = (AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
-            am.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, AudioManager.FLAG_SHOW_UI);
-        } catch (Exception ignored) {}
+            android.media.session.MediaSessionManager msm = (android.media.session.MediaSessionManager)
+                    ctx.getSystemService(Context.MEDIA_SESSION_SERVICE);
+            android.content.ComponentName cn = new android.content.ComponentName(ctx,
+                    com.carassistant.service.TargetMediaSessionService.class);
+            return msm.getActiveSessions(cn);
+        } catch (Exception e) {
+            logVol("listVolumeSessions failed: " + e);
+            return new ArrayList<>();
+        }
+    }
+
+    /** 判定会话是否可视为"播放中"（含暂停，遵循 App 既有语义） */
+    private static boolean isSessionPlaying(android.media.session.MediaController mc) {
+        android.media.session.PlaybackState st = mc.getPlaybackState();
+        if (st == null) return false;
+        int s = st.getState();
+        return s == android.media.session.PlaybackState.STATE_PLAYING
+                || s == android.media.session.PlaybackState.STATE_BUFFERING
+                || s == android.media.session.PlaybackState.STATE_PAUSED
+                || s == android.media.session.PlaybackState.STATE_FAST_FORWARDING
+                || s == android.media.session.PlaybackState.STATE_REWINDING
+                || s == 9 || s == 10 || s == 11;
+    }
+
+    private static String describeSessions(List<android.media.session.MediaController> list) {
+        StringBuilder sb = new StringBuilder();
+        for (android.media.session.MediaController mc : list) {
+            android.media.session.PlaybackState ps = mc.getPlaybackState();
+            sb.append(mc.getPackageName()).append('(')
+              .append(ps == null ? "null" : ps.getState()).append("),");
+        }
+        return sb.toString();
+    }
+
+    /** 读取会话当前音量（用于诊断日志，验证 adjustVolume/setVolumeTo 是否真正改变了会话音量） */
+    private static int currentSessionVolume(android.media.session.MediaController mc) {
+        try {
+            android.media.session.MediaController.PlaybackInfo pi = mc.getPlaybackInfo();
+            return pi == null ? -1 : pi.getCurrentVolume();
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    /** 音量调试日志（仅输出到 logcat，便于必要时通过 adb logcat 排查） */
+    private static void logVol(String msg) {
+        Log.d("KeyAction", msg);
     }
 
     /**
@@ -398,13 +498,16 @@ public final class KeyActionExecutor {
                                 selected, keyCode)) {
                     return; // 定向派发成功
                 }
-                // 已指定目标应用，但定向派发失败或被旁路：
-                // 不再回退 AudioManager 全局派发，否则会把按键误派发给其它正在播放的
-                // 音乐 App（即"只绑了 A 却也控制了 B"的 bug）。
-                // 按键已被无障碍服务消费，此处直接结束，对未绑定的应用无副作用。
-                return;
             } catch (Exception ignored) {
-                // 定向派发异常：同样不回退全局，避免误控其它应用
+                // 定向派发异常，继续走下方回退判断
+            }
+            // 到这里说明定向派发失败/被旁路：
+            // - 若有其他【未绑定】应用正在播放，则不回退 AudioManager 全局派发，
+            //   避免把按键误派发给其它音乐 App（即"只绑了 A 却也控了 B"的 bug）；
+            // - 否则回退全局派发，保证对目标应用（或系统当前播放器）的按键有效。
+            //   （无通知权限导致 sActiveSessions 为空时 isOtherAppPlaying 恒为 false，
+            //    从而回退全局，恢复"媒体控制有效"的可用性。）
+            if (com.carassistant.service.TargetMediaSessionService.isOtherAppPlaying(targets)) {
                 return;
             }
         }
@@ -676,10 +779,45 @@ public final class KeyActionExecutor {
             percent = Math.max(0, Math.min(100, percent));
             AudioManager am = (AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
             int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-            int target = max * percent / 100;
-            am.setStreamVolume(AudioManager.STREAM_MUSIC, target, AudioManager.FLAG_SHOW_UI);
+            int before = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+            boolean changed = false;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                List<android.media.session.MediaController> sessions = listVolumeSessions(ctx);
+                android.media.session.MediaController ctrl = null;
+                for (android.media.session.MediaController mc : sessions) {
+                    if (isSessionPlaying(mc)) { ctrl = mc; break; }
+                }
+                if (ctrl == null && !sessions.isEmpty()) ctrl = sessions.get(0);
+                logVol("setVolumePercent " + percent + "% sessions=" + describeSessions(sessions)
+                        + " target=" + (ctrl == null ? "none" : ctrl.getPackageName()));
+                if (ctrl != null) {
+                    try {
+                        android.media.session.MediaController.PlaybackInfo info = ctrl.getPlaybackInfo();
+                        if (info != null && info.getMaxVolume() > 0) {
+                            int vol = Math.max(0, Math.min(info.getMaxVolume(),
+                                    Math.round(info.getMaxVolume() * percent / 100f)));
+                            ctrl.setVolumeTo(vol, 0);
+                            SystemClock.sleep(80);
+                            changed = true;
+                            logVol("setVolume session done, currentVolume=" + currentSessionVolume(ctrl)
+                                    + " streamVol=" + am.getStreamVolume(AudioManager.STREAM_MUSIC));
+                        }
+                    } catch (Exception e) {
+                        logVol("setVolume session failed: " + e);
+                    }
+                }
+            }
+            if (!changed) {
+                int volTarget = max * percent / 100;
+                am.setStreamVolume(AudioManager.STREAM_MUSIC, volTarget, AudioManager.FLAG_SHOW_UI);
+                logVol("setVolume AudioManager fallback target=" + volTarget);
+            } else {
+                logVol("setVolume session OK, before=" + before
+                        + " after=" + am.getStreamVolume(AudioManager.STREAM_MUSIC));
+            }
             toast(ctx, "音量已设为 " + percent + "%");
         } catch (Exception e) {
+            Log.e("KeyAction", "setVolumePercent failed", e);
             toast(ctx, "音量设置失败");
         }
     }

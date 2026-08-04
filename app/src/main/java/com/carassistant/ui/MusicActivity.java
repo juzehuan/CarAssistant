@@ -581,6 +581,48 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         // 上一首 / 下一首显隐
         if (btnPrev != null) btnPrev.setVisibility(uiShowPrev ? View.VISIBLE : View.GONE);
         if (btnNext != null) btnNext.setVisibility(uiShowNext ? View.VISIBLE : View.GONE);
+
+        // 唱片大小（整体缩放：黑胶盘 + 封面 + 唱臂，保持相对比例协调）
+        float vinylScale;
+        try {
+            vinylScale = Float.parseFloat(sp.getString("music_vinyl_scale", "1.0"));
+        } catch (NumberFormatException e) {
+            vinylScale = 1.0f;
+        }
+        if (vinylScale < 0.5f) vinylScale = 0.5f;
+        if (vinylScale > 2.0f) vinylScale = 2.0f;
+
+        if (ivVinyl != null) {
+            int base = getResources().getDimensionPixelSize(R.dimen.music_vinyl_size);
+            int size = Math.round(base * vinylScale);
+            android.widget.FrameLayout.LayoutParams lp =
+                    (android.widget.FrameLayout.LayoutParams) ivVinyl.getLayoutParams();
+            lp.width = size;
+            lp.height = size;
+            ivVinyl.setLayoutParams(lp);
+        }
+        if (ivAlbum != null) {
+            int base = getResources().getDimensionPixelSize(R.dimen.music_album_size);
+            int size = Math.round(base * vinylScale);
+            android.widget.FrameLayout.LayoutParams lp =
+                    (android.widget.FrameLayout.LayoutParams) ivAlbum.getLayoutParams();
+            lp.width = size;
+            lp.height = size;
+            ivAlbum.setLayoutParams(lp);
+        }
+        if (ivTonearm != null) {
+            int baseW = getResources().getDimensionPixelSize(R.dimen.music_tonearm_size);
+            int baseH = getResources().getDimensionPixelSize(R.dimen.music_tonearm_height);
+            int baseMt = getResources().getDimensionPixelSize(R.dimen.music_tonearm_margin_top);
+            int baseMe = getResources().getDimensionPixelSize(R.dimen.music_tonearm_margin_end);
+            android.widget.FrameLayout.LayoutParams lp =
+                    (android.widget.FrameLayout.LayoutParams) ivTonearm.getLayoutParams();
+            lp.width = Math.round(baseW * vinylScale);
+            lp.height = Math.round(baseH * vinylScale);
+            lp.topMargin = Math.round(baseMt * vinylScale);
+            lp.rightMargin = Math.round(baseMe * vinylScale);
+            ivTonearm.setLayoutParams(lp);
+        }
     }
 
     @Override

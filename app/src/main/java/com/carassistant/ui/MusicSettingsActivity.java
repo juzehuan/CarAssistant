@@ -47,6 +47,7 @@ public final class MusicSettingsActivity extends AppCompatActivity {
     private static final String PREF_SHOW_PREV = "music_show_prev";
     private static final String PREF_SHOW_NEXT = "music_show_next";
     private static final String PREF_AUTO_OPEN_APP = "music_auto_open_app";
+    private static final String PREF_VINYL_SCALE = "music_vinyl_scale";   // 唱片大小缩放：0.8/1.0/1.2
 
 
     private static final int COLOR_PAGE_BG = 0xFF0F1320;
@@ -102,6 +103,11 @@ public final class MusicSettingsActivity extends AppCompatActivity {
                 PREF_VINYL_ROTATE, true);
         addToggle(cardAppearance, R.string.music_settings_show_arm,
                 PREF_SHOW_ARM, true);
+        addChoice(cardAppearance, R.string.music_settings_vinyl_size, PREF_VINYL_SCALE, "1.0",
+                new int[]{R.string.music_settings_vinyl_size_small,
+                        R.string.music_settings_vinyl_size_medium,
+                        R.string.music_settings_vinyl_size_large},
+                new String[]{"0.8", "1.0", "1.2"});
         addCard(root, cardAppearance);
 
         // ===== 卡片：播放控制 =====

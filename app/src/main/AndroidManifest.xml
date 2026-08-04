@@ -46,6 +46,8 @@
     <!-- 修改系统设置（亮度调节、旋转锁定） -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
+    <!-- 修改音频设置（音量调节，Android 12+ 必需，否则 adjustStreamVolume/setStreamVolume 静默失败） -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- 相机（侧边栏手电筒开关，Android 6+ 通过 Camera2 setTorchMode） -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- 精确闹钟（Android 12+ 开机自启调度需要） -->

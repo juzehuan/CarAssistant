@@ -377,6 +377,32 @@ public class TargetMediaSessionService extends NotificationListenerService {
         return anyBound;
     }
 
+    /**
+     * 判断除指定目标之外，是否还有其它应用正在播放。
+     *
+     * 用于按键定向派发失败时决定是否回退全局派发：
+     * - 若存在其它【未绑定】应用正在播放，则不回退（避免误控其它音乐 App，
+     *   即「只绑了 A 却也控了 B」的 bug）；
+     * - 否则回退全局，保证对目标应用（或系统当前播放器）的按键有效。
+     *
+     * 注：当通知访问权限未授予时 sActiveSessions 为空，本方法恒返回 false，
+     * 从而自然回退全局派发，恢复「媒体控制有效」的可用性。
+     *
+     * @param targets 用户绑定的目标包名列表
+     * @return true 表示有其它未绑定应用正在播放
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    public static boolean isOtherAppPlaying(java.util.List<String> targets) {
+        if (targets == null || targets.isEmpty()) return false;
+        for (MediaController mc : sActiveSessions) {
+            String pkg = mc.getPackageName();
+            if (!targets.contains(pkg) && isActivelyPlaying(mc)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** 判断 MediaController 是否处于「正在播放」状态 */
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private static boolean isActivelyPlaying(MediaController mc) {
@@ -449,5 +475,65 @@ public class TargetMediaSessionService extends NotificationListenerService {
             }
         }
         return null;
+    }
+
+    /**
+     * 选择用于调整音量的目标会话：优先正在播放的会话，否则取第一个活跃会话。
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private static MediaController pickVolumeTarget() {
+        MediaController fallback = null;
+        for (MediaController mc : sActiveSessions) {
+            if (isActivelyPlaying(mc)) return mc;
+            if (fallback == null) fallback = mc;
+        }
+        return fallback;
+    }
+
+    /**
+     * 通过当前媒体会话调整音量（等同用户与播放器交互，不受后台应用音频限制）。
+     *
+     * <p>用于「音量+ / 音量- / 静音」动作。Android 12+ 会静默忽略后台第三方应用通过
+     * {@code AudioManager.adjustStreamVolume(STREAM_MUSIC)} 发起的音量调整（物理音量键因为是
+     * 输入事件才可例外），而通过活动媒体会话的 {@link MediaController#adjustVolume} 调整则不受此限，
+     * 这也是车机「音量键」最贴合的语义（调节当前正在播放的应用音量）。
+     *
+     * @param direction 见 {@link android.media.AudioManager} 的 ADJUST_* 常量
+     *                  （RAISE / LOWER / TOGGLE_MUTE / MUTE / UNMUTE）
+     * @return true 表示已通过媒体会话发起调整
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    public static boolean adjustCurrentVolume(int direction) {
+        MediaController target = pickVolumeTarget();
+        if (target == null) return false;
+        try {
+            target.adjustVolume(direction, 0);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * 通过当前媒体会话将音量设置为指定百分比。
+     *
+     * @param percent 0-100
+     * @return true 表示已通过媒体会话设置
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    public static boolean setSessionVolume(int percent) {
+        MediaController target = pickVolumeTarget();
+        if (target == null) return false;
+        try {
+            android.media.session.MediaController.PlaybackInfo info = target.getPlaybackInfo();
+            if (info == null) return false;
+            int max = info.getMaxVolume();
+            if (max <= 0) return false;
+            int vol = Math.max(0, Math.min(max, Math.round(max * percent / 100f)));
+            target.setVolumeTo(vol, 0);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
