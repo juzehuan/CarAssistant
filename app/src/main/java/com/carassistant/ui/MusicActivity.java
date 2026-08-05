@@ -264,13 +264,16 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     /** 唱臂抬起角度（暂停/未播放时绕枢轴逆时针抬起，离开唱片） */
     private static final float TONEARM_LIFT_ANGLE = -25f;
 
+    /** 播放时唱臂落下角度：针停在黑胶外圈，不压中心封面 */
+    private static final float TONEARM_PLAY_ANGLE = -16f;
+
     /** 网易云风格唱臂动画：播放时落下压片、暂停时抬起 */
     private void animateTonearm(boolean playing) {
         if (ivTonearm == null || ivTonearm.getWidth() == 0) return;
         // 确保枢轴正确（布局尺寸已确定）
         ivTonearm.setPivotX(ivTonearm.getWidth() * 0.85f);
         ivTonearm.setPivotY(ivTonearm.getHeight() * 0.184f);
-        float target = playing ? 0f : TONEARM_LIFT_ANGLE;
+        float target = playing ? TONEARM_PLAY_ANGLE : TONEARM_LIFT_ANGLE;
         ivTonearm.animate()
                 .rotation(target)
                 .setDuration(450)

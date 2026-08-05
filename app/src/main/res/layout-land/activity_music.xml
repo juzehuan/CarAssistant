@@ -472,8 +472,8 @@
 
         <FrameLayout
             android:id="@+id/btn_play_container"
-            android:layout_width="72dp"
-            android:layout_height="72dp">
+            android:layout_width="48dp"
+            android:layout_height="48dp">
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -484,7 +484,7 @@
                 android:layout_height="match_parent"
                 android:src="@drawable/ic_music_play_hongqi"
                 android:scaleType="center"
-                android:padding="20dp"
+                android:padding="14dp"
                 android:contentDescription="@string/music_play"
                 tools:ignore="UseAppTint"/>
         </FrameLayout>
