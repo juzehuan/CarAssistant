@@ -397,6 +397,11 @@
     <string name="music_settings_vinyl_size_medium">中</string>
     <string name="music_settings_vinyl_size_large">大</string>
     <string name="music_settings_visualizer">音乐律动</string>
+    <string name="music_settings_icon_size">图标大小</string>
+    <string name="music_settings_seekbar_thickness">进度条粗细</string>
+    <string name="music_settings_seekbar_color">进度条颜色</string>
+    <string name="music_settings_control_margin">控制栏边距</string>
+    <string name="music_settings_header_lift">顶部按钮上移</string>
 
     <!-- 桌面歌词悬浮窗 -->
     <string name="floating_lyrics_title">桌面歌词</string>

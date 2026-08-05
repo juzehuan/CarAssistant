@@ -163,6 +163,12 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         tvCurrent = findViewById(R.id.tv_current);
         tvDuration = findViewById(R.id.tv_duration);
         sbProgress = findViewById(R.id.sb_progress);
+        btnPlayContainer = findViewById(R.id.btn_play_container);
+        bottomControlBar = findViewById(R.id.bottom_control_bar);
+        if (bottomControlBar != null) {
+            controlBarBaseTopPad = bottomControlBar.getPaddingTop();
+            controlBarBaseBottomPad = bottomControlBar.getPaddingBottom();
+        }
         btnPlay = findViewById(R.id.btn_play);
         btnPrev = findViewById(R.id.btn_prev);
         btnNext = findViewById(R.id.btn_next);
@@ -639,6 +645,86 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             lp.rightMargin = Math.round(baseMe * vinylScale);
             ivTonearm.setLayoutParams(lp);
         }
+
+        // 图标大小统一调整（视觉缩放，保持布局间距不变）
+        float iconScale = sp.getInt("music_icon_scale", 100) / 100f;
+        applyIconScale(iconScale);
+
+        // 进度条粗细 + 颜色
+        int seekThickness = sp.getInt("music_seekbar_thickness", 6);
+        int seekColor = sp.getInt("music_seekbar_color", 0xFFE60026);
+        applySeekBarStyle(dp2px(seekThickness), seekColor);
+
+        // 控制栏左右边距
+        int ctrlMargin = sp.getInt("music_ctrl_margin", 24);
+        if (bottomControlBar != null) {
+            bottomControlBar.setPadding(dp2px(ctrlMargin), controlBarBaseTopPad, dp2px(ctrlMargin), controlBarBaseBottomPad);
+        }
+
+        // 顶部按钮（返回 / 设置）上移
+        int headerLift = sp.getInt("music_header_lift", 0);
+        applyHeaderLift(dp2px(headerLift));
+    }
+
+    private View bottomControlBar;
+    private View btnPlayContainer;
+    private int controlBarBaseTopPad = 0;
+    private int controlBarBaseBottomPad = 0;
+
+    private void applyIconScale(float scale) {
+        for (View v : new View[]{btnBack, btnSettings, btnLyricsToggle, btnPrev, btnNext, btnPlaylist, btnPlayContainer}) {
+            if (v != null) {
+                v.setScaleX(scale);
+                v.setScaleY(scale);
+            }
+        }
+    }
+
+    private void applyHeaderLift(int liftPx) {
+        for (View v : new View[]{btnBack, btnSettings}) {
+            if (v != null) {
+                android.view.ViewGroup.LayoutParams lp = v.getLayoutParams();
+                if (lp instanceof android.widget.FrameLayout.LayoutParams) {
+                    ((android.widget.FrameLayout.LayoutParams) lp).topMargin = -liftPx;
+                    v.setLayoutParams(lp);
+                }
+            }
+        }
+    }
+
+    private void applySeekBarStyle(int thicknessPx, int color) {
+        if (sbProgress == null) return;
+        int r = Math.max(1, thicknessPx / 2);
+        android.graphics.drawable.GradientDrawable track = new android.graphics.drawable.GradientDrawable();
+        track.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        track.setCornerRadius(r);
+        track.setColor(0x40FFFFFF);
+        android.graphics.drawable.GradientDrawable prog = new android.graphics.drawable.GradientDrawable();
+        prog.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        prog.setCornerRadius(r);
+        prog.setColor(color);
+        android.graphics.drawable.ClipDrawable progressClip = new android.graphics.drawable.ClipDrawable(prog, android.view.Gravity.LEFT, android.graphics.drawable.ClipDrawable.HORIZONTAL);
+        android.graphics.drawable.LayerDrawable ld = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{track, progressClip});
+        ld.setId(0, android.R.id.background);
+        ld.setId(1, android.R.id.progress);
+        int thumbSize = Math.max(thicknessPx + dp2px(6), dp2px(12));
+        int minH = Math.max(thicknessPx, thumbSize);
+        sbProgress.setMinimumHeight(minH);
+        int inset = (minH - thicknessPx) / 2;
+        ld.setLayerInset(0, 0, Math.max(0, inset), 0, Math.max(0, inset));
+        ld.setLayerInset(1, 0, Math.max(0, inset), 0, Math.max(0, inset));
+        sbProgress.setProgressDrawable(ld);
+        android.graphics.drawable.GradientDrawable thumb = new android.graphics.drawable.GradientDrawable();
+        thumb.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        thumb.setSize(thumbSize, thumbSize);
+        thumb.setColor(color);
+        thumb.setStroke(dp2px(2), 0xFFFFFFFF);
+        sbProgress.setThumb(thumb);
+        sbProgress.setThumbOffset(thumbSize / 2);
+    }
+
+    private int dp2px(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density + 0.5f);
     }
 
     @Override

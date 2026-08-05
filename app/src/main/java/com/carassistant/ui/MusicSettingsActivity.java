@@ -109,6 +109,13 @@ public final class MusicSettingsActivity extends AppCompatActivity {
                         R.string.music_settings_vinyl_size_medium,
                         R.string.music_settings_vinyl_size_large},
                 new String[]{"0.8", "1.0", "1.2"});
+        addSeek(cardAppearance, R.string.music_settings_icon_size, 70, 150,
+                sp().getInt("music_icon_scale", 100), " %",
+                i -> sp().edit().putInt("music_icon_scale", i).apply());
+        addSeek(cardAppearance, R.string.music_settings_seekbar_thickness, 2, 16,
+                sp().getInt("music_seekbar_thickness", 6), " dp",
+                i -> sp().edit().putInt("music_seekbar_thickness", i).apply());
+        addColorRow(cardAppearance, R.string.music_settings_seekbar_color, "music_seekbar_color", 0xFFE60026);
         addCard(root, cardAppearance);
 
         // ===== 卡片：播放控制 =====
@@ -121,6 +128,12 @@ public final class MusicSettingsActivity extends AppCompatActivity {
         addToggle(cardCtrl, R.string.music_settings_show_prev, PREF_SHOW_PREV, true);
         addToggle(cardCtrl, R.string.music_settings_show_next, PREF_SHOW_NEXT, true);
         addToggle(cardCtrl, R.string.music_settings_auto_open_app, PREF_AUTO_OPEN_APP, false);
+        addSeek(cardCtrl, R.string.music_settings_control_margin, 0, 64,
+                sp().getInt("music_ctrl_margin", 24), " dp",
+                i -> sp().edit().putInt("music_ctrl_margin", i).apply());
+        addSeek(cardCtrl, R.string.music_settings_header_lift, 0, 40,
+                sp().getInt("music_header_lift", 0), " dp",
+                i -> sp().edit().putInt("music_header_lift", i).apply());
         addCard(root, cardCtrl);
 
         setContentView(scrollView);
@@ -357,6 +370,52 @@ public final class MusicSettingsActivity extends AppCompatActivity {
         bg.setFillColor(ColorStateList.valueOf(selected ? COLOR_ACCENT : 0xFF252B3D));
         bg.setCornerSize((float) dp(8));
         btn.setBackground(bg);
+    }
+
+    private void addColorRow(LinearLayout parent, int labelRes, final String key, int defaultColor) {
+        TextView label = labelText(labelRes, false);
+        label.setPadding(0, dp(12), 0, dp(4));
+        label.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        label.setTextColor(COLOR_TEXT_PRIMARY);
+        label.setTextSize(14f);
+        parent.addView(label);
+
+        final int[] colors = new int[]{0xFFFFFFFF, 0xFFEE0A24, 0xFFFF6B00, 0xFFFFD000,
+                0xFF00E5A0, 0xFF00C2FF, 0xFF4D8BFF, 0xFFB14DFF, 0xFFFF4D8B};
+        int current = sp().getInt(key, defaultColor);
+
+        final List<View> swatches = new ArrayList<>();
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(0, 0, 0, dp(6));
+        for (final int col : colors) {
+            View sw = new View(this);
+            int size = dp(32);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(size, size);
+            lp.leftMargin = dp(5);
+            lp.rightMargin = dp(5);
+            sw.setLayoutParams(lp);
+            MaterialShapeDrawable bg = new MaterialShapeDrawable();
+            bg.setFillColor(ColorStateList.valueOf(col));
+            bg.setCornerSize((float) dp(16));
+            bg.setStroke(dp(3), ColorStateList.valueOf(col == current ? Color.WHITE : Color.TRANSPARENT));
+            sw.setBackground(bg);
+            sw.setTag(col);
+            sw.setOnClickListener(v -> {
+                sp().edit().putInt(key, col).apply();
+                for (View s : swatches) {
+                    MaterialShapeDrawable d = (MaterialShapeDrawable) s.getBackground();
+                    boolean sel = (int) s.getTag() == col;
+                    d.setStroke(dp(3), ColorStateList.valueOf(sel ? Color.WHITE : Color.TRANSPARENT));
+                    s.invalidate();
+                }
+                changed();
+            });
+            swatches.add(sw);
+            row.addView(sw);
+        }
+        parent.addView(row);
     }
 
     // ============ 小工具 ============
