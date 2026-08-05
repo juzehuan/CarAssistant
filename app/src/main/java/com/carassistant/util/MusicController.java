@@ -836,7 +836,7 @@ public final class MusicController {
         Log.d(TAG, "initLocalPlayer: no active music session");
         isConnected = false;
         currentTitle = "暂无音乐播放";
-        currentArtist = "请打开音乐应用";
+        currentArtist = "";
         currentDuration = 0L;
         currentPosition = 0L;
         currentIsPlaying = false;

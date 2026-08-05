@@ -18,7 +18,8 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingTop="12dp"
-        android:paddingBottom="8dp">
+        android:paddingBottom="8dp"
+        android:clipToPadding="false">
 
         <ImageView
             android:id="@+id/btn_back"
@@ -47,6 +48,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginTop="18dp"
+            android:paddingBottom="10dp"
             android:orientation="vertical"
             android:gravity="center">
 
@@ -223,6 +226,7 @@
                 android:id="@+id/card_album"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
                 android:foreground="?attr/selectableItemBackground">
 
                 <View
@@ -361,106 +365,6 @@
         android:layout_height="1dp"
         android:visibility="gone"/>
 
-    <!-- 底部操作按钮：统一一行（循环 / 歌词 / 上一首 / 播放 / 下一首 / 打开音乐App） -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="64dp"
-        android:paddingEnd="64dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="18dp">
-
-        <ImageView
-            android:id="@+id/btn_lyrics_toggle"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_music_lyrics_hongqi"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerInside"
-            android:contentDescription="@string/floating_lyrics_toggle"
-            android:tint="@color/music_text_primary"
-            tools:ignore="UseAppTint"/>
-
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1"/>
-
-        <ImageView
-            android:id="@+id/btn_prev"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_music_prev_hongqi"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="center"
-            android:contentDescription="@string/music_prev"
-            android:tint="@color/music_text_primary"
-            tools:ignore="UseAppTint"/>
-
-        <FrameLayout
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:layout_marginStart="28dp"
-            android:layout_marginEnd="28dp">
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/bg_music_play_ring"/>
-            <ImageView
-                android:id="@+id/btn_play"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_music_play_hongqi"
-                android:scaleType="center"
-                android:padding="20dp"
-                android:contentDescription="@string/music_play"
-                tools:ignore="UseAppTint"/>
-        </FrameLayout>
-
-        <ImageView
-            android:id="@+id/btn_next"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_music_next_hongqi"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="center"
-            android:contentDescription="@string/music_next"
-            android:tint="@color/music_text_primary"
-            tools:ignore="UseAppTint"/>
-
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1"/>
-
-        <ImageView
-            android:id="@+id/btn_playlist"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_music_list"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerInside"
-            tools:ignore="ContentDescription"/>
-    </LinearLayout>
-
-    <View
-        android:id="@+id/play_btn_glow"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
-        android:visibility="gone"/>
-    <View
-        android:id="@+id/ambient_glow_1"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
-        android:visibility="gone"/>
-    <View
-        android:id="@+id/ambient_glow_2"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
-        android:visibility="gone"/>
-
     <!-- 音乐律动频谱条 -->
     <com.carassistant.ui.MusicVisualizerView
         android:id="@+id/music_visualizer"
@@ -471,7 +375,7 @@
         android:layout_marginTop="6dp"
         android:layout_marginBottom="2dp"/>
 
-    <!-- 进度条区 -->
+    <!-- 进度条区（置于控制栏上方） -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -521,6 +425,116 @@
                 android:fontFamily="monospace"/>
         </LinearLayout>
     </LinearLayout>
+
+    <!-- 底部操作按钮：五个按钮等距分布 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="64dp"
+        android:paddingEnd="64dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="18dp">
+
+        <ImageView
+            android:id="@+id/btn_lyrics_toggle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_music_lyrics_hongqi"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:contentDescription="@string/floating_lyrics_toggle"
+            android:tint="@color/music_text_primary"
+            tools:ignore="UseAppTint"/>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+
+        <ImageView
+            android:id="@+id/btn_prev"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_music_prev_hongqi"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="center"
+            android:contentDescription="@string/music_prev"
+            android:tint="@color/music_text_primary"
+            tools:ignore="UseAppTint"/>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+
+        <FrameLayout
+            android:layout_width="72dp"
+            android:layout_height="72dp">
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_music_play_ring"/>
+            <ImageView
+                android:id="@+id/btn_play"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_music_play_hongqi"
+                android:scaleType="center"
+                android:padding="20dp"
+                android:contentDescription="@string/music_play"
+                tools:ignore="UseAppTint"/>
+        </FrameLayout>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+
+        <ImageView
+            android:id="@+id/btn_next"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_music_next_hongqi"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="center"
+            android:contentDescription="@string/music_next"
+            android:tint="@color/music_text_primary"
+            tools:ignore="UseAppTint"/>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+
+        <ImageView
+            android:id="@+id/btn_playlist"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_music_list"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            tools:ignore="ContentDescription"/>
+    </LinearLayout>
+
+    <View
+        android:id="@+id/play_btn_glow"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"/>
+    <View
+        android:id="@+id/ambient_glow_1"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"/>
+    <View
+        android:id="@+id/ambient_glow_2"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"/>
+
+
 
 
 

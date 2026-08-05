@@ -89,7 +89,7 @@ public final class MusicSettingsActivity extends AppCompatActivity {
         addSeek(cardPlay, R.string.music_settings_lyric_offset, -5000, 5000,
                 sp().getInt(PREF_LYRIC_OFFSET_MS, 0), " ms",
                 i -> sp().edit().putInt(PREF_LYRIC_OFFSET_MS, i).apply());
-        addSeek(cardPlay, R.string.music_settings_lyric_font, 75, 150,
+        addSeek(cardPlay, R.string.music_settings_lyric_font, 50, 400,
                 sp().getInt(PREF_LYRIC_FONT_SCALE, 100), " %",
                 i -> sp().edit().putInt(PREF_LYRIC_FONT_SCALE, i).apply());
         addToggle(cardPlay, R.string.music_settings_show_translation,
