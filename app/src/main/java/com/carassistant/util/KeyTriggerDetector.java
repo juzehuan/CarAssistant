@@ -143,7 +143,16 @@ public class KeyTriggerDetector {
             tapCounts.remove(keyCode);
         };
         pendingDecision.put(keyCode, decide);
-        mainHandler.postDelayed(decide, KeyMappingUtil.DOUBLE_TAP_TIMEOUT);
+        // 若该键同时配置了「长按」映射，需等长按窗口结束后再判定单击/双击/三连按。
+        // 否则单击判定（DOUBLE_TAP_TIMEOUT=500ms）会早于长按（LONG_PRESS_TIMEOUT=600ms）触发，
+        // 导致长按时也先误触发一次单击（单击与长按同时配置时的经典问题）。
+        // 延迟到长按阈值之后，长按触发时会 cancelTapDecision 取消待定单击，单击不再误触发。
+        KeyMappingUtil.KeyMapping lp = KeyMappingUtil.getMapping(ctx, keyCode, KeyMappingUtil.TRIGGER_LONG_PRESS);
+        boolean hasLong = lp != null && lp.enabled;
+        long decideDelay = hasLong
+                ? (KeyMappingUtil.LONG_PRESS_TIMEOUT + 50)
+                : KeyMappingUtil.DOUBLE_TAP_TIMEOUT;
+        mainHandler.postDelayed(decide, decideDelay);
     }
 
     private void cancelTapDecision(int keyCode) {

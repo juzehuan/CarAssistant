@@ -43,6 +43,7 @@ public final class MusicSettingsActivity extends AppCompatActivity {
     private static final String PREF_DYNAMIC_THEME = "music_dynamic_theme";
     private static final String PREF_VINYL_ROTATE = "music_vinyl_rotate";
     private static final String PREF_SHOW_ARM = "music_show_arm";
+    private static final String PREF_VISUALIZER = "music_visualizer";
     private static final String PREF_DEFAULT_REPEAT = "music_default_repeat";
     private static final String PREF_SHOW_PREV = "music_show_prev";
     private static final String PREF_SHOW_NEXT = "music_show_next";

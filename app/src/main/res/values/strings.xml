@@ -396,6 +396,7 @@
     <string name="music_settings_vinyl_size_small">小</string>
     <string name="music_settings_vinyl_size_medium">中</string>
     <string name="music_settings_vinyl_size_large">大</string>
+    <string name="music_settings_visualizer">音乐律动</string>
 
     <!-- 桌面歌词悬浮窗 -->
     <string name="floating_lyrics_title">桌面歌词</string>

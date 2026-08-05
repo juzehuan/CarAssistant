@@ -107,6 +107,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private View playBtnGlow;     // 播放按钮外圈光晕
     private View ambientGlow1;    // 背景光斑 1
     private View ambientGlow2;    // 背景光斑 2
+    private MusicVisualizerView visualizer;   // 音乐律动频谱条
 
     /** 黑胶唱片旋转动画（同时旋转碟片+专辑封面，网易云风格） */
     private AnimatorSet vinylAnimator;
@@ -130,6 +131,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private boolean uiShowArm = true;          // 显示唱臂
     private boolean uiShowPrev = true;         // 显示上一首按钮
     private boolean uiShowNext = true;         // 显示下一首按钮
+    private boolean uiVisualizer = true;       // 音乐律动
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -178,6 +180,8 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         playBtnGlow = findViewById(R.id.play_btn_glow);
         ambientGlow1 = findViewById(R.id.ambient_glow_1);
         ambientGlow2 = findViewById(R.id.ambient_glow_2);
+        // 音乐律动频谱条
+        visualizer = findViewById(R.id.music_visualizer);
 
         // 专辑封面圆形裁剪（网易云经典圆形封面）
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -529,6 +533,12 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         applyMusicSettingsOnResume();
         // 注册回调并初始化（幂等）
         controller.initialize(this, this);
+        // 启动音乐律动（幂等），按当前播放状态与强调色刷新
+        if (visualizer != null) {
+            visualizer.setAccentColor(currentAccentColor);
+            visualizer.setActive(controller.isPlaying());
+            visualizer.start();
+        }
     }
 
     /** 进入音乐伴侣时按设置应用各项偏好 */
@@ -566,6 +576,12 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         uiShowArm = sp.getBoolean("music_show_arm", true);
         uiShowPrev = sp.getBoolean("music_show_prev", true);
         uiShowNext = sp.getBoolean("music_show_next", true);
+        // 音乐律动开关
+        uiVisualizer = sp.getBoolean("music_visualizer", true);
+        if (visualizer != null) {
+            visualizer.setAccentColor(currentAccentColor);
+            visualizer.setVisibility(uiVisualizer ? View.VISIBLE : View.GONE);
+        }
 
         // 歌词字号（基于原始 sp 尺寸按比例缩放）
         float scale = sp.getInt("music_lyric_font_scale", 100) / 100f;
@@ -629,6 +645,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     protected void onPause() {
         super.onPause();
         controller.removeCallback(this);
+        if (visualizer != null) visualizer.stop();
     }
 
     @Override
@@ -639,6 +656,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         if (playBtnGlowPulse != null) playBtnGlowPulse.cancel();
         if (ambientGlow1Anim != null) ambientGlow1Anim.cancel();
         if (ambientGlow2Anim != null) ambientGlow2Anim.cancel();
+        if (visualizer != null) visualizer.stop();
     }
 
     // ============ MusicController.Callback ============
@@ -881,6 +899,8 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         animator.start();
         currentBgColor = targetColor;
         currentAccentColor = accentColor;
+        // 同步律动条颜色（随动态主题）
+        if (visualizer != null) visualizer.setAccentColor(accentColor);
     }
 
     @Override
@@ -940,6 +960,8 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             }
             // 唱臂：播放时落下压片，暂停/未播放时抬起（网易云经典效果）
             animateTonearm(isPlaying);
+            // 音乐律动：播放时跳动，暂停时平滑回落
+            if (visualizer != null) visualizer.setActive(isPlaying);
         });
     }
 
