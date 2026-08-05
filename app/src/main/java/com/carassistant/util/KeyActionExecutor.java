@@ -82,19 +82,18 @@ public final class KeyActionExecutor {
                 break;
 
             // ============ 媒体控制类 ============
-            // 若映射指定了 targetPackage，优先通过 TargetMediaSessionService 定向派发到该应用；
-            // 失败或未指定则回退到 AudioManager 全局派发（由系统路由到当前播放器）
+            // 媒体控制统一控制「当前正在播放的应用」：始终由系统路由，不再定向到指定应用。
             case KeyMappingUtil.ACTION_MEDIA_PLAY_PAUSE:
-                dispatchMediaKey(ctx, android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, mapping.targetPackage);
+                dispatchMediaKey(ctx, android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, "");
                 break;
             case KeyMappingUtil.ACTION_MEDIA_NEXT:
-                dispatchMediaKey(ctx, android.view.KeyEvent.KEYCODE_MEDIA_NEXT, mapping.targetPackage);
+                dispatchMediaKey(ctx, android.view.KeyEvent.KEYCODE_MEDIA_NEXT, "");
                 break;
             case KeyMappingUtil.ACTION_MEDIA_PREVIOUS:
-                dispatchMediaKey(ctx, android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, mapping.targetPackage);
+                dispatchMediaKey(ctx, android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, "");
                 break;
             case KeyMappingUtil.ACTION_MEDIA_STOP:
-                dispatchMediaKey(ctx, android.view.KeyEvent.KEYCODE_MEDIA_STOP, mapping.targetPackage);
+                dispatchMediaKey(ctx, android.view.KeyEvent.KEYCODE_MEDIA_STOP, "");
                 break;
 
             // ============ 开关类 ============
