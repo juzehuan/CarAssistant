@@ -93,8 +93,8 @@
     <dimen name="music_tonearm_height">175dp</dimen>
     <dimen name="music_tonearm_margin_top">-22dp</dimen>
     <dimen name="music_tonearm_margin_end">-28dp</dimen>
-    <dimen name="music_title_size">20sp</dimen>
-    <dimen name="music_artist_size">13sp</dimen>
+    <dimen name="music_title_size">24sp</dimen>
+    <dimen name="music_artist_size">15sp</dimen>
     <dimen name="music_lyric_current_size">20sp</dimen>
     <dimen name="music_lyric_near_size">16sp</dimen>
     <dimen name="music_lyric_far_size">14sp</dimen>
@@ -105,6 +105,7 @@
     <dimen name="music_settings_btn_size">36dp</dimen>
     <dimen name="music_source_btn_size">40dp</dimen>
     <dimen name="music_time_text_size">11sp</dimen>
+    <dimen name="music_visualizer_height">64dp</dimen>
     <dimen name="music_content_padding">32dp</dimen>
     <dimen name="music_title_margin_top">32dp</dimen>
     <dimen name="music_btn_spacing">24dp</dimen>

@@ -1,111 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 超大屏（≥840dp，12寸以上车机大屏）适配 -->
+<!-- 超大屏适配（sw840dp+） -->
 <resources>
-    <dimen name="page_padding">28dp</dimen>
-    <dimen name="card_radius">22dp</dimen>
-    <dimen name="card_radius_lg">26dp</dimen>
-    <dimen name="card_padding">28dp</dimen>
-    <dimen name="card_padding_lg">32dp</dimen>
-    <dimen name="card_elevation">3dp</dimen>
-    <dimen name="feature_icon_size">76dp</dimen>
-    <dimen name="float_button_size">64dp</dimen>
-    <dimen name="text_title">26sp</dimen>
-    <dimen name="text_subtitle">20sp</dimen>
-    <dimen name="text_body">19sp</dimen>
-    <dimen name="text_caption">16sp</dimen>
-    <dimen name="spacing_xs">4dp</dimen>
-    <dimen name="spacing_sm">8dp</dimen>
-    <dimen name="spacing_md">12dp</dimen>
-    <dimen name="spacing_lg">16dp</dimen>
-    <dimen name="spacing_xl">20dp</dimen>
-
-    <!-- 首页响应式布局 -->
-    <dimen name="home_card_margin">28dp</dimen>
-    <dimen name="home_card_padding">36dp</dimen>
-    <dimen name="home_section_margin">32dp</dimen>
-    <dimen name="home_feature_card_min_width">200dp</dimen>
-    <dimen name="home_feature_spacing">18dp</dimen>
-    <dimen name="home_feature_icon_size">72dp</dimen>
-    <dimen name="home_feature_title_size">20sp</dimen>
-
-    <!-- 功能卡片最小宽度（用于计算列数） -->
-    <dimen name="feature_card_min_width">200dp</dimen>
-    <dimen name="feature_card_spacing">18dp</dimen>
-
-    <!-- 内容最大宽度（限制大屏上卡片不拉伸过宽） -->
-    <dimen name="content_max_width">1200dp</dimen>
-
-    <!-- 弹窗 -->
-    <dimen name="dialog_corner">28dp</dimen>
-    <dimen name="dialog_padding_h">28dp</dimen>
-    <dimen name="dialog_padding_v">26dp</dimen>
-    <dimen name="dialog_title_size">24sp</dimen>
-    <dimen name="dialog_message_size">18sp</dimen>
-    <dimen name="dialog_button_height">56dp</dimen>
-    <dimen name="dialog_button_text">18sp</dimen>
-
-    <!-- 列表项 -->
-    <dimen name="list_item_padding_h">24dp</dimen>
-    <dimen name="list_item_padding_v">18dp</dimen>
-    <dimen name="list_item_corner">18dp</dimen>
-    <dimen name="list_item_icon_size">68dp</dimen>
-    <dimen name="list_item_title_size">22sp</dimen>
-    <dimen name="list_item_subtitle_size">17sp</dimen>
-
-    <!-- 渐变头部 -->
-    <dimen name="header_padding_h">34dp</dimen>
-    <dimen name="header_padding_top">40dp</dimen>
-    <dimen name="header_padding_bottom">36dp</dimen>
-    <dimen name="header_title_size">30sp</dimen>
-
-    <!-- 顶栏返回按钮 -->
-    <dimen name="back_btn_size">48dp</dimen>
-
-    <!-- 悬浮球面板 -->
-    <dimen name="float_panel_width">540dp</dimen>
-    <dimen name="float_panel_list_height">480dp</dimen>
-    <dimen name="float_panel_title_size">20sp</dimen>
-    <dimen name="float_panel_text_size">18sp</dimen>
-    <dimen name="float_app_icon_size">80dp</dimen>
-    <dimen name="float_app_name_size">15sp</dimen>
-
-    <!-- 首页头部信息 -->
-    <dimen name="home_header_title_size">30sp</dimen>
-    <dimen name="home_header_label_size">16sp</dimen>
-    <dimen name="home_header_value_size">19sp</dimen>
-    <dimen name="home_header_row_title_size">19sp</dimen>
-    <dimen name="home_header_row_sub_size">16sp</dimen>
-    <dimen name="home_section_title_size">19sp</dimen>
-    <dimen name="home_tip_size">16sp</dimen>
-
-    <!-- 控制面板 -->
-    <dimen name="control_icon_size">60dp</dimen>
-    <dimen name="control_toggle_icon_size">48dp</dimen>
-    <dimen name="control_toggle_text_size">16sp</dimen>
-    <dimen name="control_value_size">24sp</dimen>
-
-    <!-- 底部导航 -->
-    <dimen name="bottom_nav_text_size">16sp</dimen>
-
-    <!-- 音乐伴侣界面（≥840dp 车机大屏放大） -->
-    <dimen name="music_vinyl_size">500dp</dimen>
-    <dimen name="music_album_size">340dp</dimen>
-    <dimen name="music_tonearm_size">200dp</dimen>
-    <dimen name="music_tonearm_height">250dp</dimen>
-    <dimen name="music_tonearm_margin_top">-34dp</dimen>
-    <dimen name="music_tonearm_margin_end">-40dp</dimen>
-    <dimen name="music_title_size">28sp</dimen>
-    <dimen name="music_artist_size">18sp</dimen>
-    <dimen name="music_lyric_current_size">28sp</dimen>
-    <dimen name="music_lyric_near_size">23sp</dimen>
-    <dimen name="music_lyric_far_size">20sp</dimen>
-    <dimen name="music_lyric_translation_size">21sp</dimen>
-    <dimen name="music_play_btn_size">92dp</dimen>
-    <dimen name="music_prev_next_btn_size">64dp</dimen>
-    <dimen name="music_repeat_btn_size">56dp</dimen>
-    <dimen name="music_source_btn_size">56dp</dimen>
-    <dimen name="music_time_text_size">15sp</dimen>
-    <dimen name="music_content_padding">56dp</dimen>
-    <dimen name="music_title_margin_top">44dp</dimen>
-    <dimen name="music_btn_spacing">36dp</dimen>
+    <dimen name="music_vinyl_size">620dp</dimen>
+    <dimen name="music_album_size">420dp</dimen>
+    <dimen name="music_tonearm_size">250dp</dimen>
+    <dimen name="music_tonearm_height">310dp</dimen>
+    <dimen name="music_tonearm_margin_top">-44dp</dimen>
+    <dimen name="music_tonearm_margin_end">-52dp</dimen>
+    <dimen name="music_title_size">38sp</dimen>
+    <dimen name="music_artist_size">24sp</dimen>
+    <dimen name="music_lyric_current_size">36sp</dimen>
+    <dimen name="music_lyric_near_size">28sp</dimen>
+    <dimen name="music_lyric_far_size">24sp</dimen>
+    <dimen name="music_lyric_translation_size">26sp</dimen>
+    <dimen name="music_play_btn_size">112dp</dimen>
+    <dimen name="music_prev_next_btn_size">80dp</dimen>
+    <dimen name="music_repeat_btn_size">64dp</dimen>
+    <dimen name="music_source_btn_size">64dp</dimen>
+    <dimen name="music_time_text_size">18sp</dimen>
+    <dimen name="music_visualizer_height">120dp</dimen>
+    <dimen name="music_settings_btn_size">64dp</dimen>
+    <dimen name="music_content_padding">64dp</dimen>
+    <dimen name="music_title_margin_top">56dp</dimen>
+    <dimen name="music_btn_spacing">48dp</dimen>
 </resources>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 车载大屏低 DPI 适配（sw480dp+，如 800x480、1024x600 车机） -->
+<resources>
+    <dimen name="music_vinyl_size">420dp</dimen>
+    <dimen name="music_album_size">280dp</dimen>
+    <dimen name="music_tonearm_size">170dp</dimen>
+    <dimen name="music_tonearm_height">210dp</dimen>
+    <dimen name="music_tonearm_margin_top">-28dp</dimen>
+    <dimen name="music_tonearm_margin_end">-34dp</dimen>
+    <dimen name="music_title_size">28sp</dimen>
+    <dimen name="music_artist_size">18sp</dimen>
+    <dimen name="music_lyric_current_size">26sp</dimen>
+    <dimen name="music_lyric_near_size">21sp</dimen>
+    <dimen name="music_lyric_far_size">18sp</dimen>
+    <dimen name="music_lyric_translation_size">20sp</dimen>
+    <dimen name="music_play_btn_size">80dp</dimen>
+    <dimen name="music_prev_next_btn_size">56dp</dimen>
+    <dimen name="music_repeat_btn_size">48dp</dimen>
+    <dimen name="music_source_btn_size">48dp</dimen>
+    <dimen name="music_time_text_size">14sp</dimen>
+    <dimen name="music_visualizer_height">80dp</dimen>
+    <dimen name="music_settings_btn_size">48dp</dimen>
+    <dimen name="music_content_padding">40dp</dimen>
+    <dimen name="music_title_margin_top">40dp</dimen>
+    <dimen name="music_btn_spacing">28dp</dimen>
+</resources>

@@ -15,7 +15,7 @@
     android:background="@drawable/bg_music_page"
     android:orientation="vertical">
 
-    <!-- 顶部头部区域（含渐变遮罩） -->
+    <!-- 顶部头部区域 -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,13 +24,6 @@
         android:paddingTop="12dp"
         android:paddingBottom="8dp"
         android:clipToPadding="false">
-
-        <!-- 顶部渐变遮罩（增强沉浸感） -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:layout_gravity="top"
-            android:background="@drawable/bg_music_top_overlay"/>
 
         <ImageView
             android:id="@+id/btn_back"
@@ -227,7 +220,7 @@
                 tools:ignore="ContentDescription"/>
         </FrameLayout>
 
-        <!-- 歌词区 -->
+        <!-- 歌词区（9行：前4 + 当前 + 翻译 + 后4） -->
         <LinearLayout
             android:id="@+id/lyrics_container"
             android:layout_width="match_parent"
@@ -239,13 +232,34 @@
             android:visibility="visible">
 
             <TextView
+                android:id="@+id/tv_lyric_prev4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:maxLines="1"
+                android:alpha="0.20"
+                android:textColor="@color/music_lyric_other"
+                android:textSize="@dimen/music_lyric_far_size"/>
+
+            <TextView
+                android:id="@+id/tv_lyric_prev3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:maxLines="1"
+                android:layout_marginTop="4dp"
+                android:alpha="0.35"
+                android:textColor="@color/music_lyric_other"
+                android:textSize="@dimen/music_lyric_near_size"/>
+
+            <TextView
                 android:id="@+id/tv_lyric_prev2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:maxLines="1"
-                android:ellipsize="end"
-                android:alpha="0.30"
+                android:layout_marginTop="4dp"
+                android:alpha="0.45"
                 android:textColor="@color/music_lyric_other"
                 android:textSize="@dimen/music_lyric_far_size"/>
 
@@ -255,9 +269,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:maxLines="1"
-                android:ellipsize="end"
-                android:layout_marginTop="8dp"
-                android:alpha="0.55"
+                android:layout_marginTop="6dp"
+                android:alpha="0.65"
                 android:textColor="@color/music_lyric_other"
                 android:textSize="@dimen/music_lyric_near_size"/>
 
@@ -267,12 +280,11 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:maxLines="2"
-                android:ellipsize="end"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:lineSpacingExtra="8dp"
+                android:lineSpacingExtra="6dp"
                 android:text="@string/music_no_lyrics"
                 android:textColor="@color/music_lyric_current"
                 android:textSize="@dimen/music_lyric_current_size"
@@ -287,8 +299,6 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:maxLines="2"
-                android:ellipsize="end"
-                android:layout_marginBottom="8dp"
                 android:alpha="0.80"
                 android:textColor="@color/music_text_hint"
                 android:textSize="@dimen/music_lyric_translation_size"
@@ -300,8 +310,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:maxLines="1"
-                android:ellipsize="end"
-                android:alpha="0.55"
+                android:layout_marginTop="6dp"
+                android:alpha="0.65"
                 android:textColor="@color/music_lyric_other"
                 android:textSize="@dimen/music_lyric_near_size"/>
 
@@ -311,9 +321,30 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:maxLines="1"
-                android:ellipsize="end"
-                android:layout_marginTop="8dp"
-                android:alpha="0.30"
+                android:layout_marginTop="4dp"
+                android:alpha="0.45"
+                android:textColor="@color/music_lyric_other"
+                android:textSize="@dimen/music_lyric_far_size"/>
+
+            <TextView
+                android:id="@+id/tv_lyric_next3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:maxLines="1"
+                android:layout_marginTop="4dp"
+                android:alpha="0.35"
+                android:textColor="@color/music_lyric_other"
+                android:textSize="@dimen/music_lyric_near_size"/>
+
+            <TextView
+                android:id="@+id/tv_lyric_next4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:maxLines="1"
+                android:layout_marginTop="4dp"
+                android:alpha="0.20"
                 android:textColor="@color/music_lyric_other"
                 android:textSize="@dimen/music_lyric_far_size"/>
         </LinearLayout>
@@ -335,7 +366,7 @@
     <com.carassistant.ui.MusicVisualizerView
         android:id="@+id/music_visualizer"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="@dimen/music_visualizer_height"
         android:layout_marginStart="36dp"
         android:layout_marginEnd="36dp"
         android:layout_marginTop="6dp"

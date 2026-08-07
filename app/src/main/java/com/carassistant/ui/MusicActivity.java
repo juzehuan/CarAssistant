@@ -86,7 +86,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private String lastMetaArtist;
     private Bitmap lastMetaArt;
     private android.animation.ValueAnimator bgColorAnimator;
-    private TextView tvLyricPrev2, tvLyricPrev, tvLyricCurrent, tvLyricTranslation, tvLyricNext, tvLyricNext2;
+    private TextView tvLyricPrev4, tvLyricPrev3, tvLyricPrev2, tvLyricPrev, tvLyricCurrent, tvLyricTranslation, tvLyricNext, tvLyricNext2, tvLyricNext3, tvLyricNext4;
     private TextView tvCurrent, tvDuration;
     private SeekBar sbProgress;
     private ImageView btnPlay, btnPrev, btnNext, btnSettings;
@@ -172,12 +172,16 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         ivTonearm = findViewById(R.id.iv_tonearm);
         tvTitle = findViewById(R.id.tv_title);
         tvArtist = findViewById(R.id.tv_artist);
+        tvLyricPrev4 = findViewById(R.id.tv_lyric_prev4);
+        tvLyricPrev3 = findViewById(R.id.tv_lyric_prev3);
         tvLyricPrev2 = findViewById(R.id.tv_lyric_prev2);
         tvLyricPrev = findViewById(R.id.tv_lyric_prev);
         tvLyricCurrent = findViewById(R.id.tv_lyric_current);
         tvLyricTranslation = findViewById(R.id.tv_lyric_translation);
         tvLyricNext = findViewById(R.id.tv_lyric_next);
         tvLyricNext2 = findViewById(R.id.tv_lyric_next2);
+        tvLyricNext3 = findViewById(R.id.tv_lyric_next3);
+        tvLyricNext4 = findViewById(R.id.tv_lyric_next4);
         tvCurrent = findViewById(R.id.tv_current);
         tvDuration = findViewById(R.id.tv_duration);
         sbProgress = findViewById(R.id.sb_progress);
@@ -638,6 +642,10 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         if (tvLyricNext != null) tvLyricNext.setTextSize(16 * scale);
         if (tvLyricPrev2 != null) tvLyricPrev2.setTextSize(14 * scale);
         if (tvLyricNext2 != null) tvLyricNext2.setTextSize(14 * scale);
+        if (tvLyricPrev3 != null) tvLyricPrev3.setTextSize(16 * scale);
+        if (tvLyricNext3 != null) tvLyricNext3.setTextSize(16 * scale);
+        if (tvLyricPrev4 != null) tvLyricPrev4.setTextSize(14 * scale);
+        if (tvLyricNext4 != null) tvLyricNext4.setTextSize(14 * scale);
         if (tvLyricTranslation != null) tvLyricTranslation.setTextSize(13 * scale);
 
         // 唱臂显隐
@@ -1137,18 +1145,26 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     @Override
     public void onLyricsChanged(String prev, String current, String next) {
         runOnUiThread(() -> {
-            // 通过 LrcParser 获取当前行索引，再取前后各 2 行（共 5 行）
+            // 通过 LrcParser 获取前4行 + 当前 + 后4行（共9行）
             int idx = controller.getLrcParser().getCurrentLineIndex(controller.getCurrentPosition());
+            LrcParser.LrcLine prev4Line = idx >= 4 ? controller.getLrcParser().getLyricLine(idx - 4) : null;
+            LrcParser.LrcLine prev3Line = idx >= 3 ? controller.getLrcParser().getLyricLine(idx - 3) : null;
             LrcParser.LrcLine prev2Line = idx >= 2 ? controller.getLrcParser().getLyricLine(idx - 2) : null;
             LrcParser.LrcLine prev1Line = idx >= 1 ? controller.getLrcParser().getLyricLine(idx - 1) : null;
             LrcParser.LrcLine currLine = idx >= 0 ? controller.getLrcParser().getLyricLine(idx) : null;
             LrcParser.LrcLine next1Line = controller.getLrcParser().getLyricLine(idx + 1);
             LrcParser.LrcLine next2Line = controller.getLrcParser().getLyricLine(idx + 2);
+            LrcParser.LrcLine next3Line = controller.getLrcParser().getLyricLine(idx + 3);
+            LrcParser.LrcLine next4Line = controller.getLrcParser().getLyricLine(idx + 4);
 
+            tvLyricPrev4.setText(prev4Line != null ? prev4Line.text : "");
+            tvLyricPrev3.setText(prev3Line != null ? prev3Line.text : "");
             tvLyricPrev2.setText(prev2Line != null ? prev2Line.text : "");
             tvLyricPrev.setText(prev1Line != null ? prev1Line.text : "");
             tvLyricNext.setText(next1Line != null ? next1Line.text : "");
             tvLyricNext2.setText(next2Line != null ? next2Line.text : "");
+            tvLyricNext3.setText(next3Line != null ? next3Line.text : "");
+            tvLyricNext4.setText(next4Line != null ? next4Line.text : "");
 
             // 当前行变化时播放淡入动画
             String newLyric = TextUtils.isEmpty(current) ? getString(R.string.music_no_lyrics) : current;
