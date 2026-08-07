@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    黑胶唱片背景（网易云音乐经典风格）
-    - 纯黑盘面 + 同心圆纹路（仅在外圈边框区域）
+    黑胶唱片背景（网易云音乐风格，增强版）
+    - 深黑盘面 + 高密度同心圆纹路
     - 中心区域留给专辑封面（220dp）覆盖
-    - 唱片与封面交界处一圈极淡红色描边作为点缀
-    - 简约不花哨
+    - 外圈红色描边高光 + 唱片透光质感
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:height="320dp"
@@ -12,68 +11,97 @@
     android:viewportWidth="320"
     android:viewportHeight="320">
 
-    <!-- 外圈微高光（极淡，营造反光） -->
+    <!-- 外圈整体微光 -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:fillAlpha="0.03"
+        android:fillAlpha="0.04"
         android:pathData="M160,160 m-160,0 a160,160 0 1,0 320,0 a160,160 0 1,0 -320,0"/>
 
-    <!-- 黑色盘面 -->
+    <!-- 深黑盘面 -->
     <path
-        android:fillColor="#FF0A0A0A"
+        android:fillColor="#FF06060A"
         android:pathData="M160,160 m-152,0 a152,152 0 1,0 304,0 a152,152 0 1,0 -304,0"/>
 
-    <!-- 纹路 1（最外圈） -->
+    <!-- 外圈红色光晕（播放时视觉动感） -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#FF1F1F1F"
-        android:strokeWidth="1"
-        android:pathData="M160,160 m-146,0 a146,146 0 1,0 292,0 a146,146 0 1,0 -292,0"/>
+        android:strokeColor="#FFEE0A24"
+        android:strokeWidth="1.5"
+        android:strokeAlpha="0.4"
+        android:pathData="M160,160 m-153,0 a153,153 0 1,0 306,0 a153,153 0 1,0 -306,0"/>
+
+    <!-- 纹路 1（最外圈密纹） -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF161616"
+        android:strokeWidth="0.75"
+        android:pathData="M160,160 m-148,0 a148,148 0 1,0 296,0 a148,148 0 1,0 -296,0"/>
 
     <!-- 纹路 2 -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#FF1F1F1F"
-        android:strokeWidth="1"
-        android:pathData="M160,160 m-138,0 a138,138 0 1,0 276,0 a138,138 0 1,0 -276,0"/>
+        android:strokeColor="#FF1A1A1A"
+        android:strokeWidth="0.75"
+        android:pathData="M160,160 m-143,0 a143,143 0 1,0 286,0 a143,143 0 1,0 -286,0"/>
 
     <!-- 纹路 3 -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FF1F1F1F"
-        android:strokeWidth="1"
-        android:pathData="M160,160 m-130,0 a130,130 0 1,0 260,0 a130,130 0 1,0 -260,0"/>
+        android:strokeWidth="0.75"
+        android:pathData="M160,160 m-138,0 a138,138 0 1,0 276,0 a138,138 0 1,0 -276,0"/>
 
     <!-- 纹路 4 -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FF1F1F1F"
-        android:strokeWidth="1"
-        android:pathData="M160,160 m-122,0 a122,122 0 1,0 244,0 a122,122 0 1,0 -244,0"/>
+        android:strokeWidth="0.75"
+        android:pathData="M160,160 m-133,0 a133,133 0 1,0 266,0 a133,133 0 1,0 -266,0"/>
 
-    <!-- 纹路 5 -->
+    <!-- 纹路 5（稍粗，模拟唱片A面标记带） -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF242424"
+        android:strokeWidth="1"
+        android:pathData="M160,160 m-128,0 a128,128 0 1,0 256,0 a128,128 0 1,0 -256,0"/>
+
+    <!-- 纹路 6 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF1F1F1F"
+        android:strokeWidth="0.75"
+        android:pathData="M160,160 m-123,0 a123,123 0 1,0 246,0 a123,123 0 1,0 -246,0"/>
+
+    <!-- 纹路 7 -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FF2A2A2A"
         android:strokeWidth="0.5"
-        android:pathData="M160,160 m-115,0 a115,115 0 1,0 230,0 a115,115 0 1,0 -230,0"/>
+        android:pathData="M160,160 m-118,0 a118,118 0 1,0 236,0 a118,118 0 1,0 -236,0"/>
 
-    <!-- 中心圆盘（被专辑封面覆盖，留作底色） -->
-    <path
-        android:fillColor="#FF1A1A1A"
-        android:pathData="M160,160 m-110,0 a110,110 0 1,0 220,0 a110,110 0 1,0 -220,0"/>
-
-    <!-- 唱片与封面交界处极淡红色描边（网易云点缀） -->
+    <!-- 纹路 8 -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#FFE60026"
+        android:strokeColor="#FF202020"
         android:strokeWidth="0.5"
-        android:strokeAlpha="0.5"
+        android:pathData="M160,160 m-114,0 a114,114 0 1,0 228,0 a114,114 0 1,0 -228,0"/>
+
+    <!-- 中心圆盘（被专辑封面覆盖） -->
+    <path
+        android:fillColor="#FF141414"
         android:pathData="M160,160 m-110,0 a110,110 0 1,0 220,0 a110,110 0 1,0 -220,0"/>
 
-    <!-- 中心孔（黑色，被封面遮挡，仅作结构保留） -->
+    <!-- 唱片与封面交界处红色微光描边 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFEE0A24"
+        android:strokeWidth="1"
+        android:strokeAlpha="0.6"
+        android:pathData="M160,160 m-110,0 a110,110 0 1,0 220,0 a110,110 0 1,0 -220,0"/>
+
+    <!-- 中心孔 -->
     <path
         android:fillColor="#FF000000"
-        android:pathData="M160,160 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0"/>
+        android:pathData="M160,160 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0"/>
 
 </vector>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 进度条拇指（12dp 圆形，白色核心+红色光环） -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#22FFFFFF"/>
+            <size android:height="20dp" android:width="20dp"/>
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#FFEE0A24"/>
+            <size android:height="12dp" android:width="12dp"/>
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#FFFFFFFF"/>
+            <size android:height="6dp" android:width="6dp"/>
+        </shape>
+    </item>
+</layer-list>

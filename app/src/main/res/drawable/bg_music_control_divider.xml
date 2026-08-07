@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 控制栏上方分隔线（中心亮两侧透明的渐变线） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="#00FFFFFF"
+        android:centerColor="#15FFFFFF"
+        android:endColor="#00FFFFFF"
+        android:angle="0"
+        android:type="linear"/>
+    <size android:height="0.5dp"/>
+</shape>

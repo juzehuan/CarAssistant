@@ -33,6 +33,7 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -101,6 +102,10 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private int currentBgColor = 0xFF0F1320;
     /** 当前主题强调色 */
     private int currentAccentColor = 0xFFEE0A24;
+    /** 当前预设主题（-1=动态取色，0-5=预设） */
+    private MusicTheme currentTheme = MusicTheme.RED;
+    /** 是否使用预设主题 */
+    private boolean usePresetTheme = false;
     /** Argb 颜色求值器（平滑过渡） */
     private final ArgbEvaluator argbEvaluator = new ArgbEvaluator();    // 特效视图
     private View vinylGlow;       // 唱片外圈呼吸光晕
@@ -132,6 +137,19 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private boolean uiShowPrev = true;         // 显示上一首按钮
     private boolean uiShowNext = true;         // 显示下一首按钮
     private boolean uiVisualizer = true;       // 音乐律动
+    private int uiLayoutOrient = 0;            // 0=纵向, 1=横向
+    private int uiVisualizerMode = 0;          // 律动特效模式
+
+    // ===== 近期播放面板 =====
+    private View recentPanel;
+    private LinearLayout recentListContainer;
+    private boolean recentPanelVisible = false;
+    // ===== 唱盘平滑变速 =====
+    private ValueAnimator vinylSpeedAnimator;
+    private float vinylSpeed = 1.0f;           // 0=停止, 1=全速
+
+    // ===== 音乐源标签 =====
+    private TextView tvSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -294,6 +312,18 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             if (controller.isPlaying()) controller.pause();
             else controller.play();
         });
+
+        // 点击唱片区域 = 播放/暂停
+        if (cardAlbum != null) {
+            cardAlbum.setOnClickListener(v -> {
+                if (!ensurePermissionAndConnected()) return;
+                if (controller.isPlaying()) controller.pause();
+                else controller.play();
+            });
+        }
+
+        // 音乐源指示器
+        updateMusicSourceLabel();
         if (btnPrev != null) btnPrev.setOnClickListener(v -> {
             playBtnPop(v);
             if (!ensurePermissionAndConnected()) return;
@@ -325,20 +355,16 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             }
         });
 
-        // 列表按钮：打开当前音乐源 app
+        // 列表按钮：展示近期播放面板
         if (btnPlaylist != null) btnPlaylist.setOnClickListener(v -> {
             playBtnPop(v);
-            String pkg = controller.getMusicPackageName();
-            if (pkg != null && !pkg.isEmpty()) {
-                Intent launchIntent = getPackageManager().getLaunchIntentForPackage(pkg);
-                if (launchIntent != null) {
-                    launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(launchIntent);
-                } else {
-                    Toast.makeText(this, R.string.music_open_app, Toast.LENGTH_SHORT).show();
-                }
-            }
+            toggleRecentPlaylist();
         });
+
+        // (保留原启动逻辑已移除，改为内部面板)
+
+        // 音乐源标签
+        addMusicSourceLabel();
 
         // 旧按钮保留监听（已隐藏，无影响）
         if (btnFloatingLyrics != null) btnFloatingLyrics.setOnClickListener(v -> toggleFloatingLyrics());
@@ -576,7 +602,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         }
     }
 
-    /** 应用音乐伴侣的 UI 微调设置（外观/字号/翻译/唱臂/按钮显隐），由 onResume 调用 */
+    /** 应用音乐伴侣的 UI 微调设置（外观/字号/翻译/唱臂/按钮显隐/布局方向/律动特效），由 onResume 调用 */
     private void applyMusicUiSettings() {
         SharedPreferences sp = getSharedPreferences("music_settings", MODE_PRIVATE);
         uiDynamicTheme = sp.getBoolean("music_dynamic_theme", true);
@@ -585,11 +611,24 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         uiShowArm = sp.getBoolean("music_show_arm", true);
         uiShowPrev = sp.getBoolean("music_show_prev", true);
         uiShowNext = sp.getBoolean("music_show_next", true);
-        // 音乐律动开关
+        // 音乐律动开关 + 特效模式
         uiVisualizer = sp.getBoolean("music_visualizer", true);
+        uiVisualizerMode = Integer.parseInt(sp.getString("music_visualizer_mode", "0"));
         if (visualizer != null) {
             visualizer.setAccentColor(currentAccentColor);
+            visualizer.setMode(uiVisualizerMode);
             visualizer.setVisibility(uiVisualizer ? View.VISIBLE : View.GONE);
+        }
+        // 唱片+歌词排版方向
+        uiLayoutOrient = Integer.parseInt(sp.getString("music_layout_orientation", "0"));
+        applyLayoutOrientation(uiLayoutOrient);
+
+        // 预设主题色
+        int themeId = Integer.parseInt(sp.getString("music_color_theme", "-1"));
+        usePresetTheme = (themeId >= 0 && themeId <= 5);
+        if (usePresetTheme) {
+            currentTheme = MusicTheme.fromId(themeId);
+            applyTheme(currentTheme);
         }
 
         // 歌词字号（基于原始 sp 尺寸按比例缩放）
@@ -695,34 +734,335 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         }
     }
 
+    /** 切换唱片+歌词的排版方向（0=纵向列排，1=横向并排） */
+    /** 将当前播放状态写入 SharedPreferences（供首页显示） */
+    private void savePlayStateToSharedPrefs(String title, String artist, boolean playing) {
+        getSharedPreferences("music_state", MODE_PRIVATE).edit()
+                .putString("title", title != null ? title : "")
+                .putString("artist", artist != null ? artist : "")
+                .putBoolean("playing", playing)
+                .apply();
+    }
+
+    /** 动态添加音乐源标签到头部信息区（歌名下方） */
+    private void addMusicSourceLabel() {
+        if (tvArtist == null) return;
+        View parent = (View) tvArtist.getParent();
+        if (!(parent instanceof LinearLayout)) return;
+        tvSource = new TextView(this);
+        tvSource.setTextSize(11);
+        tvSource.setTextColor(0x55FFFFFF);
+        tvSource.setAlpha(0.7f);
+        tvSource.setVisibility(View.GONE);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = dp2px(4);
+        tvSource.setLayoutParams(lp);
+        ((LinearLayout) parent).addView(tvSource);
+    }
+
+    /** 更新音乐源标签（显示当前音乐来源 app 名称） */
+    private void updateMusicSourceLabel() {
+        if (tvSource == null) return;
+        String pkg = controller != null ? controller.getMusicPackageName() : null;
+        if (pkg != null && !pkg.isEmpty()) {
+            String label = getSourceAppLabel(pkg);
+            tvSource.setText(label);
+            tvSource.setVisibility(View.VISIBLE);
+        } else {
+            tvSource.setVisibility(View.GONE);
+        }
+    }
+
+    private String getSourceAppLabel(String pkg) {
+        switch (pkg) {
+            case "com.netease.cloudmusic": return "来源：网易云音乐";
+            case "com.tencent.qqmusic": return "来源：QQ音乐";
+            case "com.kugou.android": return "来源：酷狗音乐";
+            case "com.spotify.music": return "来源：Spotify";
+            case "com.apple.android.music": return "来源：Apple Music";
+            default:
+                try {
+                    android.content.pm.PackageManager pm = getPackageManager();
+                    android.content.pm.ApplicationInfo ai = pm.getApplicationInfo(pkg, 0);
+                    return "来源：" + pm.getApplicationLabel(ai);
+                } catch (Exception e) {
+                    return "来源：音乐应用";
+                }
+        }
+    }
+
+    /** 切换近期播放列表面板的显示/隐藏 */
+    private void toggleRecentPlaylist() {
+        if (recentPanel == null) {
+            inflateRecentPanel();
+        }
+        if (recentPanel == null) return;
+        recentPanelVisible = !recentPanelVisible;
+        if (recentPanelVisible) {
+            refreshRecentList();
+            recentPanel.setVisibility(View.VISIBLE);
+            recentPanel.setAlpha(0f);
+            recentPanel.animate().alpha(1f).setDuration(250).start();
+        } else {
+            recentPanel.animate().alpha(0f).setDuration(200).withEndAction(() ->
+                    recentPanel.setVisibility(View.GONE)).start();
+        }
+    }
+
+    /** 填充近期播放列表内容 */
+    private void refreshRecentList() {
+        if (recentListContainer == null) return;
+        recentListContainer.removeAllViews();
+        java.util.List<MusicController.RecentSong> recent = controller.getRecentSongs();
+        if (recent.isEmpty()) {
+            TextView empty = new TextView(this);
+            empty.setText("暂无播放记录");
+            empty.setTextColor(0x80FFFFFF);
+            empty.setTextSize(14);
+            empty.setPadding(dp2px(8), dp2px(16), dp2px(8), dp2px(16));
+            recentListContainer.addView(empty);
+            return;
+        }
+        int index = 0;
+        for (MusicController.RecentSong s : recent) {
+            index++;
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            row.setPadding(dp2px(8), dp2px(10), dp2px(8), dp2px(10));
+
+            // 序号
+            TextView tvIdx = new TextView(this);
+            tvIdx.setText(String.valueOf(index));
+            tvIdx.setTextColor(index <= 3 ? 0xFFEE0A24 : 0x80FFFFFF);
+            tvIdx.setTextSize(13);
+            tvIdx.setWidth(dp2px(24));
+            tvIdx.setGravity(android.view.Gravity.CENTER);
+            row.addView(tvIdx);
+
+            // 歌名+歌手
+            LinearLayout col = new LinearLayout(this);
+            col.setOrientation(LinearLayout.VERTICAL);
+            col.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+            col.setPadding(dp2px(10), 0, dp2px(8), 0);
+            TextView tvTitle = new TextView(this);
+            tvTitle.setText(s.title);
+            tvTitle.setTextColor(0xFFF0F0F5);
+            tvTitle.setTextSize(15);
+            tvTitle.setMaxLines(1);
+            tvTitle.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            col.addView(tvTitle);
+            TextView tvArtist = new TextView(this);
+            tvArtist.setText(s.artist);
+            tvArtist.setTextColor(0x80FFFFFF);
+            tvArtist.setTextSize(12);
+            tvArtist.setMaxLines(1);
+            tvArtist.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            col.addView(tvArtist);
+            row.addView(col);
+
+            // 点击跳转到音乐源应用
+            final String musicPkg = controller.getMusicPackageName();
+            row.setOnClickListener(v -> {
+                if (recentPanel != null) {
+                    recentPanel.setVisibility(View.GONE);
+                    recentPanelVisible = false;
+                }
+                if (musicPkg != null && !musicPkg.isEmpty()) {
+                    Intent i = getPackageManager().getLaunchIntentForPackage(musicPkg);
+                    if (i != null) startActivity(i);
+                }
+            });
+            row.setBackground(getDrawable(android.R.attr.selectableItemBackground));
+            recentListContainer.addView(row);
+
+            // 分隔线
+            if (index < recent.size()) {
+                View div = new View(this);
+                div.setLayoutParams(new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, dp2px(0.5f)));
+                div.setBackgroundColor(0x10FFFFFF);
+                recentListContainer.addView(div);
+            }
+        }
+    }
+
+    /** 动态创建近期播放面板并添加到根布局 */
+    private void inflateRecentPanel() {
+        View panel = View.inflate(this, R.layout.view_recent_playlist, null);
+        panel.setVisibility(View.GONE);
+        recentListContainer = panel.findViewById(R.id.recent_list_container);
+        if (recentListContainer == null) {
+            // fallback: 查找 rv_recent 作为容器
+            recentListContainer = panel.findViewById(R.id.rv_recent);
+        }
+        // 面板点击不穿透
+        panel.setOnClickListener(v -> {});
+        // 添加到根布局末尾
+        if (musicRoot != null) {
+            musicRoot.addView(panel, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+        recentPanel = panel;
+    }
+
+    private int dp2px(float dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    /** 根据当前 vinylSpeed 动态调整旋转动画的时长，实现平滑变速 */
+    private void updateVinylSpeed() {
+        if (vinylAnimator == null || !vinylAnimator.isRunning()) return;
+        // speed 0.05→100000ms (极慢，近似停止), speed 1.0→20000ms (全速)
+        long duration = (long) (20000f / Math.max(0.03f, vinylSpeed));
+        ObjectAnimator discRot = ObjectAnimator.ofFloat(ivVinyl, "rotation",
+                ivVinyl.getRotation(), ivVinyl.getRotation() + 360f);
+        discRot.setDuration(duration);
+        discRot.setInterpolator(new LinearInterpolator());
+        discRot.setRepeatCount(ObjectAnimator.INFINITE);
+        discRot.setRepeatMode(ObjectAnimator.RESTART);
+        ObjectAnimator albumRot = ObjectAnimator.ofFloat(ivAlbum, "rotation",
+                ivAlbum.getRotation(), ivAlbum.getRotation() + 360f);
+        albumRot.setDuration(duration);
+        albumRot.setInterpolator(new LinearInterpolator());
+        albumRot.setRepeatCount(ObjectAnimator.INFINITE);
+        albumRot.setRepeatMode(ObjectAnimator.RESTART);
+        AnimatorSet newSet = new AnimatorSet();
+        newSet.playTogether(discRot, albumRot);
+        vinylAnimator.cancel();
+        vinylAnimator = newSet;
+        vinylAnimator.start();
+    }
+
+    private void applyLayoutOrientation(int orient) {
+        View contentArea = findViewById(com.carassistant.R.id.content_area);
+        View cardAlbum = findViewById(com.carassistant.R.id.card_album);
+        View lyricsContainer = findViewById(com.carassistant.R.id.lyrics_container);
+        if (contentArea == null) return;
+
+        // 横屏模式不干预，横屏 XML 已经使用唱片左+歌词右布局
+        if (contentArea.getWidth() > contentArea.getHeight() && contentArea.getWidth() > dp2px(500)) return;
+
+        boolean horizontal = (orient == 1);
+        if (contentArea instanceof LinearLayout) {
+            ((LinearLayout) contentArea).setOrientation(
+                    horizontal ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL);
+        }
+
+        // 唱片区在竖屏横向模式下不压缩尺寸，保持 wrap_content 以防唱臂被裁切
+        if (cardAlbum != null && cardAlbum.getLayoutParams() instanceof LinearLayout.LayoutParams) {
+            LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) cardAlbum.getLayoutParams();
+            if (horizontal) {
+                lp.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                lp.weight = 0;
+                lp.gravity = android.view.Gravity.CENTER;
+            } else {
+                lp.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                lp.weight = 0;
+                lp.gravity = android.view.Gravity.CENTER;
+            }
+            cardAlbum.setLayoutParams(lp);
+        }
+
+        // 歌词区在横向模式下获得剩余空间
+        if (lyricsContainer != null && lyricsContainer.getLayoutParams() instanceof LinearLayout.LayoutParams) {
+            LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) lyricsContainer.getLayoutParams();
+            if (horizontal) {
+                lp.width = 0;
+                lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                lp.weight = 1;
+                lp.leftMargin = dp2px(20);
+            } else {
+                lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                lp.height = 0;
+                lp.weight = 1;
+                lp.leftMargin = 0;
+            }
+            lyricsContainer.setLayoutParams(lp);
+        }
+    }
+
+    /** 应用预设主题到全局 UI（仅改强调色，不覆盖 XML 分层背景） */
+    private void applyTheme(MusicTheme theme) {
+        currentAccentColor = theme.accent;
+        currentBgColor = theme.bgStart;
+        // 分发到各组件
+        if (visualizer != null) {
+            visualizer.setAccentColor(theme.accent);
+            visualizer.setMode(uiVisualizerMode);
+        }
+        // 进度条（未自定义时跟随主题）
+        SharedPreferences sp = getSharedPreferences("music_settings", MODE_PRIVATE);
+        if (!sp.contains("music_seekbar_color")) {
+            int thickness = sp.getInt("music_seekbar_thickness", 6);
+            applySeekBarStyle(dp2px(thickness), theme.seekbar);
+        }
+    }
+
+    /** 将主题强调色统一应用到所有视觉元素 */
+    private void applyUnifiedAccentColor(int color) {
+        // 如果启用了预设主题，不要用动态取色覆盖
+        if (usePresetTheme) return;
+        // 律动条
+        if (visualizer != null) {
+            visualizer.setAccentColor(color);
+            visualizer.setMode(uiVisualizerMode);
+        }
+        // 进度条（仅在未自定义颜色的情况下使用主题色）
+        SharedPreferences sp = getSharedPreferences("music_settings", MODE_PRIVATE);
+        if (!sp.contains("music_seekbar_color")) {
+            int thickness = sp.getInt("music_seekbar_thickness", 6);
+            applySeekBarStyle(dp2px(thickness), color);
+        }
+    }
+
     private void applySeekBarStyle(int thicknessPx, int color) {
         if (sbProgress == null) return;
         int r = Math.max(1, thicknessPx / 2);
+
+        // 轨道背景（半透明暗底，带微弱内阴影效果）
         android.graphics.drawable.GradientDrawable track = new android.graphics.drawable.GradientDrawable();
         track.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
         track.setCornerRadius(r);
-        track.setColor(0x40FFFFFF);
-        android.graphics.drawable.GradientDrawable prog = new android.graphics.drawable.GradientDrawable();
+        track.setColor(0x25FFFFFF);
+
+        // 进度条（渐变：color → 亮红尾端）
+        float[] hsv = new float[3];
+        android.graphics.Color.colorToHSV(color, hsv);
+        int endColor = android.graphics.Color.HSVToColor(new float[]{
+                Math.max(0, hsv[0] + 8f), Math.min(1f, hsv[1] * 1.1f), Math.min(1f, hsv[2] * 1.15f)
+        });
+        android.graphics.drawable.GradientDrawable prog = new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[]{color, endColor});
         prog.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
         prog.setCornerRadius(r);
-        prog.setColor(color);
-        android.graphics.drawable.ClipDrawable progressClip = new android.graphics.drawable.ClipDrawable(prog, android.view.Gravity.LEFT, android.graphics.drawable.ClipDrawable.HORIZONTAL);
-        android.graphics.drawable.LayerDrawable ld = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{track, progressClip});
+
+        android.graphics.drawable.ClipDrawable progressClip = new android.graphics.drawable.ClipDrawable(
+                prog, android.view.Gravity.LEFT, android.graphics.drawable.ClipDrawable.HORIZONTAL);
+        android.graphics.drawable.LayerDrawable ld = new android.graphics.drawable.LayerDrawable(
+                new android.graphics.drawable.Drawable[]{track, progressClip});
         ld.setId(0, android.R.id.background);
         ld.setId(1, android.R.id.progress);
-        int thumbSize = Math.max(thicknessPx + dp2px(6), dp2px(12));
+
+        int thumbSize = Math.max(thicknessPx + dp2px(8), dp2px(14));
         int minH = Math.max(thicknessPx, thumbSize);
         sbProgress.setMinimumHeight(minH);
         int inset = (minH - thicknessPx) / 2;
         ld.setLayerInset(0, 0, Math.max(0, inset), 0, Math.max(0, inset));
         ld.setLayerInset(1, 0, Math.max(0, inset), 0, Math.max(0, inset));
         sbProgress.setProgressDrawable(ld);
-        android.graphics.drawable.GradientDrawable thumb = new android.graphics.drawable.GradientDrawable();
-        thumb.setShape(android.graphics.drawable.GradientDrawable.OVAL);
-        thumb.setSize(thumbSize, thumbSize);
-        thumb.setColor(color);
-        thumb.setStroke(dp2px(2), 0xFFFFFFFF);
-        sbProgress.setThumb(thumb);
+
+        // 拇指（白色核心 + 彩色外环，精致双层结构）
+        android.graphics.drawable.GradientDrawable ring = new android.graphics.drawable.GradientDrawable();
+        ring.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        ring.setSize(thumbSize, thumbSize);
+        ring.setColor(color);
+        ring.setStroke(dp2px(2), 0xFFFFFFFF);
+        sbProgress.setThumb(ring);
         sbProgress.setThumbOffset(thumbSize / 2);
     }
 
@@ -846,8 +1186,18 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
 
             tvTitle.setText(TextUtils.isEmpty(title) ? getString(R.string.music_no_song) : title);
             tvArtist.setText(TextUtils.isEmpty(artist) ? getString(R.string.music_unknown_artist) : artist);
+            savePlayStateToSharedPrefs(title, artist, true);
+            updateMusicSourceLabel();
             if (albumArt != null) {
-                ivAlbum.setImageBitmap(albumArt);
+                // 封面过渡动画：淡出旧封面 → 设置新封面 → 淡入
+                if (ivAlbum.getDrawable() != null && ivAlbum.getWidth() > 0) {
+                    ivAlbum.animate().alpha(0f).setDuration(200).withEndAction(() -> {
+                        ivAlbum.setImageBitmap(albumArt);
+                        ivAlbum.animate().alpha(1f).setDuration(300).start();
+                    }).start();
+                } else {
+                    ivAlbum.setImageBitmap(albumArt);
+                }
                 // 从封面提取主色调，动态更新背景色
                 applyDynamicTheme(albumArt);
             } else {
@@ -988,8 +1338,8 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         animator.start();
         currentBgColor = targetColor;
         currentAccentColor = accentColor;
-        // 同步律动条颜色（随动态主题）
-        if (visualizer != null) visualizer.setAccentColor(accentColor);
+        // 统一应用主题色到所有 UI 元素
+        applyUnifiedAccentColor(accentColor);
     }
 
     @Override
@@ -997,17 +1347,45 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         runOnUiThread(() -> {
             btnPlay.setImageResource(
                     isPlaying ? R.drawable.ic_music_pause_hongqi : R.drawable.ic_music_play_hongqi);
-            // 播放时启动黑胶旋转 + 光晕呼吸，暂停时停止（受设置开关控制）
+            // 播放时启动黑胶旋转（平滑加速），暂停时平滑停止
             if (vinylAnimator != null) {
                 if (isPlaying && uiVinylRotate) {
+                    // 取消之前的减速动画
+                    if (vinylSpeedAnimator != null && vinylSpeedAnimator.isRunning()) {
+                        vinylSpeedAnimator.cancel();
+                    }
                     if (vinylAnimator.isPaused()) {
                         vinylAnimator.resume();
+                        // 平滑加速到全速
+                        vinylSpeedAnimator = ValueAnimator.ofFloat(0.3f, 1.0f);
+                        vinylSpeedAnimator.setDuration(600);
+                        vinylSpeedAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+                        vinylSpeedAnimator.addUpdateListener(a -> {
+                            vinylSpeed = (float) a.getAnimatedValue();
+                            updateVinylSpeed();
+                        });
+                        vinylSpeedAnimator.start();
                     } else if (!vinylAnimator.isStarted()) {
                         vinylAnimator.start();
+                        vinylSpeed = 1.0f;
                     }
                 } else {
                     if (vinylAnimator.isRunning()) {
-                        vinylAnimator.pause();
+                        // 平滑减速后暂停
+                        if (vinylSpeedAnimator != null && vinylSpeedAnimator.isRunning()) {
+                            vinylSpeedAnimator.cancel();
+                        }
+                        vinylSpeedAnimator = ValueAnimator.ofFloat(vinylSpeed, 0.05f);
+                        vinylSpeedAnimator.setDuration(450);
+                        vinylSpeedAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+                        vinylSpeedAnimator.addUpdateListener(a -> {
+                            vinylSpeed = (float) a.getAnimatedValue();
+                            updateVinylSpeed();
+                            if (vinylSpeed <= 0.06f) {
+                                vinylAnimator.pause();
+                            }
+                        });
+                        vinylSpeedAnimator.start();
                     }
                 }
             }

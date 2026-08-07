@@ -170,7 +170,7 @@
                 android:layout_height="34dp"
                 android:src="@drawable/ic_feature_music"
                 android:padding="8dp"
-                android:background="@drawable/bg_quick_toggle_on"
+                android:background="@drawable/bg_sidebar_music_icon"
                 android:tint="#FFFFFF"
                 tools:ignore="UseAppTint,ContentDescription"/>
             <TextView

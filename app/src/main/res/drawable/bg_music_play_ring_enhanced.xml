@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 播放按钮光环（渐变暗红 → 亮红，带光晕） -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 外层柔和光晕 -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#00000000"/>
+            <stroke
+                android:width="4dp"
+                android:color="#33EE0A24"/>
+        </shape>
+    </item>
+    <!-- 内层渐变环 -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#00000000"/>
+            <gradient
+                android:startColor="#FFEE0A24"
+                android:centerColor="#FFFF2D55"
+                android:endColor="#FFEE0A24"
+                android:angle="135"
+                android:type="sweep"/>
+            <size android:height="52dp" android:width="52dp"/>
+        </shape>
+    </item>
+    <!-- 中间实心暗底 -->
+    <item
+        android:bottom="2dp"
+        android:left="2dp"
+        android:right="2dp"
+        android:top="2dp">
+        <shape android:shape="oval">
+            <solid android:color="#FFEE0A24"/>
+        </shape>
+    </item>
+</layer-list>

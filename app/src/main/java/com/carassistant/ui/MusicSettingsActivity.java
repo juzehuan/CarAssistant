@@ -44,6 +44,9 @@ public final class MusicSettingsActivity extends AppCompatActivity {
     private static final String PREF_VINYL_ROTATE = "music_vinyl_rotate";
     private static final String PREF_SHOW_ARM = "music_show_arm";
     private static final String PREF_VISUALIZER = "music_visualizer";
+    private static final String PREF_VISUALIZER_MODE = "music_visualizer_mode";
+    private static final String PREF_LAYOUT_ORIENT = "music_layout_orientation";
+    private static final String PREF_COLOR_THEME = "music_color_theme";
     private static final String PREF_DEFAULT_REPEAT = "music_default_repeat";
     private static final String PREF_SHOW_PREV = "music_show_prev";
     private static final String PREF_SHOW_NEXT = "music_show_next";
@@ -51,12 +54,12 @@ public final class MusicSettingsActivity extends AppCompatActivity {
     private static final String PREF_VINYL_SCALE = "music_vinyl_scale";   // 唱片大小缩放：0.8/1.0/1.2
 
 
-    private static final int COLOR_PAGE_BG = 0xFF0F1320;
-    private static final int COLOR_CARD_BG = 0xFF1A1F2E;
-    private static final int COLOR_TEXT_PRIMARY = 0xFFE8EAF0;
-    private static final int COLOR_TEXT_SECONDARY = 0xFF8B92A5;
-    private static final int COLOR_ACCENT = 0xFFEE0A24;   // 网易云红
-    private static final int COLOR_ACCENT_DIM = 0xFF6B7280;
+    private static final int COLOR_PAGE_BG = 0xFF0D0D12;
+    private static final int COLOR_CARD_BG = 0xFF151A28;
+    private static final int COLOR_TEXT_PRIMARY = 0xFFF0F0F5;
+    private static final int COLOR_TEXT_SECONDARY = 0xFF999FAD;
+    private static final int COLOR_ACCENT = 0xFFEE0A24;
+    private static final int COLOR_ACCENT_DIM = 0xFF5A6072;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +67,11 @@ public final class MusicSettingsActivity extends AppCompatActivity {
 
         ScrollView scrollView = new ScrollView(this);
         scrollView.setFillViewport(true);
-        scrollView.setBackgroundColor(COLOR_PAGE_BG);
+        // 渐变背景（与音乐伴侣页面统一）
+        android.graphics.drawable.GradientDrawable pageBg = new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+                new int[]{0xFF0D0D12, 0xFF1A1418, 0xFF1A1420});
+        scrollView.setBackground(pageBg);
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -98,12 +105,34 @@ public final class MusicSettingsActivity extends AppCompatActivity {
 
         // ===== 卡片：外观 =====
         LinearLayout cardAppearance = card(R.string.music_settings_appearance_card);
+        addChoice(cardAppearance, R.string.music_settings_color_theme, PREF_COLOR_THEME, "-1",
+                new int[]{R.string.music_theme_auto,
+                        R.string.music_theme_red,
+                        R.string.music_theme_blue,
+                        R.string.music_theme_purple,
+                        R.string.music_theme_green,
+                        R.string.music_theme_orange,
+                        R.string.music_theme_silver},
+                new String[]{"-1", "0", "1", "2", "3", "4", "5"});
         addToggle(cardAppearance, R.string.music_settings_dynamic_theme,
                 PREF_DYNAMIC_THEME, true);
         addToggle(cardAppearance, R.string.music_settings_vinyl_rotate,
                 PREF_VINYL_ROTATE, true);
         addToggle(cardAppearance, R.string.music_settings_show_arm,
                 PREF_SHOW_ARM, true);
+        addToggle(cardAppearance, R.string.music_settings_visualizer,
+                PREF_VISUALIZER, true);
+        addChoice(cardAppearance, R.string.music_settings_visualizer_mode, PREF_VISUALIZER_MODE, "0",
+                new int[]{R.string.music_vis_mode_neon,
+                        R.string.music_vis_mode_circle,
+                        R.string.music_vis_mode_wave,
+                        R.string.music_vis_mode_column,
+                        R.string.music_vis_mode_dot},
+                new String[]{"0", "1", "2", "3", "4"});
+        addChoice(cardAppearance, R.string.music_settings_layout_orientation, PREF_LAYOUT_ORIENT, "0",
+                new int[]{R.string.music_layout_vertical,
+                        R.string.music_layout_horizontal},
+                new String[]{"0", "1"});
         addChoice(cardAppearance, R.string.music_settings_vinyl_size, PREF_VINYL_SCALE, "1.0",
                 new int[]{R.string.music_settings_vinyl_size_small,
                         R.string.music_settings_vinyl_size_medium,
@@ -154,13 +183,36 @@ public final class MusicSettingsActivity extends AppCompatActivity {
     private LinearLayout card(int titleRes) {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(dp(15), dp(14), dp(15), dp(15));
-        MaterialShapeDrawable bg = new MaterialShapeDrawable();
-        bg.setFillColor(ColorStateList.valueOf(COLOR_CARD_BG));
-        bg.setCornerSize((float) dp(20));
-        card.setBackground(bg);
+        card.setPadding(dp(16), dp(16), dp(16), dp(16));
+        // 双层叠加背景（深色底 + 顶部红色微光描边）
+        android.graphics.drawable.LayerDrawable layers = new android.graphics.drawable.LayerDrawable(
+                new android.graphics.drawable.Drawable[]{
+                        createCardBg(), createCardTopGlow()
+                });
+        card.setBackground(layers);
         card.addView(cardTitle(titleRes));
         return card;
+    }
+
+    private android.graphics.drawable.GradientDrawable createCardBg() {
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        bg.setCornerRadius(dp(20));
+        bg.setColor(COLOR_CARD_BG);
+        bg.setStroke(1, 0x18EE0A24);
+        return bg;
+    }
+
+    private android.graphics.drawable.GradientDrawable createCardTopGlow() {
+        android.graphics.drawable.GradientDrawable glow = new android.graphics.drawable.GradientDrawable();
+        glow.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        float r = dp(20);
+        glow.setCornerRadii(new float[]{r, r, r, r, 0, 0, 0, 0});
+        glow.setGradientType(android.graphics.drawable.GradientDrawable.LINEAR_GRADIENT);
+        glow.setOrientation(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM);
+        glow.setColors(new int[]{0x10EE0A24, 0x00000000});
+        glow.setSize(-1, dp(60));
+        return glow;
     }
 
     private void addCard(LinearLayout parent, LinearLayout card) {

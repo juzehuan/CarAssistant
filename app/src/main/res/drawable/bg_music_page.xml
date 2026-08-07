@@ -1,14 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    音乐伴侣页面背景（网易云音乐风格）
-    - 纯黑渐变：深黑 → 浅黑 → 深黑（中下部稍亮，突出唱片）
+    音乐伴侣页面背景（增强版）
+    - 深层深色渐变：深邃黑 → 暗红棕 → 深紫基调
+    - 多层渐变叠加，营造黑胶唱片的高端夜间氛围
 -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <gradient
-        android:startColor="#FF1A1A1A"
-        android:centerColor="#FF2A2A2A"
-        android:endColor="#FF1A1A1A"
-        android:angle="90"
-        android:type="linear"/>
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 基础深色渐变（深邃黑 → 暗红棕背景） -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#FF0D0D12"
+                android:centerColor="#FF1A1418"
+                android:endColor="#FF251A1E"
+                android:angle="135"
+                android:type="linear"/>
+        </shape>
+    </item>
+    <!-- 顶部暗角（增强空间深度感） -->
+    <item android:gravity="top">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#AA08080D"
+                android:endColor="#00000000"
+                android:angle="270"
+                android:type="linear"/>
+            <size android:height="280dp"/>
+        </shape>
+    </item>
+    <!-- 底部暗角（为控制区提供视觉重心） -->
+    <item android:gravity="bottom">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#00000000"
+                android:endColor="#99000000"
+                android:angle="270"
+                android:type="linear"/>
+            <size android:height="260dp"/>
+        </shape>
+    </item>
+    <!-- 中部微红光晕（围绕唱片区域的氛围光） -->
+    <item
+        android:gravity="center"
+        android:bottom="200dp"
+        android:top="120dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#00000000"
+                android:centerColor="#15EE0A24"
+                android:endColor="#00000000"
+                android:angle="90"
+                android:type="linear"/>
+        </shape>
+    </item>
+</layer-list>

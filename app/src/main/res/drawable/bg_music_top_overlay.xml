@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 页面顶部渐变遮罩（与 bg_music_page 顶层暗角色调一致，消除割裂感） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="#9908080D"
+        android:centerColor="#2208080D"
+        android:endColor="#00000000"
+        android:angle="270"
+        android:type="linear"/>
+</shape>

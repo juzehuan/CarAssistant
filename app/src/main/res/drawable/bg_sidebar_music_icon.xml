@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 侧边栏音乐模块图标背景（粉色渐变，与音乐伴侣主题呼应） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:startColor="@color/icon_bg_music_start"
+        android:endColor="@color/icon_bg_music_end"
+        android:angle="135"
+        android:type="linear"/>
+</shape>

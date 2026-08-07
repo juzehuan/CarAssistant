@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>音乐伴侣界面预览</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a0f;
+  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── 手机模拟框 ── */
+.phone {
+  width: 390px;
+  height: 844px;
+  background: #0D0D12;
+  border-radius: 40px;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 3px #1a1a1a,
+    0 0 0 6px #111,
+    0 0 0 8px #1a1a1a,
+    0 30px 60px rgba(0,0,0,0.6);
+}
+
+/* ── 背景层次 ── */
+.bg-layer {
+  position: absolute;
+  inset: 0;
+}
+.bg-base {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0D0D12 0%, #1A1418 50%, #251A1E 100%);
+}
+.bg-top-vignette {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 280px;
+  background: linear-gradient(to bottom, rgba(8,8,13,0.9), transparent);
+}
+.bg-bottom-vignette {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 260px;
+  background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+}
+.bg-center-glow {
+  position: absolute;
+  top: 120px; bottom: 200px; left: 0; right: 0;
+  background: radial-gradient(ellipse at center, rgba(238,10,36,0.06), transparent 70%);
+}
+
+/* ── 顶部栏 ── */
+.header {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 52px 16px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+  z-index: -1;
+}
+.btn-back {
+  position: absolute;
+  left: 16px;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; opacity: 0.8;
+  font-size: 20px;
+}
+.btn-settings {
+  position: absolute;
+  right: 16px;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.7);
+  font-size: 18px;
+}
+.header-info { text-align: center; padding-top: 10px; }
+.header-info .song { color: #fff; font-size: 20px; font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+.header-info .artist { color: rgba(255,255,255,0.55); font-size: 13px; margin-top: 3px; }
+
+/* ── 分隔线 ── */
+.divider {
+  position: absolute;
+  top: 150px; left: 32px; right: 32px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(238,10,36,0.3), transparent);
+  z-index: 2;
+}
+
+/* ── 唱片区 ── */
+.vinyl-area {
+  position: absolute;
+  top: 170px;
+  left: 50%; transform: translateX(-50%);
+  width: 280px; height: 280px;
+  z-index: 5;
+}
+/* 唱片光晕 */
+.vinyl-glow {
+  position: absolute;
+  inset: -30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(238,10,36,0.2), rgba(238,10,36,0.05) 50%, transparent 70%);
+  animation: glowPulse 3s ease-in-out infinite alternate;
+}
+@keyframes glowPulse { from { opacity: 0.3; } to { opacity: 0.8; } }
+/* 黑胶盘 */
+.vinyl-disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at center,
+    #141414 0%, #141414 34%,
+    #06060A 34.5%, #06060A 100%
+  );
+  box-shadow:
+    inset 0 0 0 2px rgba(238,10,36,0.35),
+    0 0 0 0.5px rgba(255,255,255,0.15),
+    inset 0 0 0 4px #161616,
+    inset 0 0 0 9px #1a1a1a,
+    inset 0 0 0 14px #1f1f1f,
+    inset 0 0 0 19px #1f1f1f,
+    inset 0 0 0 24px #242424,
+    inset 0 0 0 28px #1f1f1f,
+    inset 0 0 0 32px #2a2a2a,
+    inset 0 0 0 36px #202020;
+  animation: rotate 20s linear infinite;
+}
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+/* 专辑封面 */
+.album-cover {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 193px; height: 193px;
+  margin: -96.5px 0 0 -96.5px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5), 0 0 0 2px rgba(238,10,36,0.4);
+  animation: rotate 20s linear infinite;
+}
+.album-cover::after {
+  content: '🎵';
+  position: absolute;
+  inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 64px;
+  opacity: 0.6;
+}
+/* 唱臂 */
+.tonearm {
+  position: absolute;
+  top: -30px; right: -40px;
+  width: 120px; height: 160px;
+  transform: rotate(-8deg);
+  transform-origin: top right;
+  z-index: 6;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.tonearm::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 4px; height: 135px;
+  background: linear-gradient(to bottom, #888, #555 30%, #333 70%, #222);
+  border-radius: 2px;
+  transform: rotate(25deg);
+  transform-origin: top center;
+}
+.tonearm::after {
+  content: '';
+  position: absolute;
+  top: 0; right: -8px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #999, #444);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* ── 歌词区 ── */
+.lyrics-area {
+  position: absolute;
+  top: 470px; left: 32px; right: 32px;
+  text-align: center;
+  z-index: 5;
+}
+.lyric-far {
+  font-size: 14px; color: rgba(255,255,255,0.25);
+  margin-bottom: 6px; line-height: 1.5;
+}
+.lyric-near {
+  font-size: 16px; color: rgba(255,255,255,0.45);
+  margin-bottom: 6px; line-height: 1.5;
+}
+.lyric-current {
+  font-size: 20px; color: #fff; font-weight: 700;
+  text-shadow: 0 1px 12px rgba(255,45,85,0.35);
+  margin: 10px 0 6px;
+  line-height: 1.6;
+  padding: 0 8px;
+}
+
+/* ── 律动条 ── */
+.visualizer {
+  position: absolute;
+  top: 600px; left: 36px; right: 36px;
+  height: 48px;
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 3px;
+  z-index: 5;
+}
+.vis-bar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(to top, rgba(238,10,36,0.9), rgba(255,45,85,0.7));
+  animation: bounce 0.6s ease-in-out infinite alternate;
+}
+@keyframes bounce {
+  from { height: 4px; }
+  to { height: var(--h); }
+}
+
+/* ── 控制区分隔线 ── */
+.ctrl-divider {
+  position: absolute;
+  top: 665px; left: 48px; right: 48px;
+  height: 0.5px;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  z-index: 2;
+}
+
+/* ── 进度条 ── */
+.progress-area {
+  position: absolute;
+  top: 678px; left: 36px; right: 36px;
+  z-index: 5;
+}
+.progress-track {
+  width: 100%; height: 3px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+  position: relative;
+  overflow: visible;
+}
+.progress-fill {
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(to right, #EE0A24, #FF2D55);
+  border-radius: 2px;
+  position: relative;
+}
+.progress-thumb {
+  position: absolute;
+  right: -6px; top: 50%; transform: translateY(-50%);
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #fff, #EE0A24);
+  box-shadow: 0 0 0 3px rgba(238,10,36,0.3);
+}
+.progress-times {
+  display: flex; justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px; color: rgba(255,255,255,0.45);
+  font-family: 'SF Mono', monospace;
+}
+
+/* ── 底部控制栏 ── */
+.control-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 14px 24px 40px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+}
+.control-bar::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 100px;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.3), transparent);
+  z-index: -1;
+}
+.ctrl-btn {
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 0.5px solid rgba(238,10,36,0.08);
+  color: rgba(255,255,255,0.85);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ctrl-btn:hover { background: rgba(255,255,255,0.12); }
+.ctrl-btn.prev, .ctrl-btn.next {
+  width: 48px; height: 48px;
+  background: transparent; border: none;
+  font-size: 22px;
+  color: rgba(255,255,255,0.75);
+}
+.play-btn-wrap {
+  position: relative;
+  width: 52px; height: 52px;
+}
+.play-btn-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.25);
+  opacity: 0.6;
+}
+.play-btn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: #EE0A24;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 22px;
+  box-shadow: 0 4px 20px rgba(238,10,36,0.5), 0 0 0 8px rgba(238,10,36,0.1);
+  cursor: pointer;
+}
+
+/* ── 状态栏 ── */
+.status-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 48px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  z-index: 20;
+  font-size: 12px; color: rgba(255,255,255,0.7);
+}
+
+/* ── 描述区 ── */
+.description {
+  position: absolute;
+  bottom: 90px;
+  left: 16px; right: 16px;
+  z-index: 0;
+}
+.desc-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  margin-right: 4px;
+  color: rgba(255,255,255,0.4);
+  border: 0.5px solid rgba(255,255,255,0.15);
+}
+.desc-tag.highlight { color: rgba(238,10,36,0.7); border-color: rgba(238,10,36,0.3); }
+
+/* ── 对比视图 ── */
+.comparison {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+.section-label {
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 2px;
+}
+.section-label span {
+  color: rgba(238,10,36,0.8);
+  font-weight: 600;
+}
+
+/* ── 特性标记 ── */
+.features-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+.feature-marker {
+  position: absolute;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; color: rgba(238,10,36,0.85);
+  white-space: nowrap;
+}
+.feature-marker::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(238,10,36,0.8);
+  animation: markerPulse 1.5s ease-in-out infinite;
+}
+@keyframes markerPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
+}
+
+.m1 { top: 88px; left: 270px; }  /* 设置按钮 */
+.m2 { top: 130px; left: 140px; }  /* 头部分隔线 */
+.m3 { top: 175px; left: 255px; }  /* 唱片光晕 */
+.m4 { top: 480px; left: 145px; }  /* 歌词辉光 */
+.m5 { top: 638px; left: 200px; }  /* 律动 */
+.m6 { top: 680px; left: 220px; }  /* 进度条 */
+.m7 { top: 755px; left: 180px; }  /* 播放按钮 */
+.m8 { top: 770px; left: 10px; }   /* 底部遮罩 */
+</style>
+</head>
+<body>
+
+<div style="display: flex; gap: 50px; align-items: flex-start;">
+
+<!-- 竖屏预览 -->
+<div>
+  <div class="section-label">美化后 <span>NEW</span></div>
+  <div class="phone">
+
+    <!-- 背景 -->
+    <div class="bg-layer">
+      <div class="bg-base"></div>
+      <div class="bg-top-vignette"></div>
+      <div class="bg-bottom-vignette"></div>
+      <div class="bg-center-glow"></div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div class="status-bar">
+      <span>20:39</span>
+      <span>📶 🔋</span>
+    </div>
+
+    <!-- 头部 -->
+    <div class="header">
+      <div class="btn-back">⌄</div>
+      <div class="btn-settings">⚙</div>
+      <div class="header-info">
+        <div class="song">晴天</div>
+        <div class="artist">周杰伦</div>
+      </div>
+    </div>
+
+    <!-- 分隔线 -->
+    <div class="divider"></div>
+
+    <!-- 唱片 -->
+    <div class="vinyl-area">
+      <div class="vinyl-glow"></div>
+      <div class="vinyl-disc"></div>
+      <div class="album-cover"></div>
+      <div class="tonearm"></div>
+    </div>
+
+    <!-- 歌词 -->
+    <div class="lyrics-area">
+      <div class="lyric-far">吹着前奏 望着天空</div>
+      <div class="lyric-near">我想起花瓣试着掉落</div>
+      <div class="lyric-current">为你翘课的那一天<br>花落的那一天</div>
+      <div class="lyric-near">教室的那一间</div>
+      <div class="lyric-far">我怎么看不见</div>
+    </div>
+
+    <!-- 律动 -->
+    <div class="visualizer">
+      <div class="vis-bar" style="--h:14px; animation-delay:0s"></div>
+      <div class="vis-bar" style="--h:22px; animation-delay:0.05s"></div>
+      <div class="vis-bar" style="--h:8px; animation-delay:0.1s"></div>
+      <div class="vis-bar" style="--h:30px; animation-delay:0.15s"></div>
+      <div class="vis-bar" style="--h:16px; animation-delay:0.2s"></div>
+      <div class="vis-bar" style="--h:24px; animation-delay:0.25s"></div>
+      <div class="vis-bar" style="--h:10px; animation-delay:0.3s"></div>
+      <div class="vis-bar" style="--h:28px; animation-delay:0.35s"></div>
+      <div class="vis-bar" style="--h:12px; animation-delay:0.4s"></div>
+      <div class="vis-bar" style="--h:20px; animation-delay:0.45s"></div>
+      <div class="vis-bar" style="--h:8px; animation-delay:0.5s"></div>
+      <div class="vis-bar" style="--h:26px; animation-delay:0.55s"></div>
+    </div>
+
+    <!-- 控制分隔线 -->
+    <div class="ctrl-divider"></div>
+
+    <!-- 进度条 -->
+    <div class="progress-area">
+      <div class="progress-track">
+        <div class="progress-fill"><div class="progress-thumb"></div></div>
+      </div>
+      <div class="progress-times">
+        <span>01:23</span><span>04:29</span>
+      </div>
+    </div>
+
+    <!-- 控制栏 -->
+    <div class="control-bar">
+      <div class="ctrl-btn" style="font-size:13px;">词</div>
+      <div class="ctrl-btn prev">⏮</div>
+      <div class="play-btn-wrap">
+        <div class="play-btn-ring"></div>
+        <div class="play-btn">▶</div>
+      </div>
+      <div class="ctrl-btn next">⏭</div>
+      <div class="ctrl-btn" style="font-size:13px;">☰</div>
+    </div>
+
+    <!-- 功能标记 -->
+    <div class="features-overlay">
+      <div class="feature-marker m1">渐变遮罩</div>
+      <div class="feature-marker m2">渐隐分隔线</div>
+      <div class="feature-marker m3">红色呼吸光晕</div>
+      <div class="feature-marker m4">文字辉光阴影</div>
+      <div class="feature-marker m5">霓虹律动条</div>
+      <div class="feature-marker m6">渐变进度条</div>
+      <div class="feature-marker m7">光环播放按钮</div>
+      <div class="feature-marker m8">底部渐变锚点</div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

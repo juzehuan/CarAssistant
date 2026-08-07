@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 权限卡片图标圆形背景（品牌色渐变） -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <!-- 红色品牌渐变背景 -->
-    <gradient
-        android:angle="135"
-        android:startColor="#FFEE0A24"
-        android:endColor="#FFB00D1F"/>
-    <size android:width="72dp" android:height="72dp"/>
-</shape>
+<!-- 权限卡片图标圆形背景（红色品牌渐变+外圈光晕） -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 外圈微光 -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#15EE0A24"/>
+        </shape>
+    </item>
+    <!-- 红色品牌渐变核心 -->
+    <item
+        android:bottom="4dp"
+        android:left="4dp"
+        android:right="4dp"
+        android:top="4dp">
+        <shape android:shape="oval">
+            <gradient
+                android:angle="135"
+                android:startColor="#FFEE0A24"
+                android:endColor="#FFB00D1F"/>
+        </shape>
+    </item>
+</layer-list>

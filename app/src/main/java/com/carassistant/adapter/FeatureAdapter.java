@@ -76,13 +76,35 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.VH> {
     public void onBindViewHolder(@NonNull VH holder, int position) {
         FeatureItem item = items.get(position);
         holder.ivIcon.setImageResource(item.iconRes);
-        // 圆形图标背景
+        // 圆形图标背景（支持渐变）
         GradientDrawable bg = new GradientDrawable();
         bg.setShape(GradientDrawable.OVAL);
-        bg.setColor(ContextCompat.getColor(context, item.bgColorRes));
+        int bgColor = ContextCompat.getColor(context, item.bgColorRes);
+        int[] colors = iconGradientOf(bgColor);
+        if (colors != null && colors.length >= 2) {
+            bg.setColors(colors);
+            bg.setGradientType(GradientDrawable.LINEAR_GRADIENT);
+            bg.setOrientation(GradientDrawable.Orientation.TL_BR);
+        } else {
+            bg.setColor(bgColor);
+        }
         holder.ivIcon.setBackground(bg);
         holder.tvTitle.setText(item.titleRes);
         holder.itemView.setOnClickListener(item.clickListener);
+    }
+
+    /**
+     * 根据基底颜色生成轻微渐变配色（增强图标背景视觉层次）
+     */
+    private int[] iconGradientOf(int baseColor) {
+        float[] hsv = new float[3];
+        android.graphics.Color.colorToHSV(baseColor, hsv);
+        float s = Math.min(1.0f, hsv[1] * 1.15f);
+        float b = Math.min(1.0f, hsv[2] * 1.08f);
+        return new int[]{
+            baseColor,
+            android.graphics.Color.HSVToColor(new float[]{hsv[0], s, b})
+        };
     }
 
     @Override

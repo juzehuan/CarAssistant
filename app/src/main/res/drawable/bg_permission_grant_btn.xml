@@ -1,19 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    权限卡片授权按钮背景（网易云风格 CTA 按钮）
-    - 红色品牌渐变
-    - 大圆角胶囊形
-    - 触摸水波纹
--->
+<!-- 权限卡片授权按钮（增强版，红色渐变+微光） -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="#33FFFFFF">
+    android:color="#44FF2D55">
     <item>
-        <shape android:shape="rectangle">
-            <gradient
-                android:angle="0"
-                android:startColor="#FFEE0A24"
-                android:endColor="#FFFF2D55"/>
-            <corners android:radius="24dp"/>
-        </shape>
+        <layer-list>
+            <!-- 按钮暗底 -->
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="0"
+                        android:startColor="#CCEE0A24"
+                        android:endColor="#CCB00D1F"/>
+                    <corners android:radius="24dp"/>
+                </shape>
+            </item>
+            <!-- 顶部高光泽层 -->
+            <item android:top="1dp" android:bottom="1dp">
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="270"
+                        android:startColor="#20FFFFFF"
+                        android:endColor="#00FFFFFF"/>
+                    <corners android:radius="24dp"/>
+                </shape>
+            </item>
+            <!-- 内边框微光 -->
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="#00000000"/>
+                    <stroke
+                        android:width="0.5dp"
+                        android:color="#30FFFFFF"/>
+                    <corners android:radius="24dp"/>
+                </shape>
+            </item>
+        </layer-list>
     </item>
 </ripple>

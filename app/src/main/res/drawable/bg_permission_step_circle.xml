@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 权限卡片步骤数字圆形背景 -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <solid android:color="#FFEE0A24"/>
-    <size android:width="22dp" android:height="22dp"/>
-</shape>
+<!-- 权限卡片步骤数字圆形背景（红色+微光） -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#FFEE0A24"/>
+        </shape>
+    </item>
+    <!-- 顶部高光 -->
+    <item
+        android:top="1dp"
+        android:bottom="12dp"
+        android:left="4dp"
+        android:right="4dp">
+        <shape android:shape="oval">
+            <gradient
+                android:startColor="#30FFFFFF"
+                android:endColor="#00FFFFFF"
+                android:angle="270"
+                android:type="linear"/>
+        </shape>
+    </item>
+</layer-list>

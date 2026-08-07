@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    歌词淡入动画
-    - 从 alpha 0 + 下方 16dp 滑入
+    歌词淡入动画（增强版）
+    - 从 alpha 0 + 下方 12dp 滑入
+    - 轻微的 scale 弹跳效果
 -->
 <set xmlns:android="http://schemas.android.com/apk/res/android"
-    android:interpolator="@android:anim/decelerate_interpolator">
+    android:interpolator="@android:anim/overshoot_interpolator">
     <alpha
         android:fromAlpha="0.0"
         android:toAlpha="1.0"
-        android:duration="400"/>
+        android:duration="450"/>
     <translate
-        android:fromYDelta="16dp"
+        android:fromYDelta="12dp"
         android:toYDelta="0"
-        android:duration="400"/>
+        android:duration="450"/>
 </set>

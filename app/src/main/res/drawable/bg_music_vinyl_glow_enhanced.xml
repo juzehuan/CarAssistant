@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    黑胶唱片外圈光晕（增强版，播放时红色呼吸光）
-    - 播放时显示，暂停时隐藏
-    - 通过 alpha 动画实现呼吸效果
--->
+<!-- 黑胶唱片外圈光晕（播放时红色呼吸光） -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
     <gradient

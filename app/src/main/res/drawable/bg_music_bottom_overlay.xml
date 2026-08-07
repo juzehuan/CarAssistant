@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 底部控制栏渐变遮罩（为控件提供视觉锚点） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="#00000000"
+        android:centerColor="#33000000"
+        android:endColor="#66000000"
+        android:angle="270"
+        android:type="linear"/>
+</shape>

@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    音乐伴侣背景光斑（飘动效果）
-    - 两个柔和的金色/红色光斑
+    音乐伴侣背景光斑（增强版）
+    - 红色/玫瑰金色调光斑，与网易云品牌色呼应
     - 通过 translate 动画缓慢飘动
     - 营造音乐氛围
 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
     <gradient
-        android:startColor="#40C9A961"
-        android:endColor="#00C9A961"
-        android:gradientRadius="120dp"
+        android:startColor="#50EE0A24"
+        android:centerColor="#30FF2D55"
+        android:endColor="#00EE0A24"
+        android:gradientRadius="140dp"
         android:type="radial"/>
 </shape>
