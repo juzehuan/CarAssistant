@@ -249,8 +249,9 @@ public class SidebarService extends Service {
             sidebarPanel = android.view.LayoutInflater.from(this)
                     .inflate(R.layout.view_sidebar_panel, null);
             int panelW = dp(240);
+            int panelH = getResources().getDisplayMetrics().heightPixels / 2;
             panelParams = new WindowManager.LayoutParams(
-                    panelW, WindowManager.LayoutParams.MATCH_PARENT, edgeType(),
+                    panelW, panelH, edgeType(),
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                             | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
                             | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,

@@ -15,7 +15,6 @@
 package com.carassistant.ui;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -23,8 +22,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,10 +55,6 @@ public class HomeFragment extends Fragment {
     private CompoundButton swFloat;
     private RecyclerView rvFeatures;
     private FeatureAdapter featureAdapter;
-    // 首页当前播放卡片
-    private LinearLayout cardNowPlaying;
-    private TextView tvNpTitle, tvNpArtist;
-    private ImageView ivNpIcon;
 
     @Nullable
     @Override
@@ -81,16 +74,6 @@ public class HomeFragment extends Fragment {
         swFloat = view.findViewById(R.id.sw_float);
         rowFloatApps = view.findViewById(R.id.row_float_apps);
         tvFloatAppsCount = view.findViewById(R.id.tv_float_apps_count);
-        // 音乐播放卡片
-        cardNowPlaying = view.findViewById(R.id.card_now_playing);
-        tvNpTitle = view.findViewById(R.id.tv_np_title);
-        tvNpArtist = view.findViewById(R.id.tv_np_artist);
-        ivNpIcon = view.findViewById(R.id.iv_np_icon);
-        if (cardNowPlaying != null) {
-            cardNowPlaying.setOnClickListener(v -> {
-                startActivity(new Intent(requireContext(), MusicActivity.class));
-            });
-        }
         setupFeatureGrid(view);
         setupFloatSwitch();
 
@@ -209,7 +192,6 @@ public class HomeFragment extends Fragment {
         super.onResume();
         if (!isAdded() || getActivity() == null) return;
         refreshStats();
-        refreshNowPlaying();
         // 同步侧边栏开关状态：先移除 listener 避免递归触发 startSidebarService
         if (swFloat != null) {
             boolean running = com.carassistant.service.SidebarService.isRunning();
@@ -265,23 +247,6 @@ public class HomeFragment extends Fragment {
                 pbMemory.setProgress(memTotal > 0 ? (int) (memUsed * 100 / memTotal) : 0);
             }
         });
-    }
-
-    /** 读取音乐播放状态（SharedPreferences 由 MusicActivity 写入）并刷新首页卡片 */
-    private void refreshNowPlaying() {
-        if (cardNowPlaying == null || tvNpTitle == null) return;
-        SharedPreferences sp = requireContext().getSharedPreferences("music_state", Context.MODE_PRIVATE);
-        String title = sp.getString("title", "");
-        String artist = sp.getString("artist", "");
-        boolean isPlaying = sp.getBoolean("playing", false);
-
-        if (!title.isEmpty()) {
-            tvNpTitle.setText(title);
-            tvNpArtist.setText(artist.isEmpty() ? "未知艺术家" : artist);
-            cardNowPlaying.setVisibility(View.VISIBLE);
-        } else {
-            cardNowPlaying.setVisibility(View.GONE);
-        }
     }
 
     @Override
