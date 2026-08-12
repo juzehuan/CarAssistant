@@ -40,14 +40,23 @@
     <string name="clean_empty">暂无垃圾，已经很干净</string>
     <string name="clean_done">清理完成，释放 %1$s</string>
     <string name="clean_summary_done">扫描完成，建议清理 %1$s</string>
+    <string name="clean_summary_done_no_root">已扫描可访问垃圾 %1$s；一键清理还可清理其他应用缓存</string>
     <!-- 清理-Root 模式 -->
     <string name="clean_root_mode">Root 已开启</string>
     <string name="clean_root_tag">Root</string>
     <string name="clean_root_summary_done">Root 模式扫描完成，建议清理 %1$s（含其他应用缓存）</string>
-    <string name="clean_no_root_summary">未检测到 Root，仅清理本应用可访问的垃圾</string>
+    <string name="clean_no_root_summary">可访问垃圾已清空；一键清理仍可进入系统清理其他应用缓存</string>
     <string name="clean_confirm_root">将清理选中的垃圾文件，含其他应用缓存（需 Root 权限）。清理后不可恢复，确认继续？</string>
-    <string name="clean_confirm_no_root">将清理选中的垃圾文件，清理后不可恢复，确认继续？</string>
+    <string name="clean_confirm_no_root">将先清理选中的可访问垃圾，再打开 Android 系统清理窗口。确认后可清理所有应用的外部缓存；清理后不可恢复。</string>
     <string name="clean_root_failed">部分 Root 项清理失败，请检查 Root 权限</string>
+    <string name="clean_storage_permission_title">需要所有文件访问权限</string>
+    <string name="clean_storage_permission_msg">Android 要求先授予“所有文件访问权限”，车机助手才能请求系统统一清理其他应用的外部缓存。</string>
+    <string name="clean_storage_permission_action">去授权</string>
+    <string name="clean_storage_permission_denied">未获得所有文件访问权限，无法清理其他应用缓存</string>
+    <string name="clean_system_cache_done">清理完成：本地垃圾 %1$s，其他应用缓存已由系统清理</string>
+    <string name="clean_system_cache_canceled">已清理本地垃圾 %1$s；其他应用缓存清理已取消</string>
+    <string name="clean_system_cache_canceled_empty">未清理其他应用缓存</string>
+    <string name="clean_system_cache_unavailable">设备不支持系统缓存清理，已清理本地垃圾 %1$s</string>
 
     <!-- 内存 -->
     <string name="memory_title">内存加速</string>
@@ -334,8 +343,9 @@
     <string name="home_lyrics_settings">歌词设置</string>
     <string name="music_title">音乐伴侣</string>
     <string name="music_source">音乐来源</string>
-    <string name="music_no_song">暂无歌曲</string>
+    <string name="music_no_song">暂无音乐播放</string>
     <string name="music_unknown_artist">未知歌手</string>
+    <string name="music_idle_subtitle">打开常用音乐应用，开始今天的第一首歌</string>
     <string name="music_open_app">点击卡片打开音乐应用</string>
     <string name="music_connected">已连接</string>
     <string name="music_disconnected">未连接</string>
@@ -348,7 +358,8 @@
     <string name="music_permission_step2">开启开关，允许车机助手读取媒体信息</string>
     <string name="music_lyrics">歌词</string>
     <string name="music_lyrics_loading">歌词加载中…</string>
-    <string name="music_no_lyrics">暂无歌词</string>
+    <string name="music_no_lyrics">等待音乐响起</string>
+    <string name="music_empty_lyric_hint">播放歌曲后，歌词将在这里同步滚动</string>
     <string name="music_progress">播放进度</string>
     <string name="music_prev">上一首</string>
     <string name="music_play">播放/暂停</string>
@@ -385,11 +396,11 @@
     <string name="music_settings_show_arm">显示唱臂</string>
     <string name="music_settings_show_arm_tip">在唱片上叠加唱臂装饰</string>
     <string name="music_settings_visualizer_mode">律动特效模式</string>
-    <string name="music_vis_mode_neon">霓虹声波</string>
-    <string name="music_vis_mode_circle">圆形频谱</string>
-    <string name="music_vis_mode_wave">粒子波浪</string>
-    <string name="music_vis_mode_column">平滑频谱</string>
-    <string name="music_vis_mode_dot">跳动圆点</string>
+    <string name="music_vis_mode_neon">流光波纹</string>
+    <string name="music_vis_mode_circle">环形律动</string>
+    <string name="music_vis_mode_wave">极光流体</string>
+    <string name="music_vis_mode_column">节拍灯带</string>
+    <string name="music_vis_mode_dot">星轨粒子</string>
     <string name="music_settings_layout_orientation">唱片与歌词排版</string>
     <string name="music_layout_vertical">纵向列排</string>
     <string name="music_layout_horizontal">横向并排</string>
@@ -403,6 +414,7 @@
     <string name="music_theme_silver">⚪ 银灰</string>
     <string name="music_settings_lyric_font">歌词字号</string>
     <string name="music_settings_lyric_font_tip">放大或缩小歌词文字，便于车机阅读</string>
+    <string name="music_settings_lyric_line_spacing">歌词行间距</string>
     <string name="music_settings_show_translation">显示翻译</string>
     <string name="music_settings_show_translation_tip">有翻译歌词时一并显示</string>
     <string name="music_settings_show_prev">显示上一首按钮</string>
@@ -411,9 +423,6 @@
     <string name="music_settings_show_next_tip">关闭后隐藏底部“下一首”</string>
     <string name="music_settings_percent">%1$d%%</string>
     <string name="music_settings_vinyl_size">唱片大小</string>
-    <string name="music_settings_vinyl_size_small">小</string>
-    <string name="music_settings_vinyl_size_medium">中</string>
-    <string name="music_settings_vinyl_size_large">大</string>
     <string name="music_settings_visualizer">音乐律动</string>
     <string name="music_settings_icon_size">图标大小</string>
     <string name="music_settings_seekbar_thickness">进度条粗细</string>
@@ -600,8 +609,8 @@
     <string name="keymap_trigger_triple">三连按</string>
     <string name="keymap_trigger_sequence">按键序列</string>
     <string name="keymap_sequence_hint">请依次按下若干键组成序列（例如：音量+ → 音量- → 播放）。\n至少需 2 个键，按「确定」完成录制。</string>
-    <string name="keymap_axis_hint">请拨动手柄 / 方向盘的模拟轴（方向、油门等）。\n本功能需先在系统「语言与输入法 → 当前输入法」中启用「车机助手按键映射输入法」。</string>
-    <string name="keymap_ime_tip">模拟轴捕获需要启用「车机助手按键映射输入法」。\n请到系统「语言与输入法 → 当前输入法」开启；本输入法无键盘界面、不干扰文字输入。</string>
+    <string name="keymap_axis_hint">请拨动手柄 / 方向盘的模拟轴（方向、油门等）。\n本功能需先在系统「语言与输入法 → 当前输入法」中将「车机助手按键映射输入法」设为当前输入法。</string>
+    <string name="keymap_ime_tip">模拟轴捕获需要将「车机助手按键映射输入法」设为当前输入法。\n请到系统「语言与输入法 → 当前输入法」中选择；本输入法无键盘界面。</string>
     <string name="keymap_constraint_hint">可设置「仅当某个应用在前台时」才触发该映射。\n留空表示始终生效；当前前台应用会被实时检测。</string>
     <string name="keymap_constraint_none">无约束（始终生效）</string>
     <string name="keymap_btn_sequence">录制序列</string>

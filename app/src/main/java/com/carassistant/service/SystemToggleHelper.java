@@ -14,13 +14,19 @@
 
 package com.carassistant.service;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.provider.Settings;
+
+import androidx.core.content.ContextCompat;
 
 /**
  * 系统快捷开关辅助类
@@ -63,9 +69,11 @@ final class SystemToggleHelper {
     }
 
     /** 蓝牙是否开启 */
+    @SuppressLint("MissingPermission")
     static boolean isBluetoothOn(Context ctx) {
         try {
-            BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
+            if (!hasBluetoothPermission(ctx)) return false;
+            BluetoothAdapter ba = getBluetoothAdapter(ctx);
             return ba != null && ba.isEnabled();
         } catch (Exception e) {
             return false;
@@ -73,9 +81,11 @@ final class SystemToggleHelper {
     }
 
     /** 切换蓝牙开关 */
+    @SuppressLint("MissingPermission")
     static boolean toggleBluetooth(Context ctx) {
         try {
-            BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
+            if (!hasBluetoothPermission(ctx)) return false;
+            BluetoothAdapter ba = getBluetoothAdapter(ctx);
             if (ba == null) return false;
             if (ba.isEnabled()) {
                 try { ba.disable(); } catch (Exception ignored) {}
@@ -86,6 +96,17 @@ final class SystemToggleHelper {
         } catch (Exception e) {
             return isBluetoothOn(ctx);
         }
+    }
+
+    private static boolean hasBluetoothPermission(Context ctx) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+                || ContextCompat.checkSelfPermission(ctx, Manifest.permission.BLUETOOTH_CONNECT)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private static BluetoothAdapter getBluetoothAdapter(Context ctx) {
+        BluetoothManager manager = (BluetoothManager) ctx.getSystemService(Context.BLUETOOTH_SERVICE);
+        return manager != null ? manager.getAdapter() : null;
     }
 
     /** 手电筒状态（CameraManager 不提供直接查询，用内部标志位） */

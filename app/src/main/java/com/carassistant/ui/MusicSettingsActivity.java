@@ -21,6 +21,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.carassistant.R;
+import com.carassistant.util.Immersive;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.shape.MaterialShapeDrawable;
 
@@ -39,6 +40,7 @@ public final class MusicSettingsActivity extends AppCompatActivity {
     private static final String PREF_DEFAULT_SHOW_LYRICS = "music_default_show_lyrics";
     private static final String PREF_LYRIC_OFFSET_MS = "music_lyric_offset_ms";
     private static final String PREF_LYRIC_FONT_SCALE = "music_lyric_font_scale";
+    private static final String PREF_LYRIC_LINE_SPACING = "music_lyric_line_spacing";
     private static final String PREF_SHOW_TRANSLATION = "music_show_translation";
     private static final String PREF_DYNAMIC_THEME = "music_dynamic_theme";
     private static final String PREF_VINYL_ROTATE = "music_vinyl_rotate";
@@ -51,7 +53,7 @@ public final class MusicSettingsActivity extends AppCompatActivity {
     private static final String PREF_SHOW_PREV = "music_show_prev";
     private static final String PREF_SHOW_NEXT = "music_show_next";
     private static final String PREF_AUTO_OPEN_APP = "music_auto_open_app";
-    private static final String PREF_VINYL_SCALE = "music_vinyl_scale";   // 唱片大小缩放：0.8/1.0/1.2
+    private static final String PREF_VINYL_SCALE = "music_vinyl_scale";   // 唱片大小：百分比整数（100=原始大小）
 
 
     private static final int COLOR_PAGE_BG = 0xFF0D0D12;
@@ -75,8 +77,14 @@ public final class MusicSettingsActivity extends AppCompatActivity {
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(18), dp(12), dp(18), dp(32));
-        scrollView.addView(root, new FrameLayout.LayoutParams(-1, -2));
+        root.setPadding(dp(22), dp(8), dp(22), dp(40));
+        int availableWidth = getResources().getDisplayMetrics().widthPixels - dp(24);
+        FrameLayout.LayoutParams rootLp = new FrameLayout.LayoutParams(
+                Math.min(availableWidth, dp(900)), -2, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        scrollView.addView(root, rootLp);
+
+        // 沉浸式状态栏：透明 + 内容铺满顶部，工具栏下压避免被遮挡
+        Immersive.apply(this, false);
 
         // ===== 顶部工具栏 =====
         MaterialToolbar toolbar = new MaterialToolbar(this);
@@ -87,7 +95,9 @@ public final class MusicSettingsActivity extends AppCompatActivity {
         toolbar.setBackgroundColor(Color.TRANSPARENT);
         toolbar.setNavigationIcon(android.R.drawable.ic_menu_close_clear_cancel);
         toolbar.setNavigationOnClickListener(v -> finish());
-        root.addView(toolbar, new LinearLayout.LayoutParams(-1, dp(70)));
+        toolbar.setMinimumHeight(dp(72));
+        root.addView(toolbar, new LinearLayout.LayoutParams(-1, -2));
+        Immersive.padTopForStatusBar(toolbar);
 
         // ===== 卡片：播放与歌词 =====
         LinearLayout cardPlay = card(R.string.music_settings_play_lyric_card);
@@ -99,6 +109,9 @@ public final class MusicSettingsActivity extends AppCompatActivity {
         addSeek(cardPlay, R.string.music_settings_lyric_font, 50, 400,
                 sp().getInt(PREF_LYRIC_FONT_SCALE, 100), " %",
                 i -> sp().edit().putInt(PREF_LYRIC_FONT_SCALE, i).apply());
+        addSeek(cardPlay, R.string.music_settings_lyric_line_spacing, 0, 16,
+                sp().getInt(PREF_LYRIC_LINE_SPACING, 4), " dp",
+                i -> sp().edit().putInt(PREF_LYRIC_LINE_SPACING, i).apply());
         addToggle(cardPlay, R.string.music_settings_show_translation,
                 PREF_SHOW_TRANSLATION, true);
         addCard(root, cardPlay);
@@ -122,7 +135,7 @@ public final class MusicSettingsActivity extends AppCompatActivity {
                 PREF_SHOW_ARM, true);
         addToggle(cardAppearance, R.string.music_settings_visualizer,
                 PREF_VISUALIZER, true);
-        addChoice(cardAppearance, R.string.music_settings_visualizer_mode, PREF_VISUALIZER_MODE, "0",
+        addEffectChoice(cardAppearance, R.string.music_settings_visualizer_mode, PREF_VISUALIZER_MODE, "0",
                 new int[]{R.string.music_vis_mode_neon,
                         R.string.music_vis_mode_circle,
                         R.string.music_vis_mode_wave,
@@ -133,16 +146,16 @@ public final class MusicSettingsActivity extends AppCompatActivity {
                 new int[]{R.string.music_layout_vertical,
                         R.string.music_layout_horizontal},
                 new String[]{"0", "1"});
-        addChoice(cardAppearance, R.string.music_settings_vinyl_size, PREF_VINYL_SCALE, "1.0",
-                new int[]{R.string.music_settings_vinyl_size_small,
-                        R.string.music_settings_vinyl_size_medium,
-                        R.string.music_settings_vinyl_size_large},
-                new String[]{"0.8", "1.0", "1.2"});
+        // 唱片大小：以 100% 为基准的百分比（兼容旧版字符串值 "0.8/1.0/1.2" → 80/100/120）
+        int vinylPct = readVinylScalePercent();
+        addSeek(cardAppearance, R.string.music_settings_vinyl_size, 50, 200,
+                vinylPct, " %",
+                i -> sp().edit().putInt(PREF_VINYL_SCALE, i).apply());
         addSeek(cardAppearance, R.string.music_settings_icon_size, 70, 150,
                 sp().getInt("music_icon_scale", 100), " %",
                 i -> sp().edit().putInt("music_icon_scale", i).apply());
         addSeek(cardAppearance, R.string.music_settings_seekbar_thickness, 2, 16,
-                sp().getInt("music_seekbar_thickness", 6), " dp",
+                sp().getInt("music_seekbar_thickness", 3), " dp",
                 i -> sp().edit().putInt("music_seekbar_thickness", i).apply());
         addColorRow(cardAppearance, R.string.music_settings_seekbar_color, "music_seekbar_color", 0xFFE60026);
         addCard(root, cardAppearance);
@@ -180,16 +193,30 @@ public final class MusicSettingsActivity extends AppCompatActivity {
         return getSharedPreferences("music_settings", MODE_PRIVATE);
     }
 
+    /** 读取唱片大小百分比，默认 100；兼容旧版以字符串存储的 "0.8/1.0/1.2"。 */
+    private int readVinylScalePercent() {
+        try {
+            return sp().getInt(PREF_VINYL_SCALE, 100);
+        } catch (ClassCastException e) {
+            try {
+                return (int) (Float.parseFloat(sp().getString(PREF_VINYL_SCALE, "1.0")) * 100);
+            } catch (Exception ignore) {
+                return 100;
+            }
+        }
+    }
+
     private LinearLayout card(int titleRes) {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(dp(16), dp(16), dp(16), dp(16));
+        card.setPadding(dp(20), dp(18), dp(20), dp(18));
         // 双层叠加背景（深色底 + 顶部红色微光描边）
         android.graphics.drawable.LayerDrawable layers = new android.graphics.drawable.LayerDrawable(
                 new android.graphics.drawable.Drawable[]{
                         createCardBg(), createCardTopGlow()
                 });
         card.setBackground(layers);
+        card.setElevation(dp(2));
         card.addView(cardTitle(titleRes));
         return card;
     }
@@ -197,32 +224,36 @@ public final class MusicSettingsActivity extends AppCompatActivity {
     private android.graphics.drawable.GradientDrawable createCardBg() {
         android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
         bg.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
-        bg.setCornerRadius(dp(20));
-        bg.setColor(COLOR_CARD_BG);
-        bg.setStroke(1, 0x18EE0A24);
+        bg.setCornerRadius(dp(22));
+        bg.setColor(0xF2151A28);
+        bg.setStroke(dp(1), 0x16FFFFFF);
         return bg;
     }
 
     private android.graphics.drawable.GradientDrawable createCardTopGlow() {
         android.graphics.drawable.GradientDrawable glow = new android.graphics.drawable.GradientDrawable();
         glow.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
-        float r = dp(20);
+        float r = dp(22);
         glow.setCornerRadii(new float[]{r, r, r, r, 0, 0, 0, 0});
         glow.setGradientType(android.graphics.drawable.GradientDrawable.LINEAR_GRADIENT);
         glow.setOrientation(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM);
-        glow.setColors(new int[]{0x10EE0A24, 0x00000000});
-        glow.setSize(-1, dp(60));
+        glow.setColors(new int[]{0x16EE0A24, 0x00000000});
+        glow.setSize(-1, dp(72));
         return glow;
     }
 
     private void addCard(LinearLayout parent, LinearLayout card) {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
-        lp.topMargin = dp(14);
+        lp.topMargin = dp(16);
         parent.addView(card, lp);
     }
 
     private TextView cardTitle(int resId) {
-        return labelText(resId, true);
+        TextView title = labelText(resId, true);
+        title.setTextSize(15f);
+        title.setTextColor(COLOR_TEXT_PRIMARY);
+        title.setPadding(0, 0, 0, dp(4));
+        return title;
     }
 
     private TextView labelText(int resId, boolean bold) {
@@ -289,7 +320,8 @@ public final class MusicSettingsActivity extends AppCompatActivity {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(0, dp(12), 0, dp(12));
+        row.setPadding(dp(2), dp(12), dp(2), dp(12));
+        row.setMinimumHeight(dp(56));
         row.setClickable(true);
         row.setFocusable(true);
         row.setBackground(getDrawable(android.R.drawable.list_selector_background));
@@ -383,7 +415,7 @@ public final class MusicSettingsActivity extends AppCompatActivity {
         label.setTextSize(14f);
         parent.addView(label);
 
-        String current = sp().getString(key, defaultVal);
+        String current = readChoiceValue(key, defaultVal);
         final List<TextView> buttons = new ArrayList<>();
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -396,7 +428,8 @@ public final class MusicSettingsActivity extends AppCompatActivity {
             btn.setText(labelResArr[i]);
             btn.setTextSize(12f);
             btn.setGravity(Gravity.CENTER);
-            btn.setPadding(dp(10), dp(7), dp(10), dp(7));
+            btn.setPadding(dp(10), dp(10), dp(10), dp(10));
+            btn.setMinHeight(dp(44));
             applySegmentButtonLook(btn, val.equals(current));
 
             LinearLayout.LayoutParams itemLp = new LinearLayout.LayoutParams(0, -2, 1f);
@@ -415,6 +448,54 @@ public final class MusicSettingsActivity extends AppCompatActivity {
         parent.addView(row);
     }
 
+    /** 五种律动使用 3+2 两行选择器，避免竖屏下文字被挤成难看的窄列。 */
+    private void addEffectChoice(LinearLayout parent, int labelRes, final String key, String defaultVal,
+                                 int[] labelResArr, final String[] valueArr) {
+        TextView label = labelText(labelRes, false);
+        label.setPadding(0, dp(12), 0, dp(6));
+        label.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        label.setTextColor(COLOR_TEXT_PRIMARY);
+        label.setTextSize(14f);
+        parent.addView(label);
+
+        String current = readChoiceValue(key, defaultVal);
+        final List<TextView> buttons = new ArrayList<>();
+        final List<String> values = new ArrayList<>();
+        LinearLayout row = null;
+        for (int i = 0; i < valueArr.length; i++) {
+            if (i == 0 || i == 3) {
+                row = new LinearLayout(this);
+                row.setOrientation(LinearLayout.HORIZONTAL);
+                row.setGravity(Gravity.CENTER_VERTICAL);
+                if (i == 3) row.setPadding(0, dp(6), 0, dp(4));
+                parent.addView(row, new LinearLayout.LayoutParams(-1, -2));
+            }
+
+            final String val = valueArr[i];
+            TextView btn = new TextView(this);
+            btn.setText(labelResArr[i]);
+            btn.setTextSize(13f);
+            btn.setGravity(Gravity.CENTER);
+            btn.setPadding(dp(12), dp(11), dp(12), dp(11));
+            btn.setMinHeight(dp(46));
+            applySegmentButtonLook(btn, val.equals(current));
+
+            LinearLayout.LayoutParams itemLp = new LinearLayout.LayoutParams(0, -2, 1f);
+            if ((i % 3) > 0) itemLp.leftMargin = dp(6);
+            btn.setLayoutParams(itemLp);
+            btn.setOnClickListener(v -> {
+                sp().edit().putString(key, val).apply();
+                for (int j = 0; j < buttons.size(); j++) {
+                    applySegmentButtonLook(buttons.get(j), values.get(j).equals(val));
+                }
+                changed();
+            });
+            buttons.add(btn);
+            values.add(val);
+            row.addView(btn);
+        }
+    }
+
     private void applySegmentButtonLook(TextView btn, boolean selected) {
         btn.setTextColor(selected ? Color.WHITE : COLOR_TEXT_SECONDARY);
         btn.setTypeface(Typeface.DEFAULT, selected ? Typeface.BOLD : Typeface.NORMAL);
@@ -422,6 +503,18 @@ public final class MusicSettingsActivity extends AppCompatActivity {
         bg.setFillColor(ColorStateList.valueOf(selected ? COLOR_ACCENT : 0xFF252B3D));
         bg.setCornerSize((float) dp(8));
         btn.setBackground(bg);
+    }
+
+    private String readChoiceValue(String key, String defaultVal) {
+        try {
+            return sp().getString(key, defaultVal);
+        } catch (ClassCastException e) {
+            try {
+                return String.valueOf(sp().getInt(key, Integer.parseInt(defaultVal)));
+            } catch (ClassCastException | NumberFormatException ignore) {
+                return defaultVal;
+            }
+        }
     }
 
     private void addColorRow(LinearLayout parent, int labelRes, final String key, int defaultColor) {

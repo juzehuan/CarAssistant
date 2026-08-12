@@ -18,6 +18,12 @@ import android.text.TextUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Shell 命令执行工具
@@ -28,6 +34,8 @@ import java.io.InputStreamReader;
  * - 所有方法在调用方线程同步执行，建议在后台线程调用
  */
 public final class ShellUtil {
+
+    private static final long COMMAND_TIMEOUT_SECONDS = 30L;
 
     private ShellUtil() {}
 
@@ -49,37 +57,48 @@ public final class ShellUtil {
         Result result = new Result();
         if (TextUtils.isEmpty(command)) return result;
         Process process = null;
-        BufferedReader outReader = null;
-        BufferedReader errReader = null;
+        ExecutorService readers = null;
         try {
             process = Runtime.getRuntime().exec(new String[]{"su", "-c", command});
             // 不需要输入，直接关闭 stdin
             process.getOutputStream().close();
-            outReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            StringBuilder out = new StringBuilder();
-            StringBuilder err = new StringBuilder();
-            String line;
-            while ((line = outReader.readLine()) != null) {
-                if (out.length() > 0) out.append("\n");
-                out.append(line);
+            final Process runningProcess = process;
+            readers = Executors.newFixedThreadPool(2);
+            Future<String> stdout = readers.submit(() -> readAll(runningProcess.getInputStream()));
+            Future<String> stderr = readers.submit(() -> readAll(runningProcess.getErrorStream()));
+
+            if (!process.waitFor(COMMAND_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                throw new TimeoutException("root command timed out after "
+                        + COMMAND_TIMEOUT_SECONDS + " seconds");
             }
-            while ((line = errReader.readLine()) != null) {
-                if (err.length() > 0) err.append("\n");
-                err.append(line);
-            }
-            result.stdout = out.toString();
-            result.stderr = err.toString();
-            result.exitCode = process.waitFor();
+            result.exitCode = process.exitValue();
+            result.stdout = stdout.get(2, TimeUnit.SECONDS);
+            result.stderr = stderr.get(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            result.exitCode = -1;
+            result.stderr = "root command interrupted";
         } catch (Exception e) {
             result.exitCode = -1;
             result.stderr = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
         } finally {
-            if (outReader != null) try { outReader.close(); } catch (Exception ignored) {}
-            if (errReader != null) try { errReader.close(); } catch (Exception ignored) {}
-            if (process != null) process.destroy();
+            if (process != null && process.isAlive()) process.destroyForcibly();
+            if (readers != null) readers.shutdownNow();
         }
         return result;
+    }
+
+    private static String readAll(java.io.InputStream stream) throws Exception {
+        StringBuilder text = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (text.length() > 0) text.append('\n');
+                text.append(line);
+            }
+        }
+        return text.toString();
     }
 
     /** 检查当前设备是否具有 root 权限 */

@@ -19,6 +19,8 @@ import android.view.View;
 import com.carassistant.util.KeyMappingUtil;
 
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -77,8 +79,7 @@ public class KeyMappingInputMethod extends InputMethodService {
                 || (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD
                 || (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD;
         if (fromGamepad) {
-            int code = detectAxisCode(event);
-            if (code != 0) {
+            for (int code : detectAxisCodes(event)) {
                 if (KeyMappingAccessibilityService.isCaptureMode()) {
                     AxisCaptureListener l = sCaptureListener;
                     if (l != null) l.onAxisCaptured(code);
@@ -91,10 +92,10 @@ public class KeyMappingInputMethod extends InputMethodService {
     }
 
     /**
-     * 从 MotionEvent 中检测发生方向变化的轴，并返回对应的合成键码。
-     * 边缘检测：仅当某轴方向相对上一次发生变化（且非 0）才返回该合成键码。
+     * 从 MotionEvent 中检测所有发生方向变化的轴，并返回对应的合成键码。
+     * 一帧可能同时有多个轴变化，不能在发现第一个轴后提前返回。
      */
-    private int detectAxisCode(MotionEvent event) {
+    private List<Integer> detectAxisCodes(MotionEvent event) {
         // 固定轴列表（含通用轴 32..47，即 AXIS_GENERIC_1..16）
         int[] axes = {
                 MotionEvent.AXIS_HAT_X, MotionEvent.AXIS_HAT_Y,
@@ -109,6 +110,7 @@ public class KeyMappingInputMethod extends InputMethodService {
             allAxes[axes.length + i] = 32 + i; // AXIS_GENERIC_1 = 32
         }
 
+        List<Integer> result = new ArrayList<>();
         for (int axis : allAxes) {
             float v = event.getAxisValue(axis);
             int dir;
@@ -119,11 +121,17 @@ public class KeyMappingInputMethod extends InputMethodService {
             if (last == null) last = 0;
             if (dir != 0 && dir != last) {
                 lastAxisDir.put(axis, dir);
-                return KeyMappingUtil.encodeAxisKey(axis, dir > 0);
+                result.add(KeyMappingUtil.encodeAxisKey(axis, dir > 0));
             } else if (dir == 0 && last != 0) {
                 lastAxisDir.put(axis, 0);
             }
         }
-        return 0;
+        return result;
+    }
+
+    @Override
+    public void onFinishInput() {
+        super.onFinishInput();
+        lastAxisDir.clear();
     }
 }

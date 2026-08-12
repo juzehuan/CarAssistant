@@ -15,6 +15,7 @@
 package com.carassistant.util;
 
 import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.ContentResolver;
@@ -161,6 +162,7 @@ public final class ControlPanelUtil {
         }
     }
 
+    @SuppressLint("MissingPermission")
     public static void toggleBluetooth(Context ctx) {
         try {
             if (!hasBluetoothConnectPermission(ctx)) {

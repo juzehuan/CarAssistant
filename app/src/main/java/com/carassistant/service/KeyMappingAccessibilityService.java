@@ -62,6 +62,11 @@ public class KeyMappingAccessibilityService extends AccessibilityService {
     /** 进入/退出按键录制模式（由 KeyCaptureDialog 调用） */
     public static void setCaptureMode(boolean enabled) {
         sCaptureMode = enabled;
+        // 进入录制前清除尚未判定的单/多击与按压状态，避免对话框显示期间
+        // 仍执行之前积压的映射；录制期间的按键也不会污染退出后的检测状态。
+        if (sInstance != null && sInstance.keyDetector != null) {
+            sInstance.keyDetector.cleanup();
+        }
     }
 
     public static boolean isCaptureMode() {
@@ -111,9 +116,9 @@ public class KeyMappingAccessibilityService extends AccessibilityService {
                 return true;
             }
         } else if (action == KeyEvent.ACTION_UP) {
-            keyDetector.onKeyUp(event.getKeyCode(), event);
-            // 不消费 ACTION_UP，让其他系统组件也能收到（如音量键调音）
-            // 仅当 KeyMapping 命中 ACTION_DOWN 时返回 true
+            // DOWN 被映射消费时，重复 DOWN 与 UP 也必须消费；否则系统仍可能执行
+            // 原按键动作（音量变化、媒体切歌等），造成“一次按键触发两个动作”。
+            return keyDetector.onKeyUp(event.getKeyCode(), event);
         }
         return false;
     }

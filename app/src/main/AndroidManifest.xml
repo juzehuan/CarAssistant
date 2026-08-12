@@ -53,15 +53,17 @@
     <!-- 精确闹钟（Android 12+ 开机自启调度需要） -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
 
     <application
         android:name=".App"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:requestLegacyExternalStorage="true"
+        android:supportsRtl="false"
         android:theme="@style/Theme.CarAssistant">
 
         <activity
@@ -145,20 +147,6 @@
             android:configChanges="orientation|screenSize|keyboardHidden"/>
 
         <!--
-            悬浮按钮服务
-            - foregroundServiceType="specialUse"：Android 14+ 必需，否则 startForeground(type) 会抛 IllegalArgumentException
-            - Android 9 会忽略未知属性，不影响兼容性
-            - 子类型通过 meta-data PROPERTY_SPECIAL_USE_FGS_SUBTYPE 声明
-        -->
-        <service
-            android:name=".service.FloatingButtonService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <meta-data android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="floating_button_quick_launcher" />
-        </service>
-
-        <!--
             侧边栏服务（替代悬浮球）
             - 屏幕左右边缘滑入触发，显示垂直侧边栏面板
             - 包含系统快捷开关、快捷应用网格、导航按钮
@@ -218,7 +206,7 @@
         <!-- 桌面歌词悬浮窗服务 -->
         <service
             android:name=".service.FloatingLyricsService"
-            android:exported="true"
+            android:exported="false"
             android:foregroundServiceType="specialUse">
             <meta-data android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="floating_lyrics_overlay" />

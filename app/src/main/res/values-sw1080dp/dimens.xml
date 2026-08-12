@@ -102,6 +102,7 @@
     <dimen name="music_lyric_translation_size">23sp</dimen>
     <dimen name="music_play_btn_size">100dp</dimen>
     <dimen name="music_prev_next_btn_size">72dp</dimen>
+    <dimen name="music_side_btn_size">62dp</dimen>
     <dimen name="music_repeat_btn_size">60dp</dimen>
     <dimen name="music_source_btn_size">60dp</dimen>
     <dimen name="music_time_text_size">17sp</dimen>

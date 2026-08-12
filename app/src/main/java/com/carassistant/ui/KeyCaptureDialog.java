@@ -12,12 +12,10 @@ package com.carassistant.ui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.provider.Settings;
 import android.view.KeyEvent;
-import android.view.inputmethod.InputMethodInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -31,7 +29,9 @@ import com.carassistant.service.KeyMappingInputMethod;
 import com.carassistant.util.KeyMappingUtil;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 按键录制对话框（参考开源 Key Mapper 的交互）。
@@ -58,6 +58,8 @@ public class KeyCaptureDialog extends AlertDialog {
     private int singleKey = -1;   // 已捕获的单键
     private final List<Integer> seqList = new ArrayList<>();
     private int axisKeyCode = 0;  // 已捕获的模拟轴合成键码
+    /** 当前确实仍被按住的键；只有同时存在两键才算组合键。 */
+    private final Set<Integer> capturePressedKeys = new HashSet<>();
 
     private TextView tvMsg;
     private Button btnSingle, btnSeq, btnAxis;
@@ -100,14 +102,19 @@ public class KeyCaptureDialog extends AlertDialog {
         scroll.addView(root);
 
         setView(scroll);
-        setButton(BUTTON_POSITIVE, activity.getString(android.R.string.ok), (d, which) -> onConfirm());
-        setButton(BUTTON_NEUTRAL, "手动输入", (d, which) -> showManualInput());
+        // onShow 后替换按钮监听，校验失败时保持主对话框打开。
+        setButton(BUTTON_POSITIVE, activity.getString(android.R.string.ok), (d, which) -> {});
+        setButton(BUTTON_NEUTRAL, "手动输入", (d, which) -> {});
         setButton(BUTTON_NEGATIVE, "取消", (d, which) -> {/* no-op */});
+        setOnShowListener(d -> {
+            getButton(BUTTON_POSITIVE).setOnClickListener(v -> onConfirm());
+            getButton(BUTTON_NEUTRAL).setOnClickListener(v -> showManualInput());
+        });
 
         btnSingle.setOnClickListener(v -> setMode(MODE_SINGLE_COMBO));
         btnSeq.setOnClickListener(v -> setMode(MODE_SEQUENCE));
         btnAxis.setOnClickListener(v -> {
-            if (!isKeyMapperImeEnabled()) {
+            if (!isKeyMapperImeSelected()) {
                 Toast.makeText(activity, R.string.keymap_ime_tip, Toast.LENGTH_LONG).show();
                 try {
                     activity.startActivity(new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS));
@@ -131,6 +138,7 @@ public class KeyCaptureDialog extends AlertDialog {
         comboKey2 = -1;
         singleKey = -1;
         seqList.clear();
+        capturePressedKeys.clear();
         axisKeyCode = 0;
         if (newMode == MODE_AXIS) {
             // 注册轴捕获监听：录制模式下由输入法把轴事件转发到这里
@@ -197,12 +205,18 @@ public class KeyCaptureDialog extends AlertDialog {
             // 模拟轴模式下忽略数字按键（轴事件由输入法捕获）
             return false;
         }
+        int keyCode = event.getKeyCode();
+        if (event.getAction() == KeyEvent.ACTION_UP) {
+            capturePressedKeys.remove(keyCode);
+            if (keyCode != KeyEvent.KEYCODE_BACK && keyCode != KeyEvent.KEYCODE_HOME
+                    && keyCode != KeyEvent.KEYCODE_APP_SWITCH) return true;
+        }
         if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
-            int keyCode = event.getKeyCode();
             if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_HOME
                     || keyCode == KeyEvent.KEYCODE_APP_SWITCH) {
                 return false;
             }
+            capturePressedKeys.add(keyCode);
             if (mode == MODE_SEQUENCE) {
                 // 序列：依次记录按键（避免与上一键重复，防止抖动）
                 if (seqList.isEmpty() || seqList.get(seqList.size() - 1) != keyCode) {
@@ -212,22 +226,17 @@ public class KeyCaptureDialog extends AlertDialog {
                 return true;
             }
             // 单键/组合模式
-            if (comboKey1 == -1) {
+            if (capturePressedKeys.size() == 1) {
                 comboKey1 = keyCode;
                 singleKey = keyCode;
+                comboKey2 = -1;
                 updateMsg();
-            } else if (comboKey2 == -1 && keyCode != comboKey1) {
+            } else if (capturePressedKeys.size() >= 2 && keyCode != comboKey1) {
                 comboKey2 = keyCode;
                 updateMsg();
                 // 组合键已捕获，直接完成
                 listener.onComboCaptured(comboKey1, comboKey2);
                 dismiss();
-            } else {
-                // 已捕获单键，再次按下则更新单键
-                singleKey = keyCode;
-                comboKey1 = keyCode;
-                comboKey2 = -1;
-                updateMsg();
             }
             return true;
         }
@@ -274,6 +283,7 @@ public class KeyCaptureDialog extends AlertDialog {
                 .setPositiveButton(android.R.string.ok, (d, w) -> {
                     try {
                         int code = Integer.parseInt(et.getText().toString().trim());
+                        if (code < 0) throw new NumberFormatException("negative keyCode");
                         listener.onSingleKeyCaptured(code);
                         dismiss();
                     } catch (Exception e) {
@@ -284,15 +294,13 @@ public class KeyCaptureDialog extends AlertDialog {
                 .show();
     }
 
-    private boolean isKeyMapperImeEnabled() {
+    private boolean isKeyMapperImeSelected() {
         try {
-            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm == null) return false;
-            String ourId = activity.getPackageName() + "/.service.KeyMappingInputMethod";
-            List<InputMethodInfo> list = imm.getEnabledInputMethodList();
-            for (InputMethodInfo info : list) {
-                if (info.getId().equals(ourId)) return true;
-            }
+            String selected = Settings.Secure.getString(activity.getContentResolver(),
+                    Settings.Secure.DEFAULT_INPUT_METHOD);
+            ComponentName selectedComponent = ComponentName.unflattenFromString(selected);
+            ComponentName expected = new ComponentName(activity, KeyMappingInputMethod.class);
+            return expected.equals(selectedComponent);
         } catch (Exception ignored) {}
         return false;
     }

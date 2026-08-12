@@ -78,7 +78,8 @@ public final class ForegroundAppUtil {
             List<Object> list = (List<Object>) m.invoke(am, 1);
             if (list == null || list.isEmpty()) return "";
             Object info = list.get(0);
-            Object topActivity = info.getClass().getMethod("topActivity").invoke(info);
+            // RunningTaskInfo.topActivity 是公开字段，不是方法；旧实现会始终抛异常。
+            Object topActivity = info.getClass().getField("topActivity").get(info);
             if (topActivity == null) return "";
             Object pkg = topActivity.getClass().getMethod("getPackageName").invoke(topActivity);
             return pkg == null ? "" : pkg.toString();

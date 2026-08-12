@@ -14,9 +14,12 @@
 
 package com.carassistant.ui;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.storage.StorageManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +28,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -37,6 +42,7 @@ import com.carassistant.util.CleanUtil;
 import com.carassistant.util.FormatUtil;
 import com.carassistant.util.MemoryCleaner;
 import com.carassistant.util.MemoryUtil;
+import com.carassistant.util.PermissionUtil;
 import com.carassistant.util.PrefsUtil;
 import com.carassistant.util.ShellUtil;
 
@@ -66,6 +72,36 @@ public class CleanFragment extends Fragment {
     private volatile boolean hasRoot = false;
     /** Root 检测是否已完成 */
     private volatile boolean rootChecked = false;
+    /** 从“所有文件访问”授权页返回后，继续用户刚才发起的清理操作 */
+    private boolean retryCleanAfterStorageGrant = false;
+    /** 启动系统缓存清理页前，本应用已经清理掉的字节数 */
+    private long pendingLocalCleanedBytes = 0L;
+
+    /**
+     * Android 11+ 不允许普通应用直接删除其他应用的私有缓存。
+     * 通过系统公开的 ACTION_CLEAR_APP_CACHE 让用户确认后统一清理所有应用外部缓存。
+     */
+    private final ActivityResultLauncher<Intent> systemCacheCleanerLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (!isAdded()) return;
+                long localCleaned = pendingLocalCleanedBytes;
+                pendingLocalCleanedBytes = 0L;
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Toast.makeText(requireContext(),
+                            getString(R.string.clean_system_cache_done,
+                                    FormatUtil.formatSize(localCleaned)),
+                            Toast.LENGTH_LONG).show();
+                } else if (localCleaned > 0) {
+                    Toast.makeText(requireContext(),
+                            getString(R.string.clean_system_cache_canceled,
+                                    FormatUtil.formatSize(localCleaned)),
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(requireContext(), R.string.clean_system_cache_canceled_empty,
+                            Toast.LENGTH_LONG).show();
+                }
+                new ScanTask(this).execute();
+            });
 
     @Nullable
     @Override
@@ -163,7 +199,8 @@ public class CleanFragment extends Fragment {
         String msg = hasRoot
                 ? getString(R.string.memory_suggest_root_msg)
                 : getString(R.string.memory_suggest_accessibility_msg);
-        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        androidx.appcompat.app.AlertDialog.Builder builder =
+                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                 .setTitle(R.string.memory_suggest_accessibility_title)
                 .setMessage(msg)
                 .setPositiveButton(R.string.memory_go_enable, (d, w) -> {
@@ -177,13 +214,17 @@ public class CleanFragment extends Fragment {
                                 Toast.LENGTH_LONG).show();
                     } catch (Exception e) {
                         Toast.makeText(requireContext(),
-                                "无法打开无障碍设置，请手动进入系统设置",
-                                Toast.LENGTH_LONG).show();
-                    }
-                })
-                .setNegativeButton(R.string.memory_clean_anyway, (d, w) -> executeBoost())
-                .setCancelable(true)
-                .show();
+                                 "无法打开无障碍设置，请手动进入系统设置",
+                                 Toast.LENGTH_LONG).show();
+                     }
+                 });
+        // Android 14+ 已明确限制普通应用只能结束自身进程，不能再把无效操作显示成“清理成功”。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            builder.setNegativeButton(android.R.string.cancel, null);
+        } else {
+            builder.setNegativeButton(R.string.memory_clean_anyway, (d, w) -> executeBoost());
+        }
+        builder.setCancelable(true).show();
     }
 
     /** 实际执行内存清理（已有 Root 或无障碍服务） */
@@ -222,6 +263,20 @@ public class CleanFragment extends Fragment {
     }
 
     private void doClean() {
+        // Android 11+ 清理其他应用外部缓存必须由系统确认页执行，并要求所有文件访问权限。
+        if (shouldUseSystemCacheCleaner() && !PermissionUtil.hasStorageAccess(requireContext())) {
+            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.clean_storage_permission_title)
+                    .setMessage(R.string.clean_storage_permission_msg)
+                    .setPositiveButton(R.string.clean_storage_permission_action, (d, w) -> {
+                        retryCleanAfterStorageGrant = true;
+                        PermissionUtil.requestAllFilesAccess(requireContext());
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
+            return;
+        }
+
         // 根据是否 Root 显示不同确认文案
         String msg = hasRoot ? getString(R.string.clean_confirm_root)
                              : getString(R.string.clean_confirm_no_root);
@@ -258,18 +313,46 @@ public class CleanFragment extends Fragment {
             requireActivity().runOnUiThread(() -> {
                 btnClean.setText(R.string.clean_clean);
                 btnClean.setEnabled(true);
-                new ScanTask(this).execute();
                 if (rootFailed) {
+                    new ScanTask(this).execute();
                     Toast.makeText(requireContext(),
                             R.string.clean_root_failed,
                             Toast.LENGTH_LONG).show();
+                } else if (shouldUseSystemCacheCleaner()) {
+                    launchSystemCacheCleaner(cleaned);
                 } else {
+                    new ScanTask(this).execute();
                     Toast.makeText(requireContext(),
                             getString(R.string.clean_done, FormatUtil.formatSize(cleaned)),
                             Toast.LENGTH_LONG).show();
                 }
             });
         }).start();
+    }
+
+    private boolean shouldUseSystemCacheCleaner() {
+        return !hasRoot && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R;
+    }
+
+    private void launchSystemCacheCleaner(long localCleanedBytes) {
+        Intent intent = new Intent(StorageManager.ACTION_CLEAR_APP_CACHE);
+        if (intent.resolveActivity(requireContext().getPackageManager()) == null) {
+            new ScanTask(this).execute();
+            Toast.makeText(requireContext(),
+                    getString(R.string.clean_system_cache_unavailable,
+                            FormatUtil.formatSize(localCleanedBytes)),
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        pendingLocalCleanedBytes = localCleanedBytes;
+        try {
+            systemCacheCleanerLauncher.launch(intent);
+        } catch (SecurityException e) {
+            pendingLocalCleanedBytes = 0L;
+            new ScanTask(this).execute();
+            Toast.makeText(requireContext(), R.string.clean_storage_permission_denied,
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     private static class ScanTask extends AsyncTask<Void, Void, List<CleanUtil.JunkGroup>> {
@@ -307,10 +390,11 @@ public class CleanFragment extends Fragment {
                 if (f.hasRoot) {
                     f.tvSummary.setText(f.getString(R.string.clean_root_summary_done, FormatUtil.formatSize(total)));
                 } else {
-                    f.tvSummary.setText(f.getString(R.string.clean_summary_done, FormatUtil.formatSize(total)));
+                    f.tvSummary.setText(f.getString(R.string.clean_summary_done_no_root,
+                            FormatUtil.formatSize(total)));
                 }
             } else {
-                // 无垃圾时，若已检测过 Root 且无 Root，提示用户
+                // 本应用可访问垃圾为空时，非 Root 设备仍可进入系统页清理其他应用缓存。
                 if (f.rootChecked && !f.hasRoot) {
                     f.tvSummary.setText(R.string.clean_no_root_summary);
                 } else {
@@ -324,5 +408,14 @@ public class CleanFragment extends Fragment {
     public void onResume() {
         super.onResume();
         refreshMemory();
+        if (retryCleanAfterStorageGrant) {
+            retryCleanAfterStorageGrant = false;
+            if (PermissionUtil.hasStorageAccess(requireContext())) {
+                doClean();
+            } else {
+                Toast.makeText(requireContext(), R.string.clean_storage_permission_denied,
+                        Toast.LENGTH_LONG).show();
+            }
+        }
     }
 }

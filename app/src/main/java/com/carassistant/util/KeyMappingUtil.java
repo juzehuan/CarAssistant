@@ -113,6 +113,8 @@ public final class KeyMappingUtil {
     public static final int ACTION_MEDIA_NEXT = 21;
     public static final int ACTION_MEDIA_PREVIOUS = 22;
     public static final int ACTION_MEDIA_STOP = 23;
+    public static final int ACTION_MEDIA_FAST_FORWARD = 24;
+    public static final int ACTION_MEDIA_REWIND = 25;
     // 开关类
     public static final int ACTION_TOGGLE_WIFI = 30;
     public static final int ACTION_TOGGLE_BLUETOOTH = 31;
@@ -335,6 +337,7 @@ public final class KeyMappingUtil {
                                                     String actionData, String actionLabel,
                                                     String targetPackage, String constraintPackage,
                                                     boolean enabled) {
+        if (keys == null || keys.length < 2) return;
         try {
             JSONObject json = new JSONObject();
             JSONArray seq = new JSONArray();
@@ -348,10 +351,10 @@ public final class KeyMappingUtil {
             json.put("combo", 0);
             json.put("targetPackage", targetPackage == null ? "" : targetPackage);
             json.put("constraintPackage", constraintPackage == null ? "" : constraintPackage);
-            ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                    .edit()
-                    .putString(seqKey(keys), json.toString())
-                    .apply();
+            SharedPreferences.Editor editor = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit();
+            // 兼容旧版 hash 存储键：写入可逆新键时同步清除旧键，避免同一序列重复出现。
+            editor.remove(legacySeqKey(keys));
+            editor.putString(seqKey(keys), json.toString()).apply();
         } catch (JSONException ignored) {}
     }
 
@@ -398,7 +401,10 @@ public final class KeyMappingUtil {
         if (m == null) return;
         if (m.trigger == TRIGGER_SEQUENCE && m.sequenceKeys != null && m.sequenceKeys.length >= 2) {
             ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                    .edit().remove(seqKey(m.sequenceKeys)).apply();
+                    .edit()
+                    .remove(seqKey(m.sequenceKeys))
+                    .remove(legacySeqKey(m.sequenceKeys))
+                    .apply();
             return;
         }
         if (m.comboKeyCode != 0) {
@@ -471,6 +477,7 @@ public final class KeyMappingUtil {
             saveMappingInternal(ctx, singleKey(m.keyCode, m.trigger), 0, m.trigger,
                     m.actionType, m.actionData, m.actionLabel, enabled, m.targetPackage, m.constraintPackage);
         }
+        m.enabled = enabled;
     }
 
     /** 清空所有映射 */
@@ -524,12 +531,12 @@ public final class KeyMappingUtil {
             JSONObject root = new JSONObject(json);
             JSONArray arr = root.optJSONArray("mappings");
             if (arr == null) return false;
-            clearAll(ctx);
-            SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-            SharedPreferences.Editor ed = sp.edit();
+            // 先完整解析到内存；任一项目非法时不触碰现有配置。
+            Map<String, String> validated = new java.util.LinkedHashMap<>();
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject item = arr.getJSONObject(i);
                 int actionType = item.getInt("actionType");
+                if (!isKnownActionType(actionType)) return false;
                 String actionData = item.optString("actionData", "");
                 String actionLabel = item.optString("actionLabel", "");
                 boolean enabled = item.optBoolean("enabled", true);
@@ -548,11 +555,12 @@ public final class KeyMappingUtil {
                 String storeKey;
                 if ("sequence".equals(type)) {
                     JSONArray seq = item.optJSONArray("keys");
-                    if (seq == null || seq.length() < 2) continue;
+                    if (seq == null || seq.length() < 2) return false;
                     int[] keys = new int[seq.length()];
                     JSONArray seqArr = new JSONArray();
                     for (int j = 0; j < seq.length(); j++) {
                         keys[j] = seq.getInt(j);
+                        if (keys[j] < 0) return false;
                         seqArr.put(keys[j]);
                     }
                     storeJson.put("sequenceKeys", seqArr);
@@ -562,17 +570,27 @@ public final class KeyMappingUtil {
                 } else if ("combo".equals(type)) {
                     int key1 = item.getInt("key1");
                     int key2 = item.getInt("key2");
+                    if (key1 < 0 || key2 < 0 || key1 == key2) return false;
                     storeJson.put("trigger", TRIGGER_TAP);
                     storeJson.put("combo", 0);
                     storeKey = comboKey(key1, key2);
                 } else {
+                    if (!"single".equals(type)) return false;
                     int keyCode = item.getInt("keyCode");
                     int trigger = item.optInt("trigger", TRIGGER_TAP);
+                    if (keyCode < 0 || trigger < TRIGGER_TAP || trigger > TRIGGER_TRIPLE_TAP) {
+                        return false;
+                    }
                     storeJson.put("trigger", trigger);
                     storeJson.put("combo", 0);
                     storeKey = singleKey(keyCode, trigger);
                 }
-                ed.putString(storeKey, storeJson.toString());
+                validated.put(storeKey, storeJson.toString());
+            }
+            SharedPreferences.Editor ed = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                    .edit().clear();
+            for (Map.Entry<String, String> entry : validated.entrySet()) {
+                ed.putString(entry.getKey(), entry.getValue());
             }
             ed.apply();
             return true;
@@ -736,6 +754,8 @@ public final class KeyMappingUtil {
             case ACTION_MEDIA_NEXT: return "下一首";
             case ACTION_MEDIA_PREVIOUS: return "上一首";
             case ACTION_MEDIA_STOP: return "停止播放";
+            case ACTION_MEDIA_FAST_FORWARD: return "快进";
+            case ACTION_MEDIA_REWIND: return "快退";
             // 开关
             case ACTION_TOGGLE_WIFI: return "切换 WiFi";
             case ACTION_TOGGLE_BLUETOOTH: return "切换蓝牙";
@@ -799,7 +819,7 @@ public final class KeyMappingUtil {
     public static String getActionCategory(int actionType) {
         if (actionType == ACTION_OPEN_APP || actionType == ACTION_OPEN_ACTIVITY) return "应用启动";
         if (actionType >= 10 && actionType <= 12) return "音量";
-        if (actionType >= 20 && actionType <= 23) return "媒体控制";
+        if (actionType >= 20 && actionType <= 25) return "媒体控制";
         if (actionType >= 30 && actionType <= 34) return "开关";
         if (actionType >= 40 && actionType <= 42) return "屏幕亮度";
         if (actionType >= 50 && actionType <= 55) return "系统操作";
@@ -822,6 +842,8 @@ public final class KeyMappingUtil {
                 ACTION_MEDIA_NEXT,
                 ACTION_MEDIA_PREVIOUS,
                 ACTION_MEDIA_STOP,
+                ACTION_MEDIA_FAST_FORWARD,
+                ACTION_MEDIA_REWIND,
                 ACTION_TOGGLE_WIFI,
                 ACTION_TOGGLE_BLUETOOTH,
                 ACTION_TOGGLE_AIRPLANE,
@@ -872,6 +894,13 @@ public final class KeyMappingUtil {
         };
     }
 
+    private static boolean isKnownActionType(int actionType) {
+        for (int known : getAllActionTypes()) {
+            if (known == actionType) return true;
+        }
+        return false;
+    }
+
     /** 判断该动作是否需要选择应用作为 actionData */
     public static boolean isActionNeedApp(int actionType) {
         return actionType == ACTION_OPEN_APP;
@@ -909,7 +938,9 @@ public final class KeyMappingUtil {
         return actionType == ACTION_MEDIA_PLAY_PAUSE
                 || actionType == ACTION_MEDIA_NEXT
                 || actionType == ACTION_MEDIA_PREVIOUS
-                || actionType == ACTION_MEDIA_STOP;
+                || actionType == ACTION_MEDIA_STOP
+                || actionType == ACTION_MEDIA_FAST_FORWARD
+                || actionType == ACTION_MEDIA_REWIND;
     }
 
     /** 媒体动作是否支持选择定向目标应用（仅媒体控制类支持） */
@@ -1017,8 +1048,8 @@ public final class KeyMappingUtil {
                         buildPreset(KeyEvent.KEYCODE_MEDIA_PREVIOUS, TRIGGER_TAP, ACTION_MEDIA_PREVIOUS),
                         buildPreset(KeyEvent.KEYCODE_MEDIA_NEXT, TRIGGER_TAP, ACTION_MEDIA_NEXT),
                         buildPreset(KeyEvent.KEYCODE_MEDIA_STOP, TRIGGER_TAP, ACTION_MEDIA_STOP),
-                        buildPreset(KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, TRIGGER_TAP, ACTION_BRIGHTNESS_UP),
-                        buildPreset(KeyEvent.KEYCODE_MEDIA_REWIND, TRIGGER_TAP, ACTION_BRIGHTNESS_DOWN),
+                        buildPreset(KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, TRIGGER_TAP, ACTION_MEDIA_FAST_FORWARD),
+                        buildPreset(KeyEvent.KEYCODE_MEDIA_REWIND, TRIGGER_TAP, ACTION_MEDIA_REWIND),
                 }));
         // 模板4：快速开关方案
         list.add(new Preset(
@@ -1087,8 +1118,18 @@ public final class KeyMappingUtil {
 
     // ============ 序列映射辅助 ============
 
-    /** 构造序列映射的存储 key（基于按键数组哈希，键数组本身存于 JSON） */
+    /** 构造无碰撞、可逆的序列存储 key。 */
     private static String seqKey(int[] keys) {
+        StringBuilder sb = new StringBuilder("seq:");
+        for (int i = 0; i < keys.length; i++) {
+            if (i > 0) sb.append(',');
+            sb.append(keys[i]);
+        }
+        return sb.toString();
+    }
+
+    /** 旧版基于 Arrays.hashCode 的存储 key，仅用于读取/迁移兼容。 */
+    private static String legacySeqKey(int[] keys) {
         return "seq:" + Arrays.hashCode(keys);
     }
 
@@ -1121,10 +1162,14 @@ public final class KeyMappingUtil {
      */
     public static boolean hasAnyEnabledMappingForKey(Context ctx, int keyCode) {
         // 单键四模式
-        if (getMapping(ctx, keyCode, TRIGGER_TAP) != null) return true;
-        if (getMapping(ctx, keyCode, TRIGGER_DOUBLE_TAP) != null) return true;
-        if (getMapping(ctx, keyCode, TRIGGER_TRIPLE_TAP) != null) return true;
-        if (getMapping(ctx, keyCode, TRIGGER_LONG_PRESS) != null) return true;
+        KeyMapping tap = getMapping(ctx, keyCode, TRIGGER_TAP);
+        KeyMapping dbl = getMapping(ctx, keyCode, TRIGGER_DOUBLE_TAP);
+        KeyMapping triple = getMapping(ctx, keyCode, TRIGGER_TRIPLE_TAP);
+        KeyMapping longPress = getMapping(ctx, keyCode, TRIGGER_LONG_PRESS);
+        if (tap != null && tap.enabled) return true;
+        if (dbl != null && dbl.enabled) return true;
+        if (triple != null && triple.enabled) return true;
+        if (longPress != null && longPress.enabled) return true;
         // 组合键（作为任一成员）
         for (KeyMapping m : getAllMappings(ctx)) {
             if (m.enabled) {
@@ -1147,9 +1192,14 @@ public final class KeyMappingUtil {
     public static KeyMapping getSequenceMapping(Context ctx, int[] keys) {
         SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String val = sp.getString(seqKey(keys), null);
+        String storeKey = seqKey(keys);
+        if (val == null) {
+            storeKey = legacySeqKey(keys);
+            val = sp.getString(storeKey, null);
+        }
         if (val == null) return null;
         try {
-            return parseFromJson(seqKey(keys), new JSONObject(val));
+            return parseFromJson(storeKey, new JSONObject(val));
         } catch (Exception e) {
             return null;
         }

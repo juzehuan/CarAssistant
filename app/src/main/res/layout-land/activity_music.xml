@@ -20,19 +20,20 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="8dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="12dp"
         android:clipToPadding="false">
 
         <ImageView
             android:id="@+id/btn_back"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_gravity="start|center_vertical"
             android:src="@drawable/ic_music_arrow_down"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="@drawable/bg_music_header_action"
+            android:padding="13dp"
             android:scaleType="centerInside"
             android:contentDescription="@string/back"
             android:elevation="2dp"
@@ -44,7 +45,8 @@
             android:layout_height="44dp"
             android:layout_gravity="end|center_vertical"
             android:src="@drawable/ic_music_settings"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="@drawable/bg_music_header_action"
+            android:padding="13dp"
             android:scaleType="centerInside"
             android:contentDescription="@string/music_settings"
             android:tint="@color/music_text_secondary"
@@ -52,19 +54,22 @@
             tools:ignore="UseAppTint"/>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="18dp"
-            android:paddingBottom="10dp"
+            android:layout_marginStart="80dp"
+            android:layout_marginEnd="80dp"
+            android:paddingBottom="6dp"
             android:orientation="vertical"
             android:gravity="center"
             android:elevation="1dp">
 
             <TextView
                 android:id="@+id/tv_title"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textAlignment="center"
                 android:maxLines="1"
                 android:ellipsize="end"
                 android:text="@string/music_no_song"
@@ -77,8 +82,10 @@
 
             <TextView
                 android:id="@+id/tv_artist"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textAlignment="center"
                 android:layout_marginTop="3dp"
                 android:maxLines="1"
                 android:ellipsize="end"
@@ -88,14 +95,6 @@
                 android:alpha="0.85"/>
         </LinearLayout>
     </FrameLayout>
-
-    <!-- 头部分隔线 -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginStart="48dp"
-        android:layout_marginEnd="48dp"
-        android:background="@drawable/bg_music_header_divider"/>
 
     <!-- 权限引导卡片 -->
     <LinearLayout
@@ -306,7 +305,8 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginStart="36dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="20dp"
             android:visibility="visible">
 
             <TextView
@@ -354,14 +354,19 @@
 
             <TextView
                 android:id="@+id/tv_lyric_current"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:minWidth="240dp"
+                android:maxWidth="520dp"
                 android:gravity="center"
                 android:maxLines="2"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:background="@drawable/bg_music_lyric_focus"
                 android:lineSpacingExtra="6dp"
                 android:text="@string/music_no_lyrics"
                 android:textColor="@color/music_lyric_current"
@@ -370,6 +375,17 @@
                 android:shadowColor="#44FF2D55"
                 android:shadowDy="1"
                 android:shadowRadius="12"/>
+
+            <TextView
+                android:id="@+id/tv_lyric_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:text="@string/music_empty_lyric_hint"
+                android:textColor="@color/music_text_hint"
+                android:textSize="15sp"
+                android:alpha="0.72"/>
 
             <TextView
                 android:id="@+id/tv_lyric_translation"
@@ -433,11 +449,13 @@
         android:id="@+id/btn_floating_lyrics"
         android:layout_width="1dp"
         android:layout_height="1dp"
+        android:contentDescription="@null"
         android:visibility="gone"/>
     <ImageView
         android:id="@+id/btn_lyrics_settings"
         android:layout_width="1dp"
         android:layout_height="1dp"
+        android:contentDescription="@null"
         android:visibility="gone"/>
 
     <!-- 音乐律动频谱条 -->
@@ -445,74 +463,12 @@
         android:id="@+id/music_visualizer"
         android:layout_width="match_parent"
         android:layout_height="@dimen/music_visualizer_height"
-        android:layout_marginStart="48dp"
-        android:layout_marginEnd="48dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginEnd="64dp"
         android:layout_marginTop="6dp"
         android:layout_marginBottom="4dp"/>
 
-    <!-- 控制栏上方分隔线 -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_marginStart="80dp"
-        android:layout_marginEnd="80dp"
-        android:background="@drawable/bg_music_control_divider"/>
-
-    <!-- 进度条区 -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingStart="48dp"
-        android:paddingEnd="48dp"
-        android:paddingTop="10dp">
-
-        <SeekBar
-            android:id="@+id/sb_progress"
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:max="100"
-            android:progress="0"
-            android:progressDrawable="@drawable/bg_music_seekbar_track"
-            android:thumb="@drawable/bg_music_seekbar_thumb"
-            android:splitTrack="false"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp">
-
-            <TextView
-                android:id="@+id/tv_current"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="00:00"
-                android:textColor="@color/music_text_hint"
-                android:textSize="@dimen/music_time_text_size"
-                android:fontFamily="monospace"
-                android:alpha="0.85"/>
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"/>
-
-            <TextView
-                android:id="@+id/tv_duration"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="00:00"
-                android:textColor="@color/music_text_hint"
-                android:textSize="@dimen/music_time_text_size"
-                android:fontFamily="monospace"
-                android:alpha="0.85"/>
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- 底部播放控制栏（含渐变遮罩背景） -->
+    <!-- 底部播放区：轻量进度层 + 独立控制层，避免大卡片压住主视觉 -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -520,114 +476,171 @@
         <!-- 底部渐变遮罩 -->
         <View
             android:layout_width="match_parent"
-            android:layout_height="90dp"
+            android:layout_height="146dp"
             android:layout_gravity="bottom"
             android:background="@drawable/bg_music_bottom_overlay"/>
 
         <LinearLayout
-            android:id="@+id/bottom_control_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingStart="64dp"
-            android:paddingEnd="64dp"
-            android:paddingTop="14dp"
-            android:paddingBottom="20dp"
-            android:elevation="2dp">
+            android:layout_marginStart="62dp"
+            android:layout_marginEnd="62dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="vertical"
+            android:paddingTop="6dp">
 
-            <!-- 歌词开关 -->
-            <ImageView
-                android:id="@+id/btn_lyrics_toggle"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:src="@drawable/ic_music_lyrics_hongqi"
-                android:background="@drawable/bg_music_icon_circle"
-                android:scaleType="centerInside"
-                android:contentDescription="@string/floating_lyrics_toggle"
-                android:tint="@color/music_text_primary"
-                android:padding="10dp"
-                tools:ignore="UseAppTint"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"/>
+                <TextView
+                    android:id="@+id/tv_current"
+                    android:layout_width="52dp"
+                    android:layout_height="wrap_content"
+                    android:text="00:00"
+                    android:textColor="@color/music_text_secondary"
+                    android:textSize="@dimen/music_time_text_size"
+                    android:fontFamily="monospace"
+                    android:alpha="0.58"/>
 
-            <!-- 上一首 -->
-            <ImageView
-                android:id="@+id/btn_prev"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:src="@drawable/ic_music_prev_hongqi"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:scaleType="center"
-                android:contentDescription="@string/music_prev"
-                android:tint="@color/music_text_primary"
-                android:alpha="0.90"
-                tools:ignore="UseAppTint"/>
+                <SeekBar
+                    android:id="@+id/sb_progress"
+                    android:layout_width="0dp"
+                    android:layout_height="28dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="14dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressDrawable="@drawable/bg_music_seekbar_track"
+                    android:thumb="@drawable/bg_music_seekbar_thumb"
+                    android:splitTrack="false"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"/>
 
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"/>
+                <TextView
+                    android:id="@+id/tv_duration"
+                    android:layout_width="52dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:text="00:00"
+                    android:textColor="@color/music_text_secondary"
+                    android:textSize="@dimen/music_time_text_size"
+                    android:fontFamily="monospace"
+                    android:alpha="0.58"/>
+            </LinearLayout>
 
-            <!-- 播放/暂停按钮（带光环） -->
-            <FrameLayout
-                android:id="@+id/btn_play_container"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:elevation="4dp">
-                <View
-                    android:layout_width="46dp"
-                    android:layout_height="46dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/bg_music_play_ring"/>
-                <ImageView
-                    android:id="@+id/btn_play"
-                    android:layout_width="match_parent"
+            <LinearLayout
+                android:id="@+id/bottom_control_bar"
+                android:layout_width="match_parent"
+                android:layout_height="82dp"
+                android:layout_marginTop="2dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clipToPadding="false"
+                android:paddingStart="54dp"
+                android:paddingEnd="54dp">
+
+                <FrameLayout
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:src="@drawable/ic_music_play_hongqi"
-                    android:scaleType="center"
-                    android:padding="16dp"
-                    android:tint="#FFFFFFFF"
-                    android:contentDescription="@string/music_play"
-                    tools:ignore="UseAppTint"/>
-            </FrameLayout>
+                    android:layout_weight="1">
+                    <ImageView
+                        android:id="@+id/btn_lyrics_toggle"
+                        android:layout_width="@dimen/music_side_btn_size"
+                        android:layout_height="@dimen/music_side_btn_size"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_music_lyrics_hongqi"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@string/floating_lyrics_toggle"
+                        android:tint="@color/music_text_primary"
+                        android:padding="9dp"
+                        tools:ignore="UseAppTint"/>
+                </FrameLayout>
 
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"/>
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+                    <ImageView
+                        android:id="@+id/btn_prev"
+                        android:layout_width="@dimen/music_prev_next_btn_size"
+                        android:layout_height="@dimen/music_prev_next_btn_size"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_music_prev_hongqi"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="center"
+                        android:contentDescription="@string/music_prev"
+                        android:tint="@color/music_text_primary"
+                        android:alpha="0.90"
+                        tools:ignore="UseAppTint"/>
+                </FrameLayout>
 
-            <!-- 下一首 -->
-            <ImageView
-                android:id="@+id/btn_next"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:src="@drawable/ic_music_next_hongqi"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:scaleType="center"
-                android:contentDescription="@string/music_next"
-                android:tint="@color/music_text_primary"
-                android:alpha="0.90"
-                tools:ignore="UseAppTint"/>
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.2">
+                    <FrameLayout
+                        android:id="@+id/btn_play_container"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:layout_gravity="center"
+                        android:elevation="5dp">
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_music_play_ring"/>
+                        <ImageView
+                            android:id="@+id/btn_play"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_music_play_hongqi"
+                            android:scaleType="center"
+                            android:padding="18dp"
+                            android:tint="#FFFFFFFF"
+                            android:contentDescription="@string/music_play"
+                            tools:ignore="UseAppTint"/>
+                    </FrameLayout>
+                </FrameLayout>
 
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"/>
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+                    <ImageView
+                        android:id="@+id/btn_next"
+                        android:layout_width="@dimen/music_prev_next_btn_size"
+                        android:layout_height="@dimen/music_prev_next_btn_size"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_music_next_hongqi"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="center"
+                        android:contentDescription="@string/music_next"
+                        android:tint="@color/music_text_primary"
+                        android:alpha="0.90"
+                        tools:ignore="UseAppTint"/>
+                </FrameLayout>
 
-            <!-- 播放列表 -->
-            <ImageView
-                android:id="@+id/btn_playlist"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:src="@drawable/ic_music_list"
-                android:scaleType="centerInside"
-                android:alpha="0.70"
-                android:contentDescription="@string/music_playlist"
-                tools:ignore="ContentDescription"/>
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+                    <ImageView
+                        android:id="@+id/btn_playlist"
+                        android:layout_width="@dimen/music_side_btn_size"
+                        android:layout_height="@dimen/music_side_btn_size"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_music_list"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="12dp"
+                        android:scaleType="centerInside"
+                        android:alpha="0.76"
+                        android:contentDescription="@string/music_playlist"/>
+                </FrameLayout>
+            </LinearLayout>
         </LinearLayout>
     </FrameLayout>
 
@@ -653,6 +666,7 @@
         android:id="@+id/btn_music_source"
         android:layout_width="1dp"
         android:layout_height="1dp"
+        android:contentDescription="@null"
         android:visibility="gone"/>
 
 </LinearLayout>

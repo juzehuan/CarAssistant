@@ -3,8 +3,11 @@ package com.carassistant.ui;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RadialGradient;
+import android.graphics.Shader;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
@@ -13,152 +16,146 @@ import android.view.View;
 import java.util.Random;
 
 /**
- * 音乐律动可视化（无需录音权限），支持 5 种特效模式：
- * <ul>
- *   <li>0 — 霓虹声波：镜像霓虹条 + 辉光 + 星点（原有）</li>
- *   <li>1 — 圆形频谱：同心圆环随节奏呼吸缩放</li>
- *   <li>2 — 粒子波浪：多点正弦波浪线</li>
- *   <li>3 — 柱状均衡：经典上下跳动均衡器</li>
- *   <li>4 — 跳动圆点：一排大小随节奏变化的圆点</li>
- * </ul>
+ * 无需录音权限的音乐律动视图。
+ *
+ * 五种模式只使用当前页面强调色及其柔和派生色，避免旧版彩虹色和高亮噪点抢走
+ * 歌词、封面与播放控制的视觉焦点。模式编号保持 0..4 不变，兼容已有设置。
  */
 public class MusicVisualizerView extends View {
 
-    public static final int MODE_NEON_BARS = 0;
-    public static final int MODE_CIRCLE_SPECTRUM = 1;
-    public static final int MODE_PARTICLE_WAVE = 2;
-    public static final int MODE_COLUMN_EQ = 3;
-    public static final int MODE_DOT_PULSE = 4;
+    public static final int MODE_NEON_BARS = 0;       // 流光波纹
+    public static final int MODE_CIRCLE_SPECTRUM = 1; // 环形律动
+    public static final int MODE_PARTICLE_WAVE = 2;   // 极光流体
+    public static final int MODE_COLUMN_EQ = 3;       // 节拍灯带
+    public static final int MODE_DOT_PULSE = 4;       // 星轨粒子
 
-    private static final int BAR_COUNT = 56;
-    private static final long FRAME_MS = 33;
-    private static final float BASELINE = 0.025f;
-    private static final float HUE_SPREAD = 55f;
-    private static final float MID = (BAR_COUNT - 1) / 2f;
+    private static final int BAR_COUNT = 64;
+    private static final long FRAME_MS = 33L;
+    private static final float BASELINE = 0.035f;
 
-    private final Paint corePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint mainPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint capPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint wavePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint dotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint fillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint detailPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Path mainPath = new Path();
+    private final Path auxPath = new Path();
+    private final float[] bars = new float[BAR_COUNT];
+    private final float[] peaks = new float[BAR_COUNT];
+    private final float[] peakVelocity = new float[BAR_COUNT];
+    private final Random random = new Random();
 
     private int accentColor = 0xFFEE0A24;
-    private float baseHue = 352f;
-    private boolean active = false;
+    private boolean active;
     private int mode = MODE_NEON_BARS;
-
-    private final float[] bars = new float[BAR_COUNT];
-    private final float[] peak = new float[BAR_COUNT];
-    private final float[] peakVel = new float[BAR_COUNT];
-    private float globalEnergy = 0f;
+    private float globalEnergy;
     private float externalLevel = 0.6f;
-    private long lastUpdate = 0;
-
-    private final Random random = new Random();
-    private final float[] hsv = new float[3];
-    private final Path wavePath = new Path();
-    private final Path spectrumPath = new Path();
-    private final Paint spectrumFill = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint spectrumStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-    // 圆形频谱专用
-    private float circlePhase = 0f;
-    // 粒子波浪专用
-    private float wavePhase = 0f;
+    private float phase;
+    private long lastUpdate;
+    private boolean running;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable tick = new Runnable() {
-        @Override public void run() {
+        @Override
+        public void run() {
+            if (!running) return;
             update();
             invalidate();
             handler.postDelayed(this, FRAME_MS);
         }
     };
 
-    public MusicVisualizerView(Context context) { super(context); init(); }
-    public MusicVisualizerView(Context context, AttributeSet attrs) { super(context, attrs); init(); }
-    public MusicVisualizerView(Context context, AttributeSet attrs, int defStyle) { super(context, attrs, defStyle); init(); }
+    public MusicVisualizerView(Context context) {
+        super(context);
+        init();
+    }
+
+    public MusicVisualizerView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
+
+    public MusicVisualizerView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        init();
+    }
 
     private void init() {
+        setLayerType(LAYER_TYPE_SOFTWARE, null);
         for (int i = 0; i < BAR_COUNT; i++) {
-            bars[i] = BASELINE; peak[i] = BASELINE; peakVel[i] = 0f;
+            bars[i] = BASELINE;
+            peaks[i] = BASELINE;
         }
-        corePaint.setStyle(Paint.Style.FILL);
-        glowPaint.setStyle(Paint.Style.FILL);
-        capPaint.setStyle(Paint.Style.FILL);
-        capPaint.setColor(Color.WHITE);
-        linePaint.setStyle(Paint.Style.FILL);
-        wavePaint.setStyle(Paint.Style.STROKE);
-        wavePaint.setStrokeWidth(3f);
-        wavePaint.setStrokeCap(Paint.Cap.ROUND);
-        spectrumFill.setStyle(Paint.Style.FILL);
-        spectrumStroke.setStyle(Paint.Style.STROKE);
-        spectrumStroke.setStrokeWidth(2f);
-        spectrumStroke.setStrokeCap(Paint.Cap.ROUND);
-        spectrumStroke.setStrokeJoin(Paint.Join.ROUND);
-
-        dotPaint.setStyle(Paint.Style.FILL);
+        mainPaint.setStyle(Paint.Style.STROKE);
+        mainPaint.setStrokeCap(Paint.Cap.ROUND);
+        mainPaint.setStrokeJoin(Paint.Join.ROUND);
+        glowPaint.setStyle(Paint.Style.STROKE);
+        glowPaint.setStrokeCap(Paint.Cap.ROUND);
+        glowPaint.setStrokeJoin(Paint.Join.ROUND);
+        fillPaint.setStyle(Paint.Style.FILL);
+        detailPaint.setStyle(Paint.Style.FILL);
     }
 
     public void setAccentColor(int color) {
-        this.accentColor = color;
-        float[] tmp = new float[3];
-        Color.colorToHSV(color, tmp);
-        baseHue = tmp[0];
+        accentColor = Color.rgb(Color.red(color), Color.green(color), Color.blue(color));
+        invalidate();
     }
 
-    public void setActive(boolean active) { this.active = active; }
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
     public void setLevel(float level) {
-        if (level >= 0f && level <= 1f) externalLevel = level;
+        externalLevel = clamp(level, 0f, 1f);
     }
 
-    /** 设置特效模式（0=霓虹声波, 1=圆形频谱, 2=粒子波浪, 3=柱状均衡, 4=跳动圆点） */
+    /** 保持旧设置兼容；越界值回到默认流光波纹。 */
     public void setMode(int mode) {
-        if (mode >= 0 && mode <= 4) this.mode = mode;
+        this.mode = mode >= 0 && mode <= 4 ? mode : MODE_NEON_BARS;
+        invalidate();
     }
 
-    public void start() { if (!handler.hasCallbacks(tick)) handler.post(tick); }
-    public void stop() { handler.removeCallbacks(tick); }
+    public void start() {
+        if (running) return;
+        running = true;
+        handler.post(tick);
+    }
+
+    public void stop() {
+        running = false;
+        handler.removeCallbacks(tick);
+        lastUpdate = 0L;
+    }
 
     private void update() {
         long now = System.currentTimeMillis();
-        float dt = lastUpdate == 0 ? FRAME_MS : Math.min(50, now - lastUpdate);
+        float dt = lastUpdate == 0L ? FRAME_MS : Math.min(50f, now - lastUpdate);
         lastUpdate = now;
-        float t = now / 1000f;
+        phase += dt * (active ? 0.0036f : 0.0012f);
 
-        globalEnergy *= (float) Math.pow(0.93f, dt / FRAME_MS);
-        if (active && random.nextDouble() < 0.025 * dt / FRAME_MS) {
-            globalEnergy = Math.min(1f, globalEnergy + 0.45f + random.nextFloat() * 0.3f);
+        globalEnergy *= (float) Math.pow(active ? 0.91f : 0.84f, dt / FRAME_MS);
+        if (active && random.nextFloat() < 0.026f * dt / FRAME_MS) {
+            globalEnergy = Math.min(1f, globalEnergy + 0.32f + random.nextFloat() * 0.34f);
         }
-        float ampScale = active ? (0.45f + 0.55f * externalLevel) : 1f;
 
-        circlePhase += dt * 0.002f;
-        wavePhase += dt * 0.003f;
-
+        float seconds = now / 1000f;
+        float scale = active ? 0.44f + externalLevel * 0.46f : 0.08f;
         for (int i = 0; i < BAR_COUNT; i++) {
-            float target;
-            if (active) {
-                float env = 0.5f + 0.5f * (float) Math.sin(Math.PI * i / (BAR_COUNT - 1));
-                double f = 2.0 + i * 0.07;
-                double w1 = Math.sin(t * f + i * 0.6) * 0.5 + 0.5;
-                double w2 = Math.sin(t * f * 1.9 + i * 1.1) * 0.5 + 0.5;
-                double w3 = Math.sin(t * f * 0.5 + i * 0.3) * 0.5 + 0.5;
-                target = (float) ((w1 * 0.5 + w2 * 0.3 + w3 * 0.2) * env * ampScale * (1f + globalEnergy * 0.7f));
-                target += random.nextFloat() * 0.04f;
-                if (target > 1f) target = 1f;
-                if (target < 0f) target = 0f;
+            float normalized = i / (float) (BAR_COUNT - 1);
+            float envelope = 0.42f + 0.58f * (float) Math.sin(Math.PI * normalized);
+            float slow = 0.5f + 0.5f * (float) Math.sin(seconds * 2.1f + i * 0.29f);
+            float fast = 0.5f + 0.5f * (float) Math.sin(seconds * 4.7f + i * 0.71f);
+            float target = BASELINE + envelope * (slow * 0.62f + fast * 0.38f)
+                    * scale * (1f + globalEnergy * 0.34f);
+            if (active) target += random.nextFloat() * 0.025f;
+            target = clamp(target, BASELINE, 1f);
+            bars[i] += (target - bars[i]) * (active ? 0.24f : 0.08f);
+
+            if (bars[i] >= peaks[i]) {
+                peaks[i] = bars[i];
+                peakVelocity[i] = 0f;
             } else {
-                target = BASELINE + 0.02f * (float) Math.sin(t * 1.1f + i * 0.5f);
-            }
-            bars[i] += (target - bars[i]) * (active ? 0.3f : 0.09f);
-            if (bars[i] >= peak[i]) { peak[i] = bars[i]; peakVel[i] = 0f; }
-            else {
-                peakVel[i] += dt * 0.0009f;
-                peak[i] -= peakVel[i] * dt;
-                if (peak[i] < bars[i]) peak[i] = bars[i];
-                if (peak[i] < 0f) peak[i] = 0f;
+                peakVelocity[i] += dt * 0.00055f;
+                peaks[i] = Math.max(bars[i], peaks[i] - peakVelocity[i] * dt);
             }
         }
     }
@@ -166,294 +163,308 @@ public class MusicVisualizerView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if (getWidth() <= 0 || getHeight() <= 0) return;
         switch (mode) {
-            case MODE_NEON_BARS:   drawNeonBars(canvas); break;
-            case MODE_CIRCLE_SPECTRUM: drawCircleSpectrum(canvas); break;
-            case MODE_PARTICLE_WAVE: drawParticleWave(canvas); break;
-            case MODE_COLUMN_EQ:   drawColumnEq(canvas); break;
-            case MODE_DOT_PULSE:   drawDotPulse(canvas); break;
-            default: drawNeonBars(canvas);
+            case MODE_CIRCLE_SPECTRUM:
+                drawOrbit(canvas);
+                break;
+            case MODE_PARTICLE_WAVE:
+                drawAurora(canvas);
+                break;
+            case MODE_COLUMN_EQ:
+                drawBeatRibbon(canvas);
+                break;
+            case MODE_DOT_PULSE:
+                drawStarTrail(canvas);
+                break;
+            case MODE_NEON_BARS:
+            default:
+                drawLightRibbon(canvas);
+                break;
         }
     }
 
-    // === 模式 0：霓虹声波（原创效果） ===
-    private void drawNeonBars(Canvas canvas) {
-        int w = getWidth(), h = getHeight();
-        if (w <= 0 || h <= 0) return;
-        float gap = Math.max(2f, w * 0.006f);
-        float barW = (w - gap * (BAR_COUNT - 1)) / (float) BAR_COUNT;
-        if (barW <= 0) return;
-        float centerY = h * 0.5f, halfSpan = h * 0.40f;
+    /** 模式 0：三层柔和流光，以一条明亮主波纹作为视觉中心。 */
+    private void drawLightRibbon(Canvas canvas) {
+        float w = getWidth();
+        float h = getHeight();
+        float cy = h * 0.53f;
+        int warm = blend(accentColor, 0xFFFF8A72, 0.32f);
 
-        for (int i = 0; i < BAR_COUNT; i++) {
-            float lv = bars[i];
-            float bh = Math.max(2f, lv * halfSpan);
-            float x = i * (barW + gap);
-            float hue = baseHue + ((i - MID) / MID) * HUE_SPREAD;
-            hsv[0] = hue; hsv[1] = 0.9f; hsv[2] = 1f;
-            int col = Color.HSVToColor(hsv);
+        for (int layer = 2; layer >= 0; layer--) {
+            float amplitude = h * (0.14f + layer * 0.055f);
+            buildWavePath(mainPath, w, cy, amplitude, layer * 1.45f, 28);
+            int color = layer == 0 ? blend(accentColor, Color.WHITE, 0.34f)
+                    : (layer == 1 ? accentColor : warm);
 
-            glowPaint.setColor(col);
-            glowPaint.setAlpha(active ? 70 : 40);
-            float gw = barW * 2.1f;
-            drawBar(canvas, glowPaint, x - (gw - barW) / 2f, gw, bh * 1.05f, centerY);
+            glowPaint.setShader(null);
+            glowPaint.setColor(withAlpha(color, active ? 34 : 15));
+            glowPaint.setStrokeWidth(dp(7f - layer));
+            canvas.drawPath(mainPath, glowPaint);
 
-            corePaint.setColor(col);
-            corePaint.setAlpha(active ? 255 : 150);
-            drawBar(canvas, corePaint, x, barW, bh, centerY);
-
-            capPaint.setAlpha(active ? 210 : 120);
-            float cr = barW * 0.6f;
-            canvas.drawCircle(x + barW / 2f, centerY - bh, cr, capPaint);
-            canvas.drawCircle(x + barW / 2f, centerY + bh, cr, capPaint);
-
-            if (peak[i] > lv + 0.01f) {
-                capPaint.setAlpha(255);
-                float pr = barW * 0.8f, ph = peak[i] * halfSpan;
-                canvas.drawCircle(x + barW / 2f, centerY - ph, pr, capPaint);
-                canvas.drawCircle(x + barW / 2f, centerY + ph, pr, capPaint);
-            }
+            mainPaint.setShader(new LinearGradient(0, 0, w, 0,
+                    new int[]{withAlpha(color, 28), withAlpha(color, active ? 228 : 105),
+                            withAlpha(blend(color, Color.WHITE, 0.22f), active ? 245 : 120),
+                            withAlpha(color, 28)},
+                    new float[]{0f, 0.26f, 0.68f, 1f}, Shader.TileMode.CLAMP));
+            mainPaint.setStrokeWidth(dp(layer == 0 ? 2.2f : 1.35f));
+            canvas.drawPath(mainPath, mainPaint);
         }
-        hsv[0] = baseHue; hsv[1] = 0.9f; hsv[2] = 1f;
-        linePaint.setColor(Color.HSVToColor(hsv));
-        linePaint.setAlpha(active ? 55 : 25);
-        canvas.drawRect(0, centerY - 1.5f, w, centerY + 1.5f, linePaint);
+        mainPaint.setShader(null);
+
+        fillPaint.setShader(new RadialGradient(w * 0.56f, cy, w * 0.32f,
+                new int[]{withAlpha(accentColor, active ? 24 : 10), Color.TRANSPARENT},
+                null, Shader.TileMode.CLAMP));
+        canvas.drawOval(w * 0.18f, cy - h * 0.38f, w * 0.92f, cy + h * 0.38f, fillPaint);
+        fillPaint.setShader(null);
     }
 
-    // === 模式 1：圆形频谱 ===
-    private void drawCircleSpectrum(Canvas canvas) {
-        int w = getWidth(), h = getHeight();
-        if (w <= 0 || h <= 0) return;
-        float cx = w / 2f, cy = h / 2f;
-        float maxR = Math.min(cx, cy) * 0.85f;
-        int rings = 6;
-        for (int r = 0; r < rings; r++) {
-            int bi = (int) (r * BAR_COUNT / (float) rings);
-            if (bi >= BAR_COUNT) bi = BAR_COUNT - 1;
-            float level = bars[bi];
-            float radius = maxR * (0.2f + 0.8f * level) * (r + 1f) / rings;
-            float hue = baseHue + r * 12f;
-            hsv[0] = hue; hsv[1] = 0.8f; hsv[2] = 1f;
-            int col = Color.HSVToColor(hsv);
+    /** 模式 1：细密环形频谱，适合黑胶主题但不与主唱片争抢。 */
+    private void drawOrbit(Canvas canvas) {
+        float w = getWidth();
+        float h = getHeight();
+        float cx = w * 0.5f;
+        float cy = h * 0.52f;
+        float radiusX = w * 0.25f;
+        float radiusY = h * 0.20f;
+        int soft = blend(accentColor, Color.WHITE, 0.42f);
 
-            glowPaint.setColor(col);
-            glowPaint.setAlpha(active ? 60 : 30);
-            wavePaint.setColor(col);
-            wavePaint.setAlpha(active ? 200 : 100);
-            wavePaint.setStrokeWidth(2.5f + level * 4f);
-            canvas.drawCircle(cx, cy, radius + circlePhase % 1f * 3f, wavePaint);
-
-            // 内圈辉光
-            glowPaint.setAlpha(active ? 25 : 10);
-            canvas.drawCircle(cx, cy, radius * 0.85f, glowPaint);
+        int rays = 56;
+        for (int i = 0; i < rays; i++) {
+            float angle = (float) (Math.PI * 2d * i / rays - Math.PI / 2d + phase * 0.12f);
+            float level = bars[(i * BAR_COUNT / rays) % BAR_COUNT];
+            float cos = (float) Math.cos(angle);
+            float sin = (float) Math.sin(angle);
+            float innerX = cx + cos * radiusX;
+            float innerY = cy + sin * radiusY;
+            float spike = h * (0.035f + level * 0.14f);
+            float outerX = innerX + cos * spike * 1.2f;
+            float outerY = innerY + sin * spike;
+            mainPaint.setShader(null);
+            mainPaint.setColor(withAlpha(i % 3 == 0 ? soft : accentColor,
+                    active ? 110 + Math.round(level * 130f) : 70));
+            mainPaint.setStrokeWidth(dp(i % 3 == 0 ? 2f : 1.15f));
+            canvas.drawLine(innerX, innerY, outerX, outerY, mainPaint);
         }
-        // 中心亮点
-        hsv[0] = baseHue; hsv[1] = 0.9f; hsv[2] = 1f;
-        dotPaint.setColor(Color.HSVToColor(hsv));
-        dotPaint.setAlpha(active ? 220 : 100);
-        canvas.drawCircle(cx, cy, 4f + globalEnergy * 6f, dotPaint);
+
+        mainPaint.setColor(withAlpha(soft, active ? 190 : 92));
+        mainPaint.setStrokeWidth(dp(1.4f));
+        canvas.drawOval(cx - radiusX, cy - radiusY, cx + radiusX, cy + radiusY, mainPaint);
+        mainPaint.setColor(withAlpha(accentColor, active ? 62 : 25));
+        mainPaint.setStrokeWidth(dp(4f));
+        float glowScale = 1.14f + globalEnergy * 0.025f;
+        canvas.drawOval(cx - radiusX * glowScale, cy - radiusY * glowScale,
+                cx + radiusX * glowScale, cy + radiusY * glowScale, mainPaint);
+
+        float starAngle = phase * 0.48f;
+        float starX = cx + (float) Math.cos(starAngle) * radiusX;
+        float starY = cy + (float) Math.sin(starAngle) * radiusY;
+        detailPaint.setShader(new RadialGradient(starX, starY, dp(9f),
+                new int[]{withAlpha(soft, active ? 220 : 105), Color.TRANSPARENT},
+                null, Shader.TileMode.CLAMP));
+        canvas.drawCircle(starX, starY, dp(9f), detailPaint);
+        detailPaint.setShader(null);
+        detailPaint.setColor(withAlpha(soft, active ? 235 : 115));
+        canvas.drawCircle(starX, starY, dp(1.8f + globalEnergy * 1.2f), detailPaint);
     }
 
-    // === 模式 2：粒子波浪 ===
-    private void drawParticleWave(Canvas canvas) {
-        int w = getWidth(), h = getHeight();
-        if (w <= 0 || h <= 0) return;
-        float cx = w / 2f, cy = h / 2f;
-        // 3 条波浪线
-        for (int wave = 0; wave < 3; wave++) {
-            wavePath.reset();
-            float yBase = cy + (wave - 1) * h * 0.22f;
-            float amp = h * 0.18f * (0.5f + 0.5f * globalEnergy);
-            float hue = baseHue + wave * 20f;
-            for (int i = 0; i <= w; i += 8) {
-                float t = i / (float) w;
-                int bi = (int) (t * (BAR_COUNT - 1));
-                float y = yBase + (float) Math.sin(t * Math.PI * 4 + wavePhase + wave * 2.1f) * amp * bars[bi];
-                if (i == 0) wavePath.moveTo(i, y);
-                else wavePath.lineTo(i, y);
-            }
-            hsv[0] = hue; hsv[1] = 0.85f; hsv[2] = 1f;
-            wavePaint.setColor(Color.HSVToColor(hsv));
-            wavePaint.setAlpha(active ? 200 : 100);
-            wavePaint.setStrokeWidth(2f + globalEnergy * 2f);
-            canvas.drawPath(wavePath, wavePaint);
+    /** 模式 2：半透明极光色带，动画缓慢，适合长时间驻留。 */
+    private void drawAurora(Canvas canvas) {
+        float w = getWidth();
+        float h = getHeight();
+        float cy = h * 0.53f;
+        int rose = blend(accentColor, 0xFFFF7995, 0.38f);
+
+        for (int layer = 2; layer >= 0; layer--) {
+            float amp = h * (0.12f + layer * 0.055f);
+            float offset = (layer - 1) * h * 0.08f;
+            buildWavePath(mainPath, w, cy + offset, amp, layer * 1.8f, 32);
+            auxPath.reset();
+            auxPath.addPath(mainPath);
+            auxPath.lineTo(w, cy + offset + h * 0.25f);
+            auxPath.lineTo(0, cy + offset + h * 0.25f);
+            auxPath.close();
+
+            int color = layer == 0 ? blend(accentColor, Color.WHITE, 0.22f)
+                    : (layer == 1 ? accentColor : rose);
+            fillPaint.setShader(new LinearGradient(0, cy - amp, 0, cy + h * 0.25f,
+                    new int[]{withAlpha(color, active ? 58 - layer * 10 : 20),
+                            withAlpha(color, active ? 12 : 5), Color.TRANSPARENT},
+                    null, Shader.TileMode.CLAMP));
+            canvas.drawPath(auxPath, fillPaint);
+
+            mainPaint.setShader(null);
+            mainPaint.setColor(withAlpha(color, active ? 185 - layer * 28 : 72));
+            mainPaint.setStrokeWidth(dp(layer == 0 ? 2f : 1.2f));
+            canvas.drawPath(mainPath, mainPaint);
         }
-        // 散布粒子
-        dotPaint.setColor(accentColor);
-        for (int i = 0; i < 12; i++) {
-            int bi = (i * BAR_COUNT / 12);
-            float t = i / 11f;
-            float x = (float) (t * w + Math.sin(wavePhase * 2 + i) * 8f);
-            float yBase = cy + (i % 3 - 1) * h * 0.22f;
-            float y = yBase + bars[bi] * h * 0.2f;
-            float r = 1.5f + bars[bi] * 5f;
-            dotPaint.setAlpha((int) (80 + bars[bi] * 175));
-            canvas.drawCircle(x, y, r, dotPaint);
+        fillPaint.setShader(null);
+
+        for (int i = 0; i < 9; i++) {
+            float x = w * (0.1f + i * 0.1f);
+            int bi = i * (BAR_COUNT - 1) / 8;
+            float y = cy + (float) Math.sin(i * 0.8f + phase) * h * 0.12f * (0.4f + bars[bi]);
+            float r = dp(1.1f + bars[bi] * 1.9f);
+            detailPaint.setColor(withAlpha(i % 2 == 0 ? rose : Color.WHITE,
+                    active ? 90 + Math.round(bars[bi] * 110f) : 58));
+            canvas.drawCircle(x, y, r, detailPaint);
         }
     }
 
-    // === 模式 3：平滑频谱曲线 ===
-    private void drawColumnEq(Canvas canvas) {
-        int w = getWidth(), h = getHeight();
-        if (w <= 0 || h <= 0) return;
-        float centerY = h * 0.5f;
-        float maxH = h * 0.42f;
-        int baseAlpha = active ? 240 : 120;
+    /** 模式 3：从下向上生长的节拍灯带；大留白、低密度，不再像一排对称栅栏。 */
+    private void drawBeatRibbon(Canvas canvas) {
+        float w = getWidth();
+        float h = getHeight();
+        float baseline = h * 0.76f;
+        int count = Math.max(19, Math.min(31, Math.round(w / dp(19f))));
+        if (count % 2 == 0) count--;
+        float contentWidth = w * 0.78f;
+        float barWidth = Math.min(dp(5.6f), contentWidth / count * 0.34f);
+        float gap = (contentWidth - barWidth * count) / Math.max(1, count - 1);
+        float startX = (w - contentWidth) * 0.5f;
+        int soft = blend(accentColor, Color.WHITE, 0.42f);
+        int deep = blend(accentColor, Color.BLACK, 0.28f);
 
-        // 取均匀采样点（上半部分）
-        int samples = 40;
-        float[] ptsX = new float[samples + 2];
-        float[] ptsY = new float[samples + 2];
-        ptsX[0] = 0; ptsY[0] = centerY;
-        for (int i = 0; i < samples; i++) {
-            int bi = (int) (i * BAR_COUNT / (float) samples);
-            ptsX[i + 1] = (i + 1) * w / (float) (samples + 1);
-            ptsY[i + 1] = centerY - bars[bi] * maxH;
+        // 灯带下方只有一层很轻的环境光，避免出现厚重卡片感。
+        fillPaint.setShader(new RadialGradient(w * 0.5f, baseline, w * 0.34f,
+                new int[]{withAlpha(accentColor, active ? 25 : 10), Color.TRANSPARENT},
+                null, Shader.TileMode.CLAMP));
+        canvas.drawOval(w * 0.15f, baseline - h * 0.34f,
+                w * 0.85f, baseline + h * 0.22f, fillPaint);
+        fillPaint.setShader(null);
+
+        for (int i = 0; i < count; i++) {
+            int bi = i * (BAR_COUNT - 1) / Math.max(1, count - 1);
+            int neighbor = Math.min(BAR_COUNT - 1, bi + 3);
+            float level = bars[bi] * 0.74f + bars[neighbor] * 0.26f;
+            float position = i / (float) Math.max(1, count - 1);
+            float envelope = 0.48f + 0.52f * (float) Math.sin(Math.PI * position);
+            float stagger = 0.88f + 0.12f * (float) Math.sin(i * 1.73f + phase * 0.42f);
+            float height = dp(6f) + level * h * 0.54f * envelope * stagger;
+            float left = startX + i * (barWidth + gap);
+            float radius = barWidth * 0.5f;
+            float top = baseline - height;
+
+            glowPaint.setShader(null);
+            glowPaint.setStyle(Paint.Style.FILL);
+            glowPaint.setColor(withAlpha(accentColor, active ? 18 + Math.round(level * 32f) : 9));
+            canvas.drawRoundRect(left - dp(2.2f), top - dp(2.2f),
+                    left + barWidth + dp(2.2f), baseline + dp(2.2f),
+                    radius + dp(2.2f), radius + dp(2.2f), glowPaint);
+
+            fillPaint.setShader(new LinearGradient(0, top, 0, baseline,
+                    new int[]{withAlpha(soft, active ? 245 : 118),
+                            withAlpha(accentColor, active ? 224 : 92),
+                            withAlpha(deep, active ? 142 : 60)},
+                    new float[]{0f, 0.36f, 1f},
+                    Shader.TileMode.CLAMP));
+            canvas.drawRoundRect(left, top, left + barWidth, baseline,
+                    radius, radius, fillPaint);
+
+            // 极短的倒影把所有柱子串成一条灯带，但不再上下完全镜像。
+            float reflection = Math.min(h - baseline - dp(2f), height * 0.13f);
+            fillPaint.setShader(new LinearGradient(0, baseline, 0, baseline + reflection,
+                    new int[]{withAlpha(accentColor, active ? 54 : 24), Color.TRANSPARENT},
+                    null, Shader.TileMode.CLAMP));
+            canvas.drawRoundRect(left, baseline + dp(2f), left + barWidth,
+                    baseline + dp(2f) + reflection, radius, radius, fillPaint);
         }
-        ptsX[samples + 1] = w; ptsY[samples + 1] = centerY;
 
-        // 下半部分（镜像，暗色）
-        float[] ptsYDim = new float[samples + 2];
-        ptsYDim[0] = centerY; ptsYDim[samples + 1] = centerY;
-        for (int i = 0; i < samples; i++) {
-            int bi = (int) (i * BAR_COUNT / (float) samples);
-            ptsYDim[i + 1] = centerY + bars[bi] * maxH * 0.65f;
-        }
+        fillPaint.setShader(null);
+        glowPaint.setStyle(Paint.Style.STROKE);
 
-        // === 上半部：渐变填充 ===
-        spectrumPath.reset();
-        spectrumPath.moveTo(0, centerY);
-        for (int i = 0; i <= samples + 1; i++) {
-            if (i <= 1 || i >= samples) {
-                spectrumPath.lineTo(ptsX[i], ptsY[i]);
-            } else {
-                float px = ptsX[i - 1], py = ptsY[i - 1];
-                float cx1 = (px + ptsX[i]) / 2f;
-                spectrumPath.cubicTo(cx1, py, cx1, ptsY[i], ptsX[i], ptsY[i]);
-            }
-        }
-        spectrumPath.close();
-
-        // 渐变填充：顶部亮红 → 底部透明
-        android.graphics.LinearGradient fillGrad = new android.graphics.LinearGradient(
-                0, centerY - maxH, 0, centerY,
-                new int[]{shiftAlpha(accentColor, 0.55f), shiftAlpha(accentColor, 0.05f)},
-                null, android.graphics.Shader.TileMode.CLAMP);
-        spectrumFill.setShader(fillGrad);
-        canvas.drawPath(spectrumPath, spectrumFill);
-
-        // 上半部顶部描边线
-        spectrumStroke.setColor(accentColor);
-        spectrumStroke.setAlpha((int)(baseAlpha * 0.9f));
-        spectrumStroke.setStrokeWidth(active ? 2.5f : 1.5f);
-        spectrumPath.reset();
-        spectrumPath.moveTo(0, centerY);
-        for (int i = 0; i <= samples + 1; i++) {
-            if (i <= 1 || i >= samples) {
-                spectrumPath.lineTo(ptsX[i], ptsY[i]);
-            } else {
-                float px = ptsX[i - 1], py = ptsY[i - 1];
-                float cx1 = (px + ptsX[i]) / 2f;
-                spectrumPath.cubicTo(cx1, py, cx1, ptsY[i], ptsX[i], ptsY[i]);
-            }
-        }
-        canvas.drawPath(spectrumPath, spectrumStroke);
-
-        // === 下半部：微光填充 ===
-        spectrumPath.reset();
-        spectrumPath.moveTo(0, centerY);
-        for (int i = 0; i <= samples + 1; i++) {
-            if (i <= 1 || i >= samples) {
-                spectrumPath.lineTo(ptsX[i], ptsYDim[i]);
-            } else {
-                float px = ptsX[i - 1], py = ptsYDim[i - 1];
-                float cx1 = (px + ptsX[i]) / 2f;
-                spectrumPath.cubicTo(cx1, py, cx1, ptsYDim[i], ptsX[i], ptsYDim[i]);
-            }
-        }
-        spectrumPath.close();
-
-        android.graphics.LinearGradient fillGradDim = new android.graphics.LinearGradient(
-                0, centerY, 0, centerY + maxH,
-                new int[]{shiftAlpha(accentColor, 0.08f), shiftAlpha(accentColor, 0f)},
-                null, android.graphics.Shader.TileMode.CLAMP);
-        spectrumFill.setShader(fillGradDim);
-        canvas.drawPath(spectrumPath, spectrumFill);
-
-        // 下半部描边线
-        spectrumStroke.setAlpha((int)(baseAlpha * 0.35f));
-        spectrumStroke.setStrokeWidth(1.5f);
-        spectrumPath.reset();
-        spectrumPath.moveTo(0, centerY);
-        for (int i = 0; i <= samples + 1; i++) {
-            if (i <= 1 || i >= samples) {
-                spectrumPath.lineTo(ptsX[i], ptsYDim[i]);
-            } else {
-                float px = ptsX[i - 1], py = ptsYDim[i - 1];
-                float cx1 = (px + ptsX[i]) / 2f;
-                spectrumPath.cubicTo(cx1, py, cx1, ptsYDim[i], ptsX[i], ptsYDim[i]);
-            }
-        }
-        canvas.drawPath(spectrumPath, spectrumStroke);
-
-        // === 中心线 ===
-        linePaint.setColor(accentColor);
-        linePaint.setAlpha(active ? 30 : 15);
-        canvas.drawLine(0, centerY, w, centerY, linePaint);
+        mainPaint.setShader(new LinearGradient(startX, 0, startX + contentWidth, 0,
+                new int[]{Color.TRANSPARENT, withAlpha(accentColor, active ? 68 : 28),
+                        withAlpha(soft, active ? 86 : 34), Color.TRANSPARENT},
+                new float[]{0f, 0.24f, 0.68f, 1f}, Shader.TileMode.CLAMP));
+        mainPaint.setStrokeWidth(dp(0.8f));
+        canvas.drawLine(startX, baseline + dp(1f), startX + contentWidth,
+                baseline + dp(1f), mainPaint);
+        mainPaint.setShader(null);
     }
 
-    /** 保留原色的 alpha 通道，整体乘系数 */
-    private int shiftAlpha(int color, float factor) {
-        int a = (int) ((color >>> 24) * factor);
-        if (a < 0) a = 0; if (a > 255) a = 255;
-        return (a << 24) | (color & 0xFFFFFF);
-    }
+    /** 模式 4：两条细线星轨与呼吸粒子，氛围感更强但保持留白。 */
+    private void drawStarTrail(Canvas canvas) {
+        float w = getWidth();
+        float h = getHeight();
+        float cy = h * 0.52f;
+        int rose = blend(accentColor, 0xFFFFB0BE, 0.48f);
 
-    // === 模式 4：跳动圆点 ===
-    private void drawDotPulse(Canvas canvas) {
-        int w = getWidth(), h = getHeight();
-        if (w <= 0 || h <= 0) return;
+        for (int trail = 0; trail < 2; trail++) {
+            buildWavePath(mainPath, w, cy + (trail == 0 ? -h * 0.08f : h * 0.09f),
+                    h * (trail == 0 ? 0.18f : 0.13f), trail * 2.4f + 0.5f, 24);
+            mainPaint.setShader(new LinearGradient(0, 0, w, 0,
+                    new int[]{Color.TRANSPARENT, withAlpha(trail == 0 ? rose : accentColor,
+                            active ? 125 : 52), Color.TRANSPARENT},
+                    new float[]{0f, 0.55f, 1f}, Shader.TileMode.CLAMP));
+            mainPaint.setStrokeWidth(dp(trail == 0 ? 1.35f : 0.9f));
+            canvas.drawPath(mainPath, mainPaint);
+        }
+        mainPaint.setShader(null);
+
         int dots = 24;
-        float cx = w / 2f, cy = h / 2f;
-        float baseR = Math.min(cx, cy) * 0.75f;
-
         for (int i = 0; i < dots; i++) {
-            int bi = (int) (i * BAR_COUNT / (float) dots);
-            float lv = bars[bi];
-            float angle = (float) (i * 2 * Math.PI / dots + circlePhase * 0.3f);
-            float r = baseR * (0.55f + 0.45f * lv);
-            float dx = cx + r * (float) Math.cos(angle);
-            float dy = cy + r * (float) Math.sin(angle);
-            float dotR = 3f + lv * 12f * (0.6f + 0.4f * globalEnergy);
+            float t = (i + 0.5f) / dots;
+            int bi = i * (BAR_COUNT - 1) / (dots - 1);
+            float drift = (float) Math.sin(t * Math.PI * 4f + phase + i * 0.17f);
+            float y = cy + drift * h * 0.19f * (0.34f + bars[bi]);
+            float x = t * w;
+            float radius = dp(0.85f + bars[bi] * 2.1f);
+            int dotColor = i % 4 == 0 ? Color.WHITE : (i % 2 == 0 ? rose : accentColor);
 
-            float hue = baseHue + i * 15f;
-            hsv[0] = hue % 360f; hsv[1] = 0.9f; hsv[2] = 1f;
-            int col = Color.HSVToColor(hsv);
-
-            // 光晕
-            dotPaint.setColor(col);
-            dotPaint.setAlpha(active ? 40 : 20);
-            canvas.drawCircle(dx, dy, dotR * 1.6f, dotPaint);
-
-            // 核心
-            dotPaint.setAlpha(active ? 230 : 120);
-            canvas.drawCircle(dx, dy, dotR, dotPaint);
+            detailPaint.setColor(withAlpha(dotColor, active ? 24 + Math.round(bars[bi] * 35f) : 12));
+            canvas.drawCircle(x, y, radius * 3.2f, detailPaint);
+            detailPaint.setColor(withAlpha(dotColor, active ? 125 + Math.round(bars[bi] * 120f) : 72));
+            canvas.drawCircle(x, y, radius, detailPaint);
         }
-        // 中心点
-        hsv[0] = baseHue; hsv[1] = 0.9f; hsv[2] = 1f;
-        dotPaint.setColor(Color.HSVToColor(hsv));
-        dotPaint.setAlpha(active ? 255 : 140);
-        canvas.drawCircle(cx, cy, 3f + globalEnergy * 5f, dotPaint);
     }
 
-    private void drawBar(Canvas canvas, Paint paint, float x, float w, float bh, float centerY) {
-        if (bh < 2f) bh = 2f;
-        float r = Math.min(w / 2f, bh);
-        canvas.drawRoundRect(x, centerY - bh, x + w, centerY + bh, r, r, paint);
+    private void buildWavePath(Path path, float width, float centerY, float amplitude,
+                               float phaseOffset, int samples) {
+        path.reset();
+        float previousX = 0f;
+        float previousY = waveY(0f, centerY, amplitude, phaseOffset, 0);
+        path.moveTo(previousX, previousY);
+        for (int i = 1; i <= samples; i++) {
+            float t = i / (float) samples;
+            float x = width * t;
+            int bi = Math.min(BAR_COUNT - 1, Math.round(t * (BAR_COUNT - 1)));
+            float y = waveY(t, centerY, amplitude, phaseOffset, bi);
+            float midX = (previousX + x) * 0.5f;
+            path.cubicTo(midX, previousY, midX, y, x, y);
+            previousX = x;
+            previousY = y;
+        }
     }
 
-    private float dp2px(float dp) {
-        return dp * getResources().getDisplayMetrics().density;
+    private float waveY(float t, float centerY, float amplitude, float phaseOffset, int barIndex) {
+        float envelope = 0.35f + 0.65f * (float) Math.sin(Math.PI * t);
+        float motion = (float) Math.sin(t * Math.PI * 3.6f + phase + phaseOffset);
+        return centerY + motion * amplitude * envelope * (0.28f + bars[barIndex] * 0.72f);
+    }
+
+    private int withAlpha(int color, int alpha) {
+        return (clamp(alpha, 0, 255) << 24) | (color & 0x00FFFFFF);
+    }
+
+    private int blend(int from, int to, float ratio) {
+        ratio = clamp(ratio, 0f, 1f);
+        return Color.rgb(
+                Math.round(Color.red(from) + (Color.red(to) - Color.red(from)) * ratio),
+                Math.round(Color.green(from) + (Color.green(to) - Color.green(from)) * ratio),
+                Math.round(Color.blue(from) + (Color.blue(to) - Color.blue(from)) * ratio));
+    }
+
+    private float clamp(float value, float min, float max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private float dp(float value) {
+        return value * getResources().getDisplayMetrics().density;
     }
 
     @Override

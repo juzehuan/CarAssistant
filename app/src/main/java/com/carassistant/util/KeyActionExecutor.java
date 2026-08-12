@@ -95,6 +95,12 @@ public final class KeyActionExecutor {
             case KeyMappingUtil.ACTION_MEDIA_STOP:
                 dispatchMediaKey(ctx, android.view.KeyEvent.KEYCODE_MEDIA_STOP, "");
                 break;
+            case KeyMappingUtil.ACTION_MEDIA_FAST_FORWARD:
+                dispatchMediaKey(ctx, android.view.KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, "");
+                break;
+            case KeyMappingUtil.ACTION_MEDIA_REWIND:
+                dispatchMediaKey(ctx, android.view.KeyEvent.KEYCODE_MEDIA_REWIND, "");
+                break;
 
             // ============ 开关类 ============
             case KeyMappingUtil.ACTION_TOGGLE_WIFI:
@@ -166,7 +172,7 @@ public final class KeyActionExecutor {
                 try {
                     Intent it = new Intent(ctx, MainActivity.class);
                     it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    it.putExtra("target_tab", "file");
+                    it.putExtra(MainActivity.EXTRA_NAV_ID, R.id.nav_file);
                     ctx.startActivity(it);
                 } catch (Exception e) {
                     toast(ctx, ctx.getString(R.string.launch_fail));

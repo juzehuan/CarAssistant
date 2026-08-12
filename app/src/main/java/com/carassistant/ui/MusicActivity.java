@@ -38,16 +38,20 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Locale;
+
 import android.animation.ArgbEvaluator;
 import android.graphics.drawable.GradientDrawable;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.activity.OnBackPressedCallback;
 import androidx.core.content.ContextCompat;
 import androidx.palette.graphics.Palette;
 import com.carassistant.MainActivity;
 import com.carassistant.R;
 import com.carassistant.service.FloatingLyricsService;
+import com.carassistant.util.Immersive;
 import com.carassistant.util.LrcParser;
 import com.carassistant.util.MusicController;
 import com.carassistant.util.PermissionUtil;
@@ -86,7 +90,8 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private String lastMetaArtist;
     private Bitmap lastMetaArt;
     private android.animation.ValueAnimator bgColorAnimator;
-    private TextView tvLyricPrev4, tvLyricPrev3, tvLyricPrev2, tvLyricPrev, tvLyricCurrent, tvLyricTranslation, tvLyricNext, tvLyricNext2, tvLyricNext3, tvLyricNext4;
+    private TextView tvLyricPrev4, tvLyricPrev3, tvLyricPrev2, tvLyricPrev, tvLyricCurrent,
+            tvLyricHint, tvLyricTranslation, tvLyricNext, tvLyricNext2, tvLyricNext3, tvLyricNext4;
     private TextView tvCurrent, tvDuration;
     private SeekBar sbProgress;
     private ImageView btnPlay, btnPrev, btnNext, btnSettings;
@@ -99,7 +104,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     /** 根布局（用于动态设置背景色） */
     private ViewGroup musicRoot;
     /** 当前背景色（用于平滑过渡） */
-    private int currentBgColor = 0xFF0F1320;
+    private int currentBgColor = 0xFF1B1117;
     /** 当前主题强调色 */
     private int currentAccentColor = 0xFFEE0A24;
     /** 当前预设主题（-1=动态取色，0-5=预设） */
@@ -157,6 +162,14 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         setContentView(R.layout.activity_music);
 
         bindViews();
+        Immersive.apply(this, false);
+        Immersive.padTopForStatusBar(this, (ViewGroup) musicRoot);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                handleBack();
+            }
+        });
         setupListeners();
         setupVinylAnimation();
 
@@ -177,6 +190,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         tvLyricPrev2 = findViewById(R.id.tv_lyric_prev2);
         tvLyricPrev = findViewById(R.id.tv_lyric_prev);
         tvLyricCurrent = findViewById(R.id.tv_lyric_current);
+        tvLyricHint = findViewById(R.id.tv_lyric_hint);
         tvLyricTranslation = findViewById(R.id.tv_lyric_translation);
         tvLyricNext = findViewById(R.id.tv_lyric_next);
         tvLyricNext2 = findViewById(R.id.tv_lyric_next2);
@@ -317,15 +331,6 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             else controller.play();
         });
 
-        // 点击唱片区域 = 播放/暂停
-        if (cardAlbum != null) {
-            cardAlbum.setOnClickListener(v -> {
-                if (!ensurePermissionAndConnected()) return;
-                if (controller.isPlaying()) controller.pause();
-                else controller.play();
-            });
-        }
-
         // 音乐源指示器
         updateMusicSourceLabel();
         if (btnPrev != null) btnPrev.setOnClickListener(v -> {
@@ -404,13 +409,12 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             }
         });
 
-        // 点击专辑卡片：未连接时尝试打开音乐应用
+        // 点击唱片：已连接时播放/暂停；未连接时尝试发现音乐会话。
         if (cardAlbum != null) {
             cardAlbum.setOnClickListener(v -> {
                 if (controller.isConnected()) {
-                    if (!controller.launchMusicApp(this)) {
-                        Toast.makeText(this, R.string.music_no_active_session, Toast.LENGTH_SHORT).show();
-                    }
+                    if (controller.isPlaying()) controller.pause();
+                    else controller.play();
                 } else {
                     controller.findActiveMusicSession();
                     if (!controller.isConnected()) {
@@ -431,11 +435,6 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
-    }
-
-    @Override
-    public void onBackPressed() {
-        handleBack();
     }
 
     /** 切换桌面歌词悬浮窗开关 */
@@ -617,36 +616,48 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         uiShowNext = sp.getBoolean("music_show_next", true);
         // 音乐律动开关 + 特效模式
         uiVisualizer = sp.getBoolean("music_visualizer", true);
-        uiVisualizerMode = Integer.parseInt(sp.getString("music_visualizer_mode", "0"));
+        uiVisualizerMode = readChoiceInt(sp, "music_visualizer_mode", 0, 0, 4);
         if (visualizer != null) {
             visualizer.setAccentColor(currentAccentColor);
             visualizer.setMode(uiVisualizerMode);
             visualizer.setVisibility(uiVisualizer ? View.VISIBLE : View.GONE);
+            visualizer.setAlpha(controller.isPlaying() ? 1f : 0.18f);
         }
         // 唱片+歌词排版方向
-        uiLayoutOrient = Integer.parseInt(sp.getString("music_layout_orientation", "0"));
+        uiLayoutOrient = readChoiceInt(sp, "music_layout_orientation", 0, 0, 1);
         applyLayoutOrientation(uiLayoutOrient);
 
         // 预设主题色
-        int themeId = Integer.parseInt(sp.getString("music_color_theme", "-1"));
+        int themeId = readChoiceInt(sp, "music_color_theme", -1, -1, 5);
         usePresetTheme = (themeId >= 0 && themeId <= 5);
         if (usePresetTheme) {
             currentTheme = MusicTheme.fromId(themeId);
             applyTheme(currentTheme);
         }
 
-        // 歌词字号（基于原始 sp 尺寸按比例缩放）
+        // 歌词字号：以当前屏幕资源档位为基准，避免大屏仍被硬编码成手机字号。
         float scale = sp.getInt("music_lyric_font_scale", 100) / 100f;
-        if (tvLyricCurrent != null) tvLyricCurrent.setTextSize(20 * scale);
-        if (tvLyricPrev != null) tvLyricPrev.setTextSize(16 * scale);
-        if (tvLyricNext != null) tvLyricNext.setTextSize(16 * scale);
-        if (tvLyricPrev2 != null) tvLyricPrev2.setTextSize(14 * scale);
-        if (tvLyricNext2 != null) tvLyricNext2.setTextSize(14 * scale);
-        if (tvLyricPrev3 != null) tvLyricPrev3.setTextSize(16 * scale);
-        if (tvLyricNext3 != null) tvLyricNext3.setTextSize(16 * scale);
-        if (tvLyricPrev4 != null) tvLyricPrev4.setTextSize(14 * scale);
-        if (tvLyricNext4 != null) tvLyricNext4.setTextSize(14 * scale);
-        if (tvLyricTranslation != null) tvLyricTranslation.setTextSize(13 * scale);
+        int lineSpacing = sp.getInt("music_lyric_line_spacing", 4);
+        float currentSp = dimenToSp(R.dimen.music_lyric_current_size) * scale;
+        float nearSp = dimenToSp(R.dimen.music_lyric_near_size) * scale;
+        float farSp = dimenToSp(R.dimen.music_lyric_far_size) * scale;
+        float translationSp = dimenToSp(R.dimen.music_lyric_translation_size) * scale;
+        if (tvLyricCurrent != null) tvLyricCurrent.setTextSize(currentSp);
+        if (tvLyricPrev != null) tvLyricPrev.setTextSize(nearSp);
+        if (tvLyricNext != null) tvLyricNext.setTextSize(nearSp);
+        if (tvLyricPrev2 != null) tvLyricPrev2.setTextSize(farSp);
+        if (tvLyricNext2 != null) tvLyricNext2.setTextSize(farSp);
+        if (tvLyricPrev3 != null) tvLyricPrev3.setTextSize(nearSp);
+        if (tvLyricNext3 != null) tvLyricNext3.setTextSize(nearSp);
+        if (tvLyricPrev4 != null) tvLyricPrev4.setTextSize(farSp);
+        if (tvLyricNext4 != null) tvLyricNext4.setTextSize(farSp);
+        if (tvLyricTranslation != null) tvLyricTranslation.setTextSize(translationSp);
+        // 应用行间距到所有歌词行
+        for (TextView tv : new TextView[]{tvLyricPrev4, tvLyricPrev3, tvLyricPrev2, tvLyricPrev,
+                tvLyricCurrent, tvLyricNext, tvLyricNext2, tvLyricNext3, tvLyricNext4,
+                tvLyricTranslation}) {
+            if (tv != null) tv.setLineSpacing(dp2px(lineSpacing), 1f);
+        }
 
         // 唱臂显隐
         if (ivTonearm != null) ivTonearm.setVisibility(uiShowArm ? View.VISIBLE : View.GONE);
@@ -655,11 +666,16 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         if (btnNext != null) btnNext.setVisibility(uiShowNext ? View.VISIBLE : View.GONE);
 
         // 唱片大小（整体缩放：黑胶盘 + 封面 + 唱臂，保持相对比例协调）
-        float vinylScale;
+        // 以百分比整数存储（100=原始大小）；兼容旧版字符串值
+        float vinylScale = 1.0f;
         try {
-            vinylScale = Float.parseFloat(sp.getString("music_vinyl_scale", "1.0"));
-        } catch (NumberFormatException e) {
-            vinylScale = 1.0f;
+            vinylScale = sp.getInt("music_vinyl_scale", 100) / 100f;
+        } catch (ClassCastException e) {
+            try {
+                vinylScale = Float.parseFloat(sp.getString("music_vinyl_scale", "1.0"));
+            } catch (NumberFormatException ignore) {
+                vinylScale = 1.0f;
+            }
         }
         if (vinylScale < 0.5f) vinylScale = 0.5f;
         if (vinylScale > 2.0f) vinylScale = 2.0f;
@@ -701,7 +717,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         applyIconScale(iconScale);
 
         // 进度条粗细 + 颜色
-        int seekThickness = sp.getInt("music_seekbar_thickness", 6);
+        int seekThickness = sp.getInt("music_seekbar_thickness", 3);
         int seekColor = sp.getInt("music_seekbar_color", 0xFFE60026);
         applySeekBarStyle(dp2px(seekThickness), seekColor);
 
@@ -761,10 +777,13 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         tvSource.setTextSize(11);
         tvSource.setTextColor(0x55FFFFFF);
         tvSource.setAlpha(0.7f);
+        tvSource.setGravity(android.view.Gravity.CENTER);
+        tvSource.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         tvSource.setVisibility(View.GONE);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.topMargin = dp2px(4);
+        lp.gravity = android.view.Gravity.CENTER_HORIZONTAL;
         tvSource.setLayoutParams(lp);
         ((LinearLayout) parent).addView(tvSource);
     }
@@ -882,7 +901,10 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
                     if (i != null) startActivity(i);
                 }
             });
-            row.setBackground(getDrawable(android.R.attr.selectableItemBackground));
+            android.util.TypedValue ripple = new android.util.TypedValue();
+            if (getTheme().resolveAttribute(android.R.attr.selectableItemBackground, ripple, true)) {
+                row.setBackgroundResource(ripple.resourceId);
+            }
             recentListContainer.addView(row);
 
             // 分隔线
@@ -917,6 +939,28 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
 
     private int dp2px(float dp) {
         return (int) (dp * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    /** 兼容设置项历史上可能出现的 String / int 两种存储形式，并防止坏值导致页面崩溃。 */
+    private int readChoiceInt(SharedPreferences sp, String key, int defaultValue, int min, int max) {
+        int value = defaultValue;
+        try {
+            value = Integer.parseInt(sp.getString(key, String.valueOf(defaultValue)));
+        } catch (ClassCastException e) {
+            try {
+                value = sp.getInt(key, defaultValue);
+            } catch (ClassCastException ignore) {
+                value = defaultValue;
+            }
+        } catch (NumberFormatException e) {
+            value = defaultValue;
+        }
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private float dimenToSp(int dimenRes) {
+        return getResources().getDimension(dimenRes)
+                / getResources().getDisplayMetrics().scaledDensity;
     }
 
     /** 根据当前 vinylSpeed 动态调整旋转动画的时长，实现平滑变速 */
@@ -1005,7 +1049,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         // 进度条（未自定义时跟随主题）
         SharedPreferences sp = getSharedPreferences("music_settings", MODE_PRIVATE);
         if (!sp.contains("music_seekbar_color")) {
-            int thickness = sp.getInt("music_seekbar_thickness", 6);
+            int thickness = sp.getInt("music_seekbar_thickness", 3);
             applySeekBarStyle(dp2px(thickness), theme.seekbar);
         }
     }
@@ -1022,7 +1066,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         // 进度条（仅在未自定义颜色的情况下使用主题色）
         SharedPreferences sp = getSharedPreferences("music_settings", MODE_PRIVATE);
         if (!sp.contains("music_seekbar_color")) {
-            int thickness = sp.getInt("music_seekbar_thickness", 6);
+            int thickness = sp.getInt("music_seekbar_thickness", 3);
             applySeekBarStyle(dp2px(thickness), color);
         }
     }
@@ -1168,6 +1212,9 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
 
             // 当前行变化时播放淡入动画
             String newLyric = TextUtils.isEmpty(current) ? getString(R.string.music_no_lyrics) : current;
+            if (tvLyricHint != null) {
+                tvLyricHint.setVisibility(TextUtils.isEmpty(current) ? View.VISIBLE : View.GONE);
+            }
             if (!newLyric.equals(lastLyric)) {
                 lastLyric = newLyric;
                 tvLyricCurrent.setText(newLyric);
@@ -1200,8 +1247,11 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             lastMetaArtist = artist;
             lastMetaArt = albumArt;
 
-            tvTitle.setText(TextUtils.isEmpty(title) ? getString(R.string.music_no_song) : title);
-            tvArtist.setText(TextUtils.isEmpty(artist) ? getString(R.string.music_unknown_artist) : artist);
+            boolean hasTrack = !TextUtils.isEmpty(title) && !"暂无音乐播放".equals(title);
+            tvTitle.setText(hasTrack ? title : getString(R.string.music_no_song));
+            tvArtist.setText(hasTrack
+                    ? (TextUtils.isEmpty(artist) ? getString(R.string.music_unknown_artist) : artist)
+                    : getString(R.string.music_idle_subtitle));
             savePlayStateToSharedPrefs(title, artist, true);
             updateMusicSourceLabel();
             if (albumArt != null) {
@@ -1220,7 +1270,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
                 // 无封面时显示黑胶风格的占位图
                 ivAlbum.setImageResource(R.drawable.ic_music_cover_placeholder);
                 // 恢复默认深色背景
-                applyBackgroundColor(0xFF0F1320, 0xFFEE0A24);
+                applyBackgroundColor(0xFF1B1117, 0xFFEE0A24);
             }
         });
     }
@@ -1245,7 +1295,7 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
     private void applyDynamicTheme(Bitmap bitmap) {
         if (!uiDynamicTheme) {
             // 关闭动态主题色：使用默认深蓝背景 + 网易云红强调色
-            applyBackgroundColor(0xFF0F1320, 0xFFEE0A24);
+            applyBackgroundColor(0xFF1B1117, 0xFFEE0A24);
             return;
         }
         if (bitmap == null || bitmap.isRecycled()) return;
@@ -1258,17 +1308,12 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
                 scaled = scaleForPalette(bitmap);
                 if (scaled == null) return;
                 Palette palette = Palette.from(scaled).maximumColorCount(16).generate();
-                // 优先使用 Vibrant，其次 DarkVibrant，再次 Muted，最后 DarkMuted
-                int dominant = palette.getDominantColor(0xFF1A1F2E);
-                int vibrant = palette.getVibrantColor(dominant);
-                int darkVibrant = palette.getDarkVibrantColor(vibrant);
-                int muted = palette.getMutedColor(darkVibrant);
-                // 选择饱和度较高的颜色作为背景（偏深，保证文字可读性）
-                int bgColor = darken(muted, 0.75f);
-                int accentColor = palette.getLightVibrantColor(0xFFEE0A24);
-                if (accentColor == 0xFFEE0A24) {
-                    accentColor = palette.getVibrantColor(0xFFEE0A24);
-                }
+                // 只让封面颜色轻微影响深色背景，避免浅色封面把播放页染成灰白。
+                // 控件强调色保持网易云式红色，保证整页视觉语义一致。
+                int coverTone = palette.getDarkMutedColor(
+                        palette.getDarkVibrantColor(0xFF321823));
+                int bgColor = darken(blendColors(0xFF1B1117, coverTone, 0.32f), 0.72f);
+                int accentColor = 0xFFEE0A24;
                 final int finalBg = bgColor;
                 final int finalAccent = accentColor;
                 runOnUiThread(() -> applyBackgroundColor(finalBg, finalAccent));
@@ -1325,6 +1370,15 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
                          Math.min(255, Math.max(0, b)));
     }
 
+    private int blendColors(int base, int overlay, float overlayRatio) {
+        float ratio = Math.max(0f, Math.min(1f, overlayRatio));
+        float baseRatio = 1f - ratio;
+        return Color.rgb(
+                Math.round(Color.red(base) * baseRatio + Color.red(overlay) * ratio),
+                Math.round(Color.green(base) * baseRatio + Color.green(overlay) * ratio),
+                Math.round(Color.blue(base) * baseRatio + Color.blue(overlay) * ratio));
+    }
+
     /**
      * 用 ValueAnimator 平滑过渡背景色（从 currentBgColor 到 targetColor）。
      * 使用垂直渐变（顶部深、底部稍浅），营造氛围感。
@@ -1336,18 +1390,17 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             bgColorAnimator.cancel();
         }
         int startColor = currentBgColor;
-        // 创建渐变背景：顶部更深，底部为目标色
-        int topColor = darken(targetColor, 0.55f);
         ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
         animator.setDuration(800);
         animator.setInterpolator(new android.view.animation.DecelerateInterpolator());
         animator.addUpdateListener(animation -> {
             float fraction = animation.getAnimatedFraction();
-            int curTop = (int) argbEvaluator.evaluate(fraction, darken(startColor, 0.55f), topColor);
-            int curBot = (int) argbEvaluator.evaluate(fraction, startColor, targetColor);
+            int curMid = (int) argbEvaluator.evaluate(fraction, startColor, targetColor);
+            int curTop = darken(curMid, 0.48f);
+            int curBot = darken(curMid, 0.70f);
             GradientDrawable gd = new GradientDrawable(
                     GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{curTop, curBot});
+                    new int[]{curTop, curMid, curBot});
             musicRoot.setBackground(gd);
         });
         bgColorAnimator = animator;
@@ -1444,7 +1497,10 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
             // 唱臂：播放时落下压片，暂停/未播放时抬起（网易云经典效果）
             animateTonearm(isPlaying);
             // 音乐律动：播放时跳动，暂停时平滑回落
-            if (visualizer != null) visualizer.setActive(isPlaying);
+            if (visualizer != null) {
+                visualizer.setActive(isPlaying);
+                visualizer.animate().alpha(isPlaying ? 1f : 0.18f).setDuration(280).start();
+            }
         });
     }
 
@@ -1474,6 +1530,6 @@ public class MusicActivity extends AppCompatActivity implements MusicController.
         long totalSec = ms / 1000;
         long mm = totalSec / 60;
         long ss = totalSec % 60;
-        return String.format("%02d:%02d", mm, ss);
+        return String.format(Locale.ROOT, "%02d:%02d", mm, ss);
     }
 }

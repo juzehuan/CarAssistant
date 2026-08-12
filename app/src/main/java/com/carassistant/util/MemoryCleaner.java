@@ -15,6 +15,7 @@
 package com.carassistant.util;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 
 import com.carassistant.service.KeyMappingAccessibilityService;
@@ -150,8 +151,10 @@ public final class MemoryCleaner {
 
         // 同步等待清理完成（cleanRecentTasks 内部已是异步线程）
         final boolean[] done = {false};
+        final boolean[] actionSucceeded = {false};
         svc.cleanRecentTasks(success -> {
             synchronized (done) {
+                actionSucceeded[0] = success;
                 done[0] = true;
                 done.notifyAll();
             }
@@ -165,17 +168,22 @@ public final class MemoryCleaner {
             }
         }
 
-        r.success = true;
+        r.success = done[0] && actionSucceeded[0];
         return r;
     }
 
     /** 普通模式：killBackgroundProcesses（系统 API，效果有限） */
     private static Result cleanNormal(Context ctx, java.util.Set<String> whitelist) {
         Result r = new Result();
-        r.success = true;
         r.methodDesc = "普通模式";
+        // Android 14 起 killBackgroundProcesses 只能结束调用应用自身，不能清理其他应用。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            r.success = false;
+            return r;
+        }
         List<String> pkgs = MemoryUtil.getKillablePackages(ctx, whitelist);
-        MemoryUtil.killBackgroundProcesses(ctx, pkgs);
+        int requested = MemoryUtil.killBackgroundProcesses(ctx, pkgs);
+        r.success = requested > 0;
         return r;
     }
 }

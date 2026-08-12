@@ -14,6 +14,8 @@
 
 package com.carassistant.ui;
 
+import com.carassistant.util.Immersive;
+
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -139,8 +141,14 @@ public final class LyricsSettingsActivity extends AppCompatActivity {
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(18), dp(12), dp(18), dp(32));
-        scrollView.addView(root, new FrameLayout.LayoutParams(-1, -2));
+        root.setPadding(dp(22), dp(8), dp(22), dp(40));
+        int availableWidth = getResources().getDisplayMetrics().widthPixels - dp(24);
+        FrameLayout.LayoutParams rootLp = new FrameLayout.LayoutParams(
+                Math.min(availableWidth, dp(900)), -2, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        scrollView.addView(root, rootLp);
+
+        // 沉浸式状态栏：透明 + 内容铺满顶部，工具栏下压避免被遮挡
+        Immersive.apply(this, false);
 
         // ===== 顶部工具栏 =====
         MaterialToolbar toolbar = new MaterialToolbar(this);
@@ -151,7 +159,9 @@ public final class LyricsSettingsActivity extends AppCompatActivity {
         toolbar.setBackgroundColor(Color.TRANSPARENT);
         toolbar.setNavigationIcon(android.R.drawable.ic_menu_close_clear_cancel);
         toolbar.setNavigationOnClickListener(v -> finish());
-        root.addView(toolbar, new LinearLayout.LayoutParams(-1, dp(70)));
+        toolbar.setMinimumHeight(dp(72));
+        root.addView(toolbar, new LinearLayout.LayoutParams(-1, -2));
+        Immersive.padTopForStatusBar(toolbar);
 
         // ===== 桌面歌词开关 =====
         setupLyricsEnable(root);
@@ -506,18 +516,20 @@ public final class LyricsSettingsActivity extends AppCompatActivity {
     private LinearLayout card(int titleRes) {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(dp(15), dp(14), dp(15), dp(15));
+        card.setPadding(dp(20), dp(18), dp(20), dp(18));
         MaterialShapeDrawable bg = new MaterialShapeDrawable();
-        bg.setFillColor(ColorStateList.valueOf(COLOR_CARD_BG));
-        bg.setCornerSize((float) dp(20));
+        bg.setFillColor(ColorStateList.valueOf(0xF21A1F2E));
+        bg.setCornerSize((float) dp(22));
+        bg.setStroke(dp(1), ColorStateList.valueOf(0x16FFFFFF));
         card.setBackground(bg);
+        card.setElevation(dp(2));
         card.addView(cardTitle(titleRes));
         return card;
     }
 
     private void addCard(LinearLayout parent, LinearLayout card) {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
-        lp.topMargin = dp(14);
+        lp.topMargin = dp(16);
         parent.addView(card, lp);
     }
 
@@ -570,7 +582,11 @@ public final class LyricsSettingsActivity extends AppCompatActivity {
     }
 
     private TextView cardTitle(int resId) {
-        return labelText(resId, true);
+        TextView title = labelText(resId, true);
+        title.setTextSize(15f);
+        title.setTextColor(COLOR_TEXT_PRIMARY);
+        title.setPadding(0, 0, 0, dp(4));
+        return title;
     }
 
     private TextView labelText(int resId, boolean bold) {
@@ -640,7 +656,8 @@ public final class LyricsSettingsActivity extends AppCompatActivity {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(0, dp(12), 0, dp(12));
+        row.setPadding(dp(2), dp(12), dp(2), dp(12));
+        row.setMinimumHeight(dp(56));
         row.setClickable(true);
         row.setFocusable(true);
         row.setBackground(getDrawable(android.R.drawable.list_selector_background));
@@ -747,7 +764,8 @@ public final class LyricsSettingsActivity extends AppCompatActivity {
             btn.setText(labelResArr[i]);
             btn.setTextSize(12f);
             btn.setGravity(Gravity.CENTER);
-            btn.setPadding(dp(10), dp(7), dp(10), dp(7));
+            btn.setPadding(dp(10), dp(10), dp(10), dp(10));
+            btn.setMinHeight(dp(44));
             applySegmentButtonLook(btn, val.equals(current));
 
             LinearLayout.LayoutParams itemLp = new LinearLayout.LayoutParams(0, -2, 1f);

@@ -168,7 +168,9 @@ public class MainActivity extends AppCompatActivity {
     /** 通知侧边栏刷新（设置变更后调用） */
     public void notifySidebarRefresh() {
         try {
-            sendBroadcast(new Intent(SidebarService.ACTION_REFRESH));
+            Intent refresh = new Intent(SidebarService.ACTION_REFRESH);
+            refresh.setPackage(getPackageName());
+            sendBroadcast(refresh);
         } catch (Exception ignored) {}
     }
 
@@ -198,8 +200,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyDetector != null) {
-            keyDetector.onKeyUp(keyCode, event);
+        if (keyDetector != null && keyDetector.onKeyUp(keyCode, event)) {
+            return true;
         }
         return super.onKeyUp(keyCode, event);
     }

@@ -1878,9 +1878,6 @@ public final class LyricsPanelView extends View {
     }
 
     private static int saveLayerAlphaCompat(Canvas canvas, RectF rect, int alpha) {
-        if (Build.VERSION.SDK_INT < 21) {
-            return canvas.saveLayerAlpha(rect.left, rect.top, rect.right, rect.bottom, alpha, 31);
-        }
         return canvas.saveLayerAlpha(rect, alpha);
     }
 
