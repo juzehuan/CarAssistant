@@ -84,11 +84,14 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="4dp">
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
             <ImageView
                 android:id="@+id/iv_mod_clean"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
                 android:src="@drawable/ic_feature_clean"
                 android:padding="8dp"
                 android:background="@drawable/bg_quick_toggle_on"
@@ -102,7 +105,7 @@
                 android:gravity="center"
                 android:text="@string/home_feature_clean"
                 android:textColor="@color/text_secondary"
-                android:textSize="11sp"/>
+                android:textSize="9sp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -112,11 +115,14 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="4dp">
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
             <ImageView
                 android:id="@+id/iv_mod_app"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
                 android:src="@drawable/ic_feature_app"
                 android:padding="8dp"
                 android:background="@drawable/bg_quick_toggle_on"
@@ -130,7 +136,7 @@
                 android:gravity="center"
                 android:text="@string/home_feature_app"
                 android:textColor="@color/text_secondary"
-                android:textSize="11sp"/>
+                android:textSize="9sp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -140,11 +146,14 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="4dp">
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
             <ImageView
                 android:id="@+id/iv_mod_file"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
                 android:src="@drawable/ic_feature_file"
                 android:padding="8dp"
                 android:background="@drawable/bg_quick_toggle_on"
@@ -158,7 +167,7 @@
                 android:gravity="center"
                 android:text="@string/home_feature_file"
                 android:textColor="@color/text_secondary"
-                android:textSize="11sp"/>
+                android:textSize="9sp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -168,11 +177,14 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="4dp">
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
             <ImageView
                 android:id="@+id/iv_mod_music"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
                 android:src="@drawable/ic_feature_music"
                 android:padding="8dp"
                 android:background="@drawable/bg_sidebar_music_icon"
@@ -186,7 +198,7 @@
                 android:gravity="center"
                 android:text="@string/home_feature_music"
                 android:textColor="@color/text_secondary"
-                android:textSize="11sp"/>
+                android:textSize="9sp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -196,11 +208,14 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="4dp">
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
             <ImageView
                 android:id="@+id/iv_mod_monitor"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
                 android:src="@drawable/ic_feature_monitor"
                 android:padding="8dp"
                 android:background="@drawable/bg_quick_toggle_on"
@@ -214,7 +229,7 @@
                 android:gravity="center"
                 android:text="@string/home_feature_monitor"
                 android:textColor="@color/text_secondary"
-                android:textSize="11sp"/>
+                android:textSize="9sp"/>
         </LinearLayout>
     </LinearLayout>
 
