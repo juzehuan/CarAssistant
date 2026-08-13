@@ -62,7 +62,7 @@ import java.util.concurrent.Executors;
  * 侧边栏服务（替代悬浮球）
  *
  * 工作原理：
- * - 在屏幕左/右边缘手势区内侧各放置一条透明热区
+ * - 在屏幕左/右边缘各放置一条透明热区
  * - 用户从边缘向内滑动超过阈值时，从对应方向滑出垂直侧边栏面板
  * - 面板包含：系统快捷开关(WiFi/蓝牙/亮度/手电筒/旋转) + 快捷应用网格 + 导航按钮(返回/主页/最近任务/锁屏)
  * - 点击面板外遮罩或关闭按钮收起面板
@@ -95,13 +95,8 @@ public class SidebarService extends Service {
 
     /** 滑入触发阈值（dp） */
     private static final float SWIPE_THRESHOLD_DP = 14f;
-    /** 边缘热区宽度（dp）：保证驾驶场景下容易触发。 */
-    private static final float EDGE_WIDTH_DP = 20f;
-    /**
-     * 避开系统返回手势和厂商智慧侧边栏占用的最外沿区域。
-     * 例如 vivo 横屏设备会在左右各覆盖约 16dp，应用悬浮窗无法收到该区域的触摸事件。
-     */
-    private static final float EDGE_INSET_DP = 18f;
+    /** 边缘热区宽度（dp） */
+    private static final float EDGE_WIDTH_DP = 16f;
 
     @Override
     public void onCreate() {
@@ -191,7 +186,6 @@ public class SidebarService extends Service {
     /** 添加左/右边缘热区条 */
     private void addEdges() {
         int w = dp(EDGE_WIDTH_DP);
-        int inset = dp(EDGE_INSET_DP);
         int h = WindowManager.LayoutParams.MATCH_PARENT;
 
         leftEdge = new View(this);
@@ -204,7 +198,6 @@ public class SidebarService extends Service {
                         | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
         edgeLeftParams.gravity = Gravity.START | Gravity.TOP;
-        edgeLeftParams.x = inset;
 
         rightEdge = new View(this);
         rightEdge.setBackgroundColor(0x00000000);
@@ -216,7 +209,6 @@ public class SidebarService extends Service {
                         | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
         edgeRightParams.gravity = Gravity.END | Gravity.TOP;
-        edgeRightParams.x = inset;
 
         try { windowManager.addView(leftEdge, edgeLeftParams); } catch (Exception e) {
             android.util.Log.e("SidebarService", "add left edge failed", e);
