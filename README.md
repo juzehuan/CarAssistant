@@ -1,24 +1,20 @@
 # CarAssistant · 车机助手
 
-> 面向 Android 车机（红旗车机为主）的一站式系统工具箱，提供清理、应用管理、文件管理、悬浮快捷面板、按键映射、音乐伴侣、性能监控等功能。现代化 Material Design 风格，注重大屏车机的扫视可读性与品牌设计语言。
+> 面向 Android 车机（红旗车机为主）的精简系统工具箱，只保留清理优化、应用管理、文件管理、性能监控、自启管理、设备信息六大核心功能。现代化 Material Design 风格，注重大屏车机的扫视可读性与品牌设计语言。
 
 ## 功能模块
 
 | 模块 | 说明 |
 | --- | --- |
 | 主界面 | 首页 / 应用 / 清理 / 文件 四大 Fragment + 底部导航 |
-| 一键清理 | 缓存扫描 + 残留文件清理 |
+| 清理优化 | 缓存扫描 + 残留文件清理 + 内存加速（Root / 普通模式） |
 | 应用管理 | 应用列表、APK 安装、应用详情、批量卸载 |
 | 文件管理 | 存储浏览、U 盘自动识别 |
-| 悬浮球 / 侧边栏 | 屏幕边缘滑入触发，含系统快捷开关、快捷应用网格、导航按钮 |
-| 控制面板 | WiFi / 蓝牙 / 亮度 / 手电筒 / 旋转锁定等系统开关 |
-| 按键映射 | 无障碍服务全局拦截物理按键，自定义功能映射 |
+| 性能监控 | CPU / 内存 / 温度悬浮窗实时监控 |
 | 自启管理 | 应用开机自启动配置 |
 | 设备信息 | 硬件 / 系统 / 屏幕信息一览 |
-| 音乐伴侣 | 媒体会话控制、歌词显示、黑胶唱片 UI（鸿启桌面风格） |
-| 性能监控 | CPU / 内存 / 温度悬浮窗实时监控 |
 | 权限引导 | 首次启动集中授权（运行时权限 + 特殊权限） |
-| 开机自启 | BOOT_COMPLETED 自启动悬浮球 |
+| 设置 | 内存清理白名单、版本号 |
 | U 盘监听 | 插拔事件自动刷新文件列表 |
 
 ## 技术栈
@@ -45,15 +41,15 @@ CarAssistant/
 │       │   ├── SettingsActivity.java
 │       │   ├── adapter/          # RecyclerView 适配器
 │       │   ├── receiver/         # BootReceiver / UsbReceiver
-│       │   ├── service/          # 悬浮球、侧边栏、按键映射、监控、媒体会话
+│       │   ├── service/          # 性能监控悬浮窗服务
 │       │   ├── ui/               # Fragment 与各功能 Activity
-│       │   └── util/             # 工具类（清理、文件、按键、权限、内存等）
+│       │   └── util/             # 工具类（清理、文件、权限、内存、设备等）
 │       └── res/
 │           ├── drawable/         # 自定义背景、图标
 │           ├── layout/           # 布局文件
 │           ├── values/           # 颜色、尺寸、字符串、主题
 │           ├── values-sw600dp/   # 大屏适配
-│           └── xml/              # 无障碍配置、FileProvider
+│           └── xml/              # FileProvider 配置
 ├── build.gradle                  # 工程构建配置
 ├── settings.gradle
 ├── gradle/                       # Gradle Wrapper
@@ -65,15 +61,12 @@ CarAssistant/
 
 | 权限 | 用途 |
 | --- | --- |
-| `SYSTEM_ALERT_WINDOW` | 悬浮球、侧边栏、监控悬浮窗 |
-| `BIND_ACCESSIBILITY_SERVICE` | 物理按键全局拦截、手势模拟 |
-| `BIND_NOTIFICATION_LISTENER_SERVICE` | 媒体会话监听（音乐伴侣） |
+| `SYSTEM_ALERT_WINDOW` | 性能监控悬浮窗 |
 | `PACKAGE_USAGE_STATS` | 扫描应用缓存大小 |
 | `MANAGE_EXTERNAL_STORAGE` | 全盘文件管理（Android 11+） |
 | `REQUEST_INSTALL_PACKAGES` | APK 安装 |
-| `WRITE_SETTINGS` | 亮度调节、旋转锁定 |
-| `CAMERA` | 手电筒（Camera2 Torch） |
-| `RECEIVE_BOOT_COMPLETED` | 开机自启 |
+| `REQUEST_DELETE_PACKAGES` | 应用卸载 |
+| `RECEIVE_BOOT_COMPLETED` | 开机自启调度 |
 | `FOREGROUND_SERVICE_SPECIAL_USE` | Android 14+ 前台服务类型声明 |
 
 ## 构建方法

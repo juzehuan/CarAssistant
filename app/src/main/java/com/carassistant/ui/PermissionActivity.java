@@ -42,12 +42,10 @@ import com.carassistant.util.PrefsUtil;
  * 权限分类：
  * 1. 必需权限（运行时权限）：进入应用前必须授予
  *    - POST_NOTIFICATIONS（Android 13+）
- *    - BLUETOOTH_CONNECT（Android 12+）
- *    - CAMERA
  *    - READ/WRITE_EXTERNAL_STORAGE（Android 10 及以下）
  *
  * 2. 重要权限（特殊权限）：跳转系统设置，可跳过但提示影响
- *    - 悬浮窗 / 所有文件访问 / 使用情况访问 / 修改系统设置 / 通知访问
+ *    - 悬浮窗 / 所有文件访问 / 使用情况访问
  *
  * 进入按钮策略：
  * - 必需权限全部授予时可点击进入应用
@@ -61,9 +59,8 @@ public class PermissionActivity extends AppCompatActivity {
     private TextView tvRuntimeStatus;
     // 视图：特殊权限状态徽章
     private TextView tvOverlayStatus, tvStorageStatus, tvUsageStatus;
-    private TextView tvWriteSettingsStatus, tvListenerStatus;
     // 视图：行容器（点击跳转设置）
-    private View rowOverlay, rowStorage, rowUsage, rowWriteSettings, rowListener;
+    private View rowOverlay, rowStorage, rowUsage;
     // 视图：底部按钮
     private Button btnRequestRuntime, btnEnterApp, btnSkipSpecial;
 
@@ -82,14 +79,10 @@ public class PermissionActivity extends AppCompatActivity {
         tvOverlayStatus = findViewById(R.id.tv_overlay_status);
         tvStorageStatus = findViewById(R.id.tv_storage_status);
         tvUsageStatus = findViewById(R.id.tv_usage_status);
-        tvWriteSettingsStatus = findViewById(R.id.tv_write_settings_status);
-        tvListenerStatus = findViewById(R.id.tv_listener_status);
 
         rowOverlay = findViewById(R.id.row_overlay);
         rowStorage = findViewById(R.id.row_storage);
         rowUsage = findViewById(R.id.row_usage);
-        rowWriteSettings = findViewById(R.id.row_write_settings);
-        rowListener = findViewById(R.id.row_listener);
 
         btnRequestRuntime = findViewById(R.id.btn_request_runtime);
         btnEnterApp = findViewById(R.id.btn_enter_app);
@@ -115,16 +108,6 @@ public class PermissionActivity extends AppCompatActivity {
         rowUsage.setOnClickListener(v -> {
             if (!PermissionUtil.hasUsageStatsAccess(this)) {
                 PermissionUtil.requestUsageStatsAccess(this);
-            }
-        });
-        rowWriteSettings.setOnClickListener(v -> {
-            if (!PermissionUtil.canWriteSettings(this)) {
-                PermissionUtil.requestWriteSettings(this);
-            }
-        });
-        rowListener.setOnClickListener(v -> {
-            if (!PermissionUtil.isNotificationListenerEnabled(this)) {
-                PermissionUtil.requestNotificationListenerAccess(this);
             }
         });
 
@@ -195,8 +178,6 @@ public class PermissionActivity extends AppCompatActivity {
         updateStatusBadge(tvOverlayStatus, PermissionUtil.canDrawOverlays(this));
         updateStatusBadge(tvStorageStatus, PermissionUtil.hasStorageAccess(this));
         updateStatusBadge(tvUsageStatus, PermissionUtil.hasUsageStatsAccess(this));
-        updateStatusBadge(tvWriteSettingsStatus, PermissionUtil.canWriteSettings(this));
-        updateStatusBadge(tvListenerStatus, PermissionUtil.isNotificationListenerEnabled(this));
 
         // 进入按钮可用性
         btnEnterApp.setEnabled(runtimeOk);

@@ -4,9 +4,6 @@
 
     <!-- 通用动作 -->
     <string name="launch_fail">启动失败</string>
-    <string name="app_not_installed">应用未安装</string>
-    <string name="cleaned">已清理</string>
-    <string name="home_feature_home">返回首页</string>
 
     <!-- 底部导航 -->
     <string name="tab_home">首页</string>
@@ -19,9 +16,6 @@
     <string name="home_feature_clean">清理优化</string>
     <string name="home_feature_app">应用管理</string>
     <string name="home_feature_file">文件管理</string>
-    <string name="home_feature_usb">U盘管理</string>
-    <string name="home_feature_float">桌面侧边栏</string>
-    <string name="home_feature_control">控制面板</string>
     <string name="home_feature_monitor">性能监控</string>
     <string name="home_feature_autostart">自启管理</string>
     <string name="home_feature_device">设备信息</string>
@@ -33,13 +27,8 @@
     <string name="clean_scaning">正在扫描…</string>
     <string name="clean_clean">一键清理</string>
     <string name="clean_junk_title">垃圾文件</string>
-    <string name="clean_cache">缓存垃圾</string>
-    <string name="clean_apk">多余APK安装包</string>
-    <string name="clean_log">日志文件</string>
-    <string name="clean_thumb">缩略图缓存</string>
     <string name="clean_empty">暂无垃圾，已经很干净</string>
     <string name="clean_done">清理完成，释放 %1$s</string>
-    <string name="clean_summary_done">扫描完成，建议清理 %1$s</string>
     <string name="clean_summary_done_no_root">已扫描可访问垃圾 %1$s；一键清理还可清理其他应用缓存</string>
     <!-- 清理-Root 模式 -->
     <string name="clean_root_mode">Root 已开启</string>
@@ -63,25 +52,14 @@
     <string name="memory_total">总内存 %1$s</string>
     <string name="memory_used">已用</string>
     <string name="memory_avail_short">可用</string>
-    <string name="memory_avail">可用：%1$s</string>
     <string name="memory_running">运行进程 %1$d</string>
     <string name="memory_boost">一键加速</string>
     <string name="memory_boosting">正在加速…</string>
-    <string name="memory_done">加速完成，释放 %1$s 内存</string>
     <!-- 内存-Root 模式 -->
     <string name="memory_root_done">加速完成，强制结束 %1$d 个后台应用，释放 %2$s 内存</string>
     <string name="memory_root_drop_caches">加速完成，已清理系统缓存，释放 %1$s 内存</string>
-    <string name="memory_accessibility_done">加速完成，已清除最近任务，释放 %1$s 内存</string>
-    <string name="memory_no_root_done">加速完成，释放 %1$s 内存（无 Root，效果有限，建议开启 Root）</string>
     <string name="memory_normal_done">普通模式清理完成，释放 %1$s 内存\n开启无障碍服务可释放更多内存</string>
-    <string name="memory_no_method_enabled">需要开启无障碍服务或 Root 权限才能有效清理内存</string>
     <string name="memory_failed">内存加速失败，请重试</string>
-    <string name="memory_no_apps_to_kill">没有可清理的后台应用</string>
-    <string name="memory_suggest_accessibility_title">清理效果受限</string>
-    <string name="memory_suggest_accessibility_msg">当前为普通清理模式（未检测到 Root，未开启无障碍服务），系统 API 限制下仅能释放少量内存。\n\n开启无障碍服务后，可模拟「清除全部最近任务」，释放 100~500 MB 内存，效果显著提升。</string>
-    <string name="memory_suggest_root_msg">当前为普通清理模式，系统 API 限制下仅能释放少量内存。\n\n开启 Root 权限后，可强制结束后台应用并清理系统缓存，释放数百 MB 内存。</string>
-    <string name="memory_go_enable">去开启</string>
-    <string name="memory_clean_anyway">仍清理</string>
 
     <!-- 应用管理 -->
     <string name="app_title">应用管理</string>
@@ -92,18 +70,13 @@
     <string name="app_uninstall">卸载</string>
     <string name="app_uninstall_confirm">确定要卸载 %1$s 吗？\n\n卸载将清除该应用的所有数据。</string>
     <string name="app_detail">详情</string>
-    <string name="app_clear_cache">清除缓存</string>
     <string name="app_search_hint">搜索应用名或包名</string>
     <string name="app_search_no_match">未找到匹配的应用</string>
     <string name="app_open_failed">无法启动 %1$s，已跳转应用详情</string>
     <string name="app_disabled_cannot_open">%1$s 已被禁用，无法启动，已跳转详情页可手动启用</string>
-    <string name="app_disabled_cannot_open_short">应用已被禁用，无法启动</string>
 
     <!-- 文件管理 -->
     <string name="file_title">文件管理</string>
-    <string name="file_internal">内部存储</string>
-    <string name="file_sd">SD 卡</string>
-    <string name="file_usb">U盘</string>
     <string name="file_empty">空文件夹</string>
     <string name="file_install_apk">安装</string>
     <string name="file_install_apk_confirm">确定要安装 %1$s 吗？</string>
@@ -112,77 +85,16 @@
 
     <!-- U盘 -->
     <string name="usb_title">U盘管理</string>
-    <string name="usb_none">未检测到 U 盘</string>
     <string name="usb_plugged">U盘已插入：%1$s</string>
     <string name="usb_removed">U盘已拔出</string>
-    <string name="usb_open">浏览 U 盘</string>
-    <string name="usb_safe_eject">安全弹出</string>
 
     <!-- 侧边栏 -->
-    <string name="float_open">侧边栏已开启</string>
-    <string name="float_start_failed">侧边栏启动失败，请检查权限或重启应用</string>
-    <string name="float_close">关闭侧边栏</string>
-    <string name="float_panel_edit">编辑快捷应用</string>
-    <string name="float_panel_empty">暂无快捷应用\n请在设置中添加</string>
-    <string name="float_quick_actions">侧边栏快捷按钮</string>
-    <string name="float_quick_actions_desc">在侧边栏底部显示返回、主页等系统快捷按钮，需开启无障碍服务才能生效</string>
-    <string name="float_quick_master">显示快捷按钮区</string>
-    <string name="quick_back">返回</string>
-    <string name="quick_home">主页</string>
-    <string name="quick_recents">最近任务</string>
-    <string name="quick_lock">锁屏</string>
-    <string name="quick_accessibility_required">请先在按键映射页开启无障碍服务</string>
     <!-- 侧边栏 -->
-    <string name="sidebar_title">侧边栏</string>
-    <string name="sidebar_apps">快捷应用</string>
-    <string name="sidebar_apps_empty">暂无快捷应用\n请在设置中添加</string>
-    <string name="sidebar_running_title">侧边栏运行中</string>
-    <string name="sidebar_running_text">从屏幕边缘滑入打开侧边栏</string>
-    <string name="sidebar_hint">从屏幕左/右边缘向内滑动打开侧边栏</string>
     <!-- 侧边栏系统开关 -->
-    <string name="quick_wifi">WiFi</string>
-    <string name="quick_bluetooth">蓝牙</string>
-    <string name="quick_brightness">亮度</string>
-    <string name="quick_torch">手电</string>
-    <string name="quick_rotation">旋转</string>
-    <string name="quick_on">已开启</string>
-    <string name="quick_off">已关闭</string>
-    <string name="control_wifi_on">WiFi 已开启</string>
-    <string name="control_wifi_off">WiFi 已关闭</string>
-    <string name="control_bluetooth_on">蓝牙已开启</string>
-    <string name="control_bluetooth_off">蓝牙已关闭</string>
-    <string name="control_hotspot_on">热点已开启</string>
-    <string name="control_hotspot_off">热点已关闭</string>
-    <string name="control_dark_on">夜间模式已开启</string>
-    <string name="control_dark_off">夜间模式已关闭</string>
-    <string name="control_open_settings">已跳转系统设置</string>
-    <string name="control_volume_changed">音量已调整</string>
-    <string name="control_brightness_changed">亮度已调整</string>
 
     <!-- 按键映射权限 -->
-    <string name="keymap_accessibility_label">车机助手按键映射</string>
-    <string name="keymap_accessibility_desc">用于全局拦截物理按键和模拟系统手势（返回、最近任务、锁屏等）。不读取屏幕内容，不上传任何数据。</string>
-    <string name="keymap_permissions_title">需要开启的权限</string>
-    <string name="keymap_perm_accessibility">无障碍服务</string>
-    <string name="keymap_perm_notification">通知权限</string>
-    <string name="keymap_perm_not_granted">未开启</string>
-    <string name="keymap_perm_granted">已开启</string>
-    <string name="keymap_perm_go_grant">去开启</string>
-    <string name="keymap_perm_accessibility_tip">请在系统设置中找到「车机助手按键映射」并开启，开启后按键映射可在任意界面生效</string>
-    <string name="keymap_perm_notification_not_required">当前系统无需单独申请通知权限</string>
 
     <!-- 媒体会话服务（方控媒体按键定向派发） -->
-    <string name="media_session_service_label">车机助手媒体会话</string>
-    <string name="keymap_perm_media_session">媒体会话访问</string>
-    <string name="keymap_perm_media_session_tip">用于将方向盘媒体键定向派发到指定音乐应用，请在通知访问设置中开启「车机助手媒体会话」</string>
-    <string name="media_target_app">目标应用（可多选）</string>
-    <string name="media_target_app_hint">不选则由系统路由到当前播放器；选择一个或多个应用后，按键将智能路由到其中正在播放的应用</string>
-    <string name="media_target_any">当前播放器（系统默认）</string>
-    <string name="media_target_pick">选择应用（可多选）</string>
-    <string name="media_target_pick_subtitle">勾选要控制的应用，可多选；选好后点确定</string>
-    <string name="media_target_skip">不选，用系统默认</string>
-    <string name="media_target_confirm">确定（已选 %1$d 个）</string>
-    <string name="media_target_none_selected">未选择应用，将使用系统默认路由</string>
     <string name="float_permission_title">需要悬浮窗权限</string>
     <string name="float_permission_msg">侧边栏需要"显示在其他应用上层"权限，是否立即开启？</string>
     <string name="float_grant">去开启</string>
@@ -194,18 +106,10 @@
     <string name="back">返回</string>
     <string name="loading">加载中…</string>
     <string name="permission_storage_required">需要存储权限才能管理文件</string>
-    <string name="permission_grant">授予权限</string>
-    <string name="permission_settings">去设置</string>
     <string name="empty_list">暂无内容</string>
 
     <!-- 设置页 -->
     <string name="settings_title">设置</string>
-    <string name="settings_float_apps">侧边栏快捷应用</string>
-    <string name="settings_float_apps_desc">点击下方按钮选择常用应用，侧边栏展开后将显示这些应用</string>
-    <string name="float_apps_count_selected">已选 %1$d 个</string>
-    <string name="float_apps_count_none">未设置</string>
-    <string name="settings_float_apps_pick">选择应用</string>
-    <string name="settings_float_apps_empty">尚未选择应用，点击右上角"选择应用"</string>
     <string name="settings_whitelist">内存清理白名单</string>
     <string name="settings_whitelist_desc">白名单中的应用在"一键加速"时不会被结束</string>
     <string name="settings_whitelist_pick">添加应用</string>
@@ -218,20 +122,8 @@
     <string name="settings_about">关于</string>
     <string name="settings_about_version">版本 %1$s</string>
     <string name="settings_about_desc">车机助手 - 车机端工具箱</string>
-    <string name="settings_open_settings">打开设置页</string>
 
     <!-- 控制面板 -->
-    <string name="control_volume">媒体音量</string>
-    <string name="control_brightness">屏幕亮度</string>
-    <string name="control_quick">快捷开关</string>
-    <string name="control_wifi">WiFi</string>
-    <string name="control_bluetooth">蓝牙</string>
-    <string name="control_hotspot">热点</string>
-    <string name="control_hotspot_unknown">热点</string>
-    <string name="control_dark">夜间模式</string>
-    <string name="control_airplane">飞行模式</string>
-    <string name="control_location">定位</string>
-    <string name="control_brightness_permission">修改系统亮度需要"修改系统设置"权限，是否立即开启？</string>
 
     <!-- 设备信息 -->
     <string name="device_title">设备信息</string>
@@ -241,7 +133,6 @@
     <string name="device_screenshot_dir">截屏已保存到 Pictures/Screenshots 目录</string>
     <string name="device_basic">基本信息</string>
     <string name="device_hardware">硬件配置</string>
-    <string name="device_system">系统信息</string>
     <string name="device_battery">电量</string>
     <string name="device_model">设备型号</string>
     <string name="device_brand">品牌</string>
@@ -264,7 +155,6 @@
     <string name="autostart_self_desc">若车机助手本身被系统限制自启动，开机后无法自动拉起侧边栏和配置的自启应用。请在系统设置中允许车机助手自启动。</string>
     <string name="autostart_self_go">去开启</string>
     <string name="autostart_self_toast">请在应用详情页中开启「自启动」开关</string>
-    <string name="autostart_scanning">正在扫描自启应用…</string>
     <string name="autostart_empty">未发现自启应用</string>
     <string name="autostart_disable">禁用自启</string>
     <string name="autostart_enable">允许自启</string>
@@ -280,13 +170,11 @@
     <string name="autostart_pick_title">选择开机自启应用</string>
     <string name="autostart_pick_subtitle">勾选需要在开机时自动启动的应用</string>
     <string name="autostart_loading_apps">正在加载应用列表…</string>
-    <string name="autostart_user_app">用户应用</string>
     <string name="autostart_refresh">刷新</string>
     <string name="autostart_search_hint">搜索应用名或包名</string>
     <string name="autostart_launch">启动</string>
     <string name="autostart_launch_all">全部启动</string>
     <string name="autostart_launch_failed">启动失败：%1$s</string>
-    <string name="autostart_launch_all_done">已启动 %1$d 个应用</string>
     <string name="autostart_filter_all">全部</string>
     <string name="autostart_filter_system">系统</string>
     <string name="autostart_filter_user">用户</string>
@@ -321,8 +209,6 @@
     <string name="monitor_battery">电量</string>
     <string name="monitor_float">悬浮监控</string>
     <string name="monitor_float_on">开启悬浮监控</string>
-    <string name="monitor_float_off">关闭悬浮监控</string>
-    <string name="monitor_overheat">设备过热告警</string>
     <string name="monitor_overheat_msg">设备温度过高（%1$.1f°C），请暂停使用并散热</string>
     <string name="monitor_history">历史峰值</string>
     <string name="monitor_peak_cpu">CPU 峰值</string>
@@ -330,239 +216,14 @@
     <string name="monitor_freq">CPU 频率</string>
 
     <!-- 按键映射 -->
-    <string name="keymap_title">按键映射</string>
-    <string name="home_feature_keymap">按键映射</string>
-    <string name="keymap_usage">使用说明</string>
-    <string name="keymap_usage_desc">1. 点击右上角 + 号添加映射，按下物理按键（方向盘键/音量键等）\n2. 支持触发模式：单击 / 双击 / 长按 / 三连按 / 组合键（按住一键再按另一键）\n3. 支持「按键序列」：依次按下若干键组成序列触发（如 音量+ → 音量- → 播放）\n4. 支持「模拟轴」：手柄/方向盘的方向、油门等模拟轴事件也可映射（需在系统输入法中启用本应用输入法）\n5. 支持「仅前台应用生效」：可设置仅当某应用处于前台时才触发该映射（车机很实用，如导航/音乐前台时方控键行为不同）\n6. 支持动作：应用启动、音量、媒体、开关、亮度、系统操作、设置子页、常用应用、URL、广播等\n7. 长按列表项可编辑动作，点击播放按钮可立即测试\n8. 菜单支持导入/导出配置和应用预设模板\n9. 如无法捕获按键，可点击「手动输入」输入 keyCode\n10. 映射生效范围：车机助手在前台运行时</string>
-    <string name="keymap_empty">暂无按键映射\n点击右上角 + 号添加\n或通过菜单应用预设模板</string>
 
     <!-- 音乐伴侣 -->
-    <string name="home_feature_music">音乐伴侣</string>
-    <string name="home_lyrics_title">歌词伴侣</string>
-    <string name="home_lyrics_desktop">桌面歌词</string>
-    <string name="home_lyrics_settings">歌词设置</string>
-    <string name="music_title">音乐伴侣</string>
-    <string name="music_source">音乐来源</string>
-    <string name="music_no_song">暂无音乐播放</string>
-    <string name="music_unknown_artist">未知歌手</string>
-    <string name="music_idle_subtitle">打开常用音乐应用，开始今天的第一首歌</string>
-    <string name="music_open_app">点击卡片打开音乐应用</string>
-    <string name="music_connected">已连接</string>
-    <string name="music_disconnected">未连接</string>
-    <string name="music_permission_title">需要通知访问权限</string>
-    <string name="music_permission_desc">音乐伴侣需要「通知访问权限」来读取系统媒体会话信息（歌曲标题、歌手、播放状态、专辑封面），不会读取或上传任何通知内容。</string>
-    <string name="music_permission_grant">去开启</string>
-    <string name="music_permission_required">请先授予通知访问权限</string>
-    <string name="music_permission_subtitle">用于读取当前播放状态并显示歌词</string>
-    <string name="music_permission_step1">在系统「通知访问设置」中找到「车机助手媒体会话」</string>
-    <string name="music_permission_step2">开启开关，允许车机助手读取媒体信息</string>
-    <string name="music_lyrics">歌词</string>
-    <string name="music_lyrics_loading">歌词加载中…</string>
-    <string name="music_no_lyrics">等待音乐响起</string>
-    <string name="music_empty_lyric_hint">播放歌曲后，歌词将在这里同步滚动</string>
-    <string name="music_progress">播放进度</string>
-    <string name="music_prev">上一首</string>
-    <string name="music_play">播放/暂停</string>
-    <string name="music_next">下一首</string>
-    <string name="music_playlist">播放列表</string>
-    <string name="music_repeat">循环模式</string>
-    <string name="music_repeat_off">顺序播放</string>
-    <string name="music_repeat_one">单曲循环</string>
-    <string name="music_repeat_all">列表循环</string>
-    <string name="music_tip">提示：若未自动识别当前播放的歌曲，请确保音乐应用正在播放且已授予通知访问权限</string>
-    <string name="music_no_active_session">未发现正在播放的音乐会话，请先打开音乐应用并播放</string>
-    <string name="music_open_app_first">请先打开音乐应用并开始播放</string>
-    <string name="music_settings">音乐伴侣设置</string>
-    <string name="music_settings_subtitle">实时预览，调整后立即生效</string>
-    <string name="music_settings_play_lyric_card">播放与歌词</string>
-    <string name="music_settings_default_show_lyrics">默认显示歌词</string>
-    <string name="music_settings_default_show_lyrics_tip">进入音乐伴侣时默认展开歌词</string>
-    <string name="music_settings_lyric_offset">歌词时间校正</string>
-    <string name="music_settings_lyric_offset_tip">若歌词比演唱慢或快，可整体偏移对齐</string>
-    <string name="music_settings_lyric_offset_reset">重置</string>
-    <string name="music_settings_pref_card">偏好</string>
-    <string name="music_settings_default_repeat">默认循环模式</string>
-    <string name="music_settings_repeat_order">顺序播放</string>
-    <string name="music_settings_repeat_all">列表循环</string>
-    <string name="music_settings_repeat_one">单曲循环</string>
-    <string name="music_settings_auto_open_app">自动打开音乐应用</string>
-    <string name="music_settings_auto_open_app_tip">进入音乐伴侣时自动拉起上次使用的音乐应用</string>
-    <string name="music_lyric_offset_seconds">%1$.1f 秒</string>
-    <string name="music_settings_appearance_card">外观</string>
-    <string name="music_settings_dynamic_theme">动态主题色</string>
-    <string name="music_settings_dynamic_theme_tip">根据专辑封面自动提取主色作为背景</string>
-    <string name="music_settings_vinyl_rotate">黑胶旋转动画</string>
-    <string name="music_settings_vinyl_rotate_tip">播放时唱片转动，暂停时停转</string>
-    <string name="music_settings_show_arm">显示唱臂</string>
-    <string name="music_settings_show_arm_tip">在唱片上叠加唱臂装饰</string>
-    <string name="music_settings_visualizer_mode">律动特效模式</string>
-    <string name="music_vis_mode_neon">流光波纹</string>
-    <string name="music_vis_mode_circle">环形律动</string>
-    <string name="music_vis_mode_wave">极光流体</string>
-    <string name="music_vis_mode_column">节拍灯带</string>
-    <string name="music_vis_mode_dot">星轨粒子</string>
-    <string name="music_settings_layout_orientation">唱片与歌词排版</string>
-    <string name="music_layout_vertical">纵向列排</string>
-    <string name="music_layout_horizontal">横向并排</string>
-    <string name="music_settings_color_theme">配色方案</string>
-    <string name="music_theme_auto">🎨 动态取色（专辑封面）</string>
-    <string name="music_theme_red">🔴 网易红</string>
-    <string name="music_theme_blue">🔵 深海蓝</string>
-    <string name="music_theme_purple">🟣 暗夜紫</string>
-    <string name="music_theme_green">🟢 极光绿</string>
-    <string name="music_theme_orange">🟠 橙焰</string>
-    <string name="music_theme_silver">⚪ 银灰</string>
-    <string name="music_settings_lyric_font">歌词字号</string>
-    <string name="music_settings_lyric_font_tip">放大或缩小歌词文字，便于车机阅读</string>
-    <string name="music_settings_lyric_line_spacing">歌词行间距</string>
-    <string name="music_settings_show_translation">显示翻译</string>
-    <string name="music_settings_show_translation_tip">有翻译歌词时一并显示</string>
-    <string name="music_settings_show_prev">显示上一首按钮</string>
-    <string name="music_settings_show_prev_tip">关闭后隐藏底部“上一首”</string>
-    <string name="music_settings_show_next">显示下一首按钮</string>
-    <string name="music_settings_show_next_tip">关闭后隐藏底部“下一首”</string>
-    <string name="music_settings_percent">%1$d%%</string>
-    <string name="music_settings_vinyl_size">唱片大小</string>
-    <string name="music_settings_visualizer">音乐律动</string>
-    <string name="music_settings_icon_size">图标大小</string>
-    <string name="music_settings_seekbar_thickness">进度条粗细</string>
-    <string name="music_settings_seekbar_color">进度条颜色</string>
-    <string name="music_settings_control_margin">控制栏边距</string>
-    <string name="music_settings_header_lift">顶部按钮上移</string>
 
     <!-- 桌面歌词悬浮窗 -->
-    <string name="floating_lyrics_title">桌面歌词</string>
-    <string name="floating_lyrics_noti_desc">在任意应用上层显示当前歌词</string>
-    <string name="floating_lyrics_noti_text">桌面歌词运行中，长按悬浮窗可关闭</string>
-    <string name="floating_lyrics_no_overlay_perm">悬浮窗权限不足，请在系统设置中授予</string>
-    <string name="floating_lyrics_toggle">桌面歌词开关</string>
-    <string name="floating_lyrics_enabled">桌面歌词已开启</string>
-    <string name="floating_lyrics_disabled">桌面歌词已关闭</string>
-    <string name="floating_lyrics_drag_hint">拖动可移动位置，单击切换歌曲信息，长按关闭</string>
-    <string name="floating_lyrics_settings">桌面歌词设置</string>
-    <string name="floating_lyrics_settings_subtitle">实时预览，调整后立即生效</string>
-    <string name="floating_lyrics_enable_card">桌面歌词开关</string>
-    <string name="floating_lyrics_enable_switch">开启桌面歌词</string>
-    <string name="floating_lyrics_enable_tip">开启后将在其他应用上方悬浮显示当前播放歌词，需要通知访问与悬浮窗权限</string>
-    <string name="floating_lyrics_style_default">经典</string>
-    <string name="floating_lyrics_style_refined">精致</string>
-    <string name="floating_lyrics_style_compact">紧凑</string>
-    <string name="floating_lyrics_style_pip">画中画</string>
-    <string name="floating_lyrics_card_size">悬浮窗尺寸与文字</string>
-    <string name="floating_lyrics_card_bg">背景与封面</string>
-    <string name="floating_lyrics_card_refined">精致风格特效</string>
-    <string name="floating_lyrics_card_compact">紧凑风格选项</string>
-    <string name="floating_lyrics_card_controls">播放控制按钮</string>
-    <string name="floating_lyrics_width">悬浮窗宽度</string>
-    <string name="floating_lyrics_height">悬浮窗高度</string>
-    <string name="floating_lyrics_font_scale">字号</string>
-    <string name="floating_lyrics_offset">歌词时间校正</string>
-    <string name="floating_lyrics_opacity">背景不透明度</string>
-    <string name="floating_lyrics_cover_scale">封面大小</string>
-    <string name="floating_lyrics_blur">封面背景柔化</string>
-    <string name="floating_lyrics_dim">封面背景遮罩</string>
-    <string name="floating_lyrics_bg_type">背景类型</string>
-    <string name="floating_lyrics_bg_blur">高斯模糊</string>
-    <string name="floating_lyrics_bg_solid">纯色</string>
-    <string name="floating_lyrics_bg_gradient">渐变</string>
-    <string name="floating_lyrics_bg_fluid">流体</string>
-    <string name="floating_lyrics_bg_none">无</string>
-    <string name="floating_lyrics_show_translation">显示翻译</string>
-    <string name="floating_lyrics_show_karaoke">卡拉OK逐字高亮</string>
-    <string name="floating_lyrics_show_glow">歌词发光</string>
-    <string name="floating_lyrics_show_blur">歌词模糊景深</string>
-    <string name="floating_lyrics_show_rotate">歌词曲线旋转</string>
-    <string name="floating_lyrics_show_zoom">歌词缩放动画</string>
-    <string name="floating_lyrics_show_fade">歌词淡入淡出</string>
-    <string name="floating_lyrics_compact_cover">显示封面</string>
-    <string name="floating_lyrics_compact_bars">显示底部律动条</string>
-    <string name="floating_lyrics_show_prev">显示上一首按钮</string>
-    <string name="floating_lyrics_show_play">显示播放暂停按钮</string>
-    <string name="floating_lyrics_show_next">显示下一首按钮</string>
-    <string name="floating_lyrics_secondary">副屏模式</string>
-    <string name="floating_lyrics_secondary_tip">副屏不显示播放控制按钮，并放大文字以提升远距离可读性。</string>
 
     <!-- 歌词设置：精致风格外观组 -->
-    <string name="floating_lyrics_card_appearance">外观</string>
-    <string name="floating_lyrics_card_cover">封面</string>
-    <string name="floating_lyrics_card_lyric">歌词</string>
-    <string name="floating_lyrics_display_mode">显示内容</string>
-    <string name="floating_lyrics_display_mode_all">全部</string>
-    <string name="floating_lyrics_display_mode_lyrics">仅歌词</string>
-    <string name="floating_lyrics_display_mode_cover">仅封面</string>
-    <string name="floating_lyrics_color_scheme">颜色模式</string>
-    <string name="floating_lyrics_color_scheme_auto">跟随系统</string>
-    <string name="floating_lyrics_color_scheme_dark">暗色</string>
-    <string name="floating_lyrics_color_scheme_light">亮色</string>
-    <string name="floating_lyrics_accent_variant">沉浸主题色</string>
-    <string name="floating_lyrics_accent_primary">鲜艳</string>
-    <string name="floating_lyrics_accent_secondary">柔和</string>
-    <string name="floating_lyrics_accent_tertiary">偏色</string>
-    <string name="floating_lyrics_accent_off">关闭</string>
-    <string name="floating_lyrics_text_effect">文字效果</string>
-    <string name="floating_lyrics_text_effect_none">无</string>
-    <string name="floating_lyrics_text_effect_shadow">文字阴影</string>
-    <string name="floating_lyrics_text_effect_glow">文字辉光</string>
-    <string name="floating_lyrics_progress_bottom">进度条贴底</string>
-    <string name="floating_lyrics_cover_horizontal">水平对齐</string>
-    <string name="floating_lyrics_cover_horizontal_left">居左</string>
-    <string name="floating_lyrics_cover_horizontal_center">居中</string>
-    <string name="floating_lyrics_cover_vertical">垂直对齐</string>
-    <string name="floating_lyrics_cover_vertical_bottom">居下</string>
-    <string name="floating_lyrics_cover_vertical_middle">居中</string>
-    <string name="floating_lyrics_rectangle_cover">方形专辑封面</string>
-    <string name="floating_lyrics_cover_shadow">封面弥散阴影</string>
-    <string name="floating_lyrics_static_fluid">静态流体</string>
-    <string name="floating_lyrics_dynamic_gradient">动态渐变</string>
-    <string name="floating_lyrics_lyric_font_size">字体大小</string>
-    <string name="floating_lyrics_original_bold">加粗首行</string>
-    <string name="floating_lyrics_rotate_curvature">旋转曲率（弧形换句）</string>
-    <string name="floating_lyrics_karaoke_animation">逐字动画</string>
-    <string name="floating_lyrics_karaoke_float">上浮（整字符）</string>
-    <string name="floating_lyrics_karaoke_step">阶梯点亮</string>
-    <string name="floating_lyrics_current_align">当前歌词位置</string>
-    <string name="floating_lyrics_current_align_center">居中</string>
-    <string name="floating_lyrics_current_align_top">居上</string>
-    <string name="floating_lyrics_lyric_lines">歌词显示行数</string>
-    <string name="floating_lyrics_refined_tip">精致风格相关选项仅在「精致」风格下生效。</string>
-    <string name="floating_lyrics_refined_note">逐字动画保持完整 Unicode 字符跳变；没有逐字时间轴的普通 LRC 仍按整句切换。</string>
 
     <!-- 歌词设置：补齐原版 AppPreferences 缺失项 -->
-    <string name="floating_lyrics_card_advanced">高级与扩展</string>
-    <string name="floating_lyrics_card_secondary_panel">副悬浮窗</string>
-    <string name="floating_lyrics_card_data_source">歌词与诊断</string>
-    <string name="floating_lyrics_card_compact_size">紧凑风格尺寸</string>
-    <string name="floating_lyrics_panel_scale">面板整体缩放</string>
-    <string name="floating_lyrics_display_id">目标显示器</string>
-    <string name="floating_lyrics_display_default">默认</string>
-    <string name="floating_lyrics_display_main">主屏</string>
-    <string name="floating_lyrics_display_secondary">副屏</string>
-    <string name="floating_lyrics_main_overlay">主悬浮窗总开关</string>
-    <string name="floating_lyrics_main_overlay_tip">开启后独立于桌面歌词显示主悬浮窗（默认关闭，使用桌面歌词即可）。</string>
-    <string name="floating_lyrics_secondary_enable">启用副悬浮窗</string>
-    <string name="floating_lyrics_secondary_style">副悬浮窗风格</string>
-    <string name="floating_lyrics_secondary_style_default">跟随主悬浮窗</string>
-    <string name="floating_lyrics_secondary_position">副悬浮窗位置</string>
-    <string name="floating_lyrics_secondary_position_default">跟随主悬浮窗</string>
-    <string name="floating_lyrics_secondary_position_custom">独立位置</string>
-    <string name="floating_lyrics_lyric_catalog">歌词源</string>
-    <string name="floating_lyrics_lyric_catalog_auto">自动</string>
-    <string name="floating_lyrics_lyric_catalog_netease">网易云音乐</string>
-    <string name="floating_lyrics_lyric_catalog_qqmusic">QQ音乐</string>
-    <string name="floating_lyrics_lyric_catalog_kugou">酷狗音乐</string>
-    <string name="floating_lyrics_lyric_catalog_kuwo">酷我音乐</string>
-    <string name="floating_lyrics_lyric_catalog_soda">汽水音乐</string>
-    <string name="floating_lyrics_player_catalog_fallback">播放器源回退</string>
-    <string name="floating_lyrics_player_catalog_fallback_tip">当所选歌词源无结果时，回退到当前播放器返回的歌词。</string>
-    <string name="floating_lyrics_custom_font">自定义字体</string>
-    <string name="floating_lyrics_custom_font_none">未选择</string>
-    <string name="floating_lyrics_custom_font_pick">选择字体文件</string>
-    <string name="floating_lyrics_custom_font_clear">清除</string>
-    <string name="floating_lyrics_diagnostic_upload">诊断数据上传</string>
-    <string name="floating_lyrics_diagnostic_upload_tip">开启后匿名上传歌词匹配异常的诊断数据，帮助改进歌词库。</string>
-    <string name="floating_lyrics_compact_width">紧凑独立宽度</string>
-    <string name="floating_lyrics_compact_height">紧凑独立高度</string>
-    <string name="floating_lyrics_advanced_tip">高级选项一般无需调整，保持默认即可。</string>
 
     <!-- 首次启动权限引导 -->
     <string name="permission_guide_title">权限授权</string>
@@ -573,12 +234,10 @@
     <string name="permission_section_special">重要权限</string>
     <string name="permission_section_special_desc">用于侧边栏、文件管理、清理、音乐伴侣等进阶功能</string>
     <string name="permission_action_grant_runtime">一键申请运行时权限</string>
-    <string name="permission_action_go_settings">去开启</string>
     <string name="permission_status_granted">已授予</string>
     <string name="permission_status_not_granted">未授予</string>
     <string name="permission_runtime_requesting">申请中…</string>
     <string name="permission_runtime_done">运行时权限已全部授予</string>
-    <string name="permission_runtime_partial">部分权限未授予，点击重试</string>
 
     <string name="perm_name_runtime">运行时权限</string>
     <string name="perm_desc_runtime">通知 / 蓝牙 / 相机 / 存储（Android 10 及以下）</string>
@@ -592,11 +251,7 @@
     <string name="perm_name_usage">使用情况访问</string>
     <string name="perm_desc_usage">垃圾清理需要扫描各应用的缓存占用，需要使用情况访问权限</string>
 
-    <string name="perm_name_write_settings">修改系统设置</string>
-    <string name="perm_desc_write_settings">控制面板的亮度调节、自动旋转开关需要修改系统设置权限</string>
 
-    <string name="perm_name_listener">通知访问权限</string>
-    <string name="perm_desc_listener">音乐伴侣读取媒体会话、方控媒体键定向派发需要通知访问权限，不会读取通知内容</string>
 
     <string name="permission_enter_app">进入应用</string>
     <string name="permission_skip_special">跳过特殊权限</string>
@@ -605,17 +260,4 @@
     <string name="permission_skip_no">继续授权</string>
     <string name="permission_runtime_required_toast">请先授予所有必需权限</string>
     <!-- 按键映射：新增能力文案 -->
-    <string name="keymap_ime_label">车机助手按键映射输入法</string>
-    <string name="keymap_trigger_triple">三连按</string>
-    <string name="keymap_trigger_sequence">按键序列</string>
-    <string name="keymap_sequence_hint">请依次按下若干键组成序列（例如：音量+ → 音量- → 播放）。\n至少需 2 个键，按「确定」完成录制。</string>
-    <string name="keymap_axis_hint">请拨动手柄 / 方向盘的模拟轴（方向、油门等）。\n本功能需先在系统「语言与输入法 → 当前输入法」中将「车机助手按键映射输入法」设为当前输入法。</string>
-    <string name="keymap_ime_tip">模拟轴捕获需要将「车机助手按键映射输入法」设为当前输入法。\n请到系统「语言与输入法 → 当前输入法」中选择；本输入法无键盘界面。</string>
-    <string name="keymap_constraint_hint">可设置「仅当某个应用在前台时」才触发该映射。\n留空表示始终生效；当前前台应用会被实时检测。</string>
-    <string name="keymap_constraint_none">无约束（始终生效）</string>
-    <string name="keymap_btn_sequence">录制序列</string>
-    <string name="keymap_btn_axis">模拟轴</string>
-    <string name="keymap_btn_single_combo">单键/组合</string>
-    <string name="keymap_seq_prefix">序列：</string>
-    <string name="keymap_axis_prefix">模拟轴：</string>
 </resources>

@@ -37,119 +37,14 @@ public final class PrefsUtil {
     private PrefsUtil() {}
 
     private static final String PREF_NAME = "car_assistant_prefs";
-    private static final String KEY_FLOAT_APPS = "float_app_packages";
     private static final String KEY_WHITELIST = "clean_whitelist";
     private static final String KEY_BOOT_APPS = "boot_app_packages";
-
-    // ---------------- 悬浮球快捷按钮开关 ----------------
-    // 总开关 + 4 个子开关（返回/主页/最近任务/锁屏）
-    private static final String KEY_FLOAT_QUICK_MASTER = "float_quick_master";
-    private static final String KEY_FLOAT_QUICK_BACK = "float_quick_back";
-    private static final String KEY_FLOAT_QUICK_HOME = "float_quick_home";
-    private static final String KEY_FLOAT_QUICK_RECENTS = "float_quick_recents";
-    private static final String KEY_FLOAT_QUICK_LOCK = "float_quick_lock";
 
     // ---------------- 首次启动权限引导 ----------------
     private static final String KEY_PERMISSION_GUIDE_DONE = "permission_guide_done";
 
     private static SharedPreferences sp(Context ctx) {
         return ctx.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-    }
-
-    // ---------------- 悬浮球应用 ----------------
-
-    /** 获取悬浮球快捷应用包名列表（按用户排序） */
-    public static List<String> getFloatApps(Context ctx) {
-        String json = sp(ctx).getString(KEY_FLOAT_APPS, null);
-        if (json == null) return new ArrayList<>();
-        try {
-            JSONArray arr = new JSONArray(json);
-            List<String> result = new ArrayList<>();
-            for (int i = 0; i < arr.length(); i++) {
-                result.add(arr.getString(i));
-            }
-            return result;
-        } catch (JSONException e) {
-            return new ArrayList<>();
-        }
-    }
-
-    public static void setFloatApps(Context ctx, List<String> packages) {
-        JSONArray arr = new JSONArray();
-        if (packages != null) {
-            // 去重保序
-            Set<String> seen = new LinkedHashSet<>(packages);
-            for (String pkg : seen) {
-                if (pkg != null && !pkg.isEmpty()) arr.put(pkg);
-            }
-        }
-        sp(ctx).edit().putString(KEY_FLOAT_APPS, arr.toString()).apply();
-    }
-
-    public static boolean isFloatApp(Context ctx, String pkg) {
-        if (pkg == null) return false;
-        return getFloatApps(ctx).contains(pkg);
-    }
-
-    public static void addFloatApp(Context ctx, String pkg) {
-        if (pkg == null) return;
-        List<String> list = getFloatApps(ctx);
-        if (!list.contains(pkg)) {
-            list.add(pkg);
-            setFloatApps(ctx, list);
-        }
-    }
-
-    public static void removeFloatApp(Context ctx, String pkg) {
-        if (pkg == null) return;
-        List<String> list = getFloatApps(ctx);
-        if (list.remove(pkg)) {
-            setFloatApps(ctx, list);
-        }
-    }
-
-    // ---------------- 悬浮球快捷按钮开关 ----------------
-
-    /** 快捷按钮总开关（控制整个快捷按钮区是否显示），默认开启 */
-    public static boolean isFloatQuickMasterOn(Context ctx) {
-        return sp(ctx).getBoolean(KEY_FLOAT_QUICK_MASTER, true);
-    }
-
-    public static void setFloatQuickMaster(Context ctx, boolean on) {
-        sp(ctx).edit().putBoolean(KEY_FLOAT_QUICK_MASTER, on).apply();
-    }
-
-    public static boolean isFloatQuickBackOn(Context ctx) {
-        return sp(ctx).getBoolean(KEY_FLOAT_QUICK_BACK, true);
-    }
-
-    public static void setFloatQuickBack(Context ctx, boolean on) {
-        sp(ctx).edit().putBoolean(KEY_FLOAT_QUICK_BACK, on).apply();
-    }
-
-    public static boolean isFloatQuickHomeOn(Context ctx) {
-        return sp(ctx).getBoolean(KEY_FLOAT_QUICK_HOME, true);
-    }
-
-    public static void setFloatQuickHome(Context ctx, boolean on) {
-        sp(ctx).edit().putBoolean(KEY_FLOAT_QUICK_HOME, on).apply();
-    }
-
-    public static boolean isFloatQuickRecentsOn(Context ctx) {
-        return sp(ctx).getBoolean(KEY_FLOAT_QUICK_RECENTS, true);
-    }
-
-    public static void setFloatQuickRecents(Context ctx, boolean on) {
-        sp(ctx).edit().putBoolean(KEY_FLOAT_QUICK_RECENTS, on).apply();
-    }
-
-    /** 锁屏按钮默认关闭（需 Android 9+ 和无障碍服务） */
-    public static boolean isFloatQuickLockOn(Context ctx) {
-        return sp(ctx).getBoolean(KEY_FLOAT_QUICK_LOCK, false);
-    }
-
-    public static void setFloatQuickLock(Context ctx, boolean on) {
-        sp(ctx).edit().putBoolean(KEY_FLOAT_QUICK_LOCK, on).apply();
     }
 
     // ---------------- 清理白名单 ----------------

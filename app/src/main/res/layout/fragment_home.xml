@@ -123,84 +123,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- 悬浮球开关 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:background="@drawable/bg_float_switch"
-                android:padding="12dp">
-
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/ic_feature_float"
-                    app:tint="#FFFFFF"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="@string/home_feature_float"
-                    android:textColor="#FFFFFF"
-                    android:textSize="@dimen/home_header_row_title_size"
-                    android:textStyle="bold"/>
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/sw_float"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:theme="@style/SwitchWhite"/>
-            </LinearLayout>
-
-            <!-- 自定义悬浮球应用入口 -->
-            <LinearLayout
-                android:id="@+id/row_float_apps"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:background="@drawable/bg_float_switch"
-                android:padding="12dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:backgroundTint="#33FFFFFF">
-
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/ic_settings"
-                    app:tint="#FFFFFF"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="@string/settings_float_apps"
-                    android:textColor="#FFFFFF"
-                    android:textSize="@dimen/home_header_row_title_size"/>
-
-                <TextView
-                    android:id="@+id/tv_float_apps_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:textColor="@color/text_white_70"
-                    android:textSize="@dimen/home_header_row_sub_size"
-                    tools:text="已选 4 个"/>
-
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:src="@drawable/ic_chevron_right"
-                    app:tint="#FFFFFF"/>
-            </LinearLayout>
-        </LinearLayout>
+    </LinearLayout>
 
         <!-- 功能宫格标题 -->
         <TextView
@@ -230,7 +153,7 @@
             android:layout_marginStart="18dp"
             android:layout_marginEnd="18dp"
             android:layout_marginBottom="24dp"
-            android:text="提示：开启悬浮球可在桌面快速打开常用应用，点击设置可自定义快捷应用"
+            android:text="提示：进入「设置」可管理内存清理白名单，被加入白名单的应用在清理时会被跳过"
             android:textColor="@color/text_hint"
             android:textSize="@dimen/home_tip_size"/>
 

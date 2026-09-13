@@ -182,52 +182,10 @@ public class CleanFragment extends Fragment {
     }
 
     private void doBoost() {
-        // 前置检查：无 Root 且无障碍未开启时，弹窗引导用户开启其中之一
-        if (!hasRoot && !com.carassistant.service.KeyMappingAccessibilityService.isConnected()) {
-            showSuggestEnableDialog();
-            return;
-        }
-
         executeBoost();
     }
 
-    /**
-     * 引导用户开启无障碍服务或 Root 权限的对话框。
-     * 提供「去开启」（跳转无障碍设置）和「仍清理」（普通模式执行）两个选项。
-     */
-    private void showSuggestEnableDialog() {
-        String msg = hasRoot
-                ? getString(R.string.memory_suggest_root_msg)
-                : getString(R.string.memory_suggest_accessibility_msg);
-        androidx.appcompat.app.AlertDialog.Builder builder =
-                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle(R.string.memory_suggest_accessibility_title)
-                .setMessage(msg)
-                .setPositiveButton(R.string.memory_go_enable, (d, w) -> {
-                    // 跳转到无障碍设置（车机助手按键映射）
-                    try {
-                        Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        Toast.makeText(requireContext(),
-                                "请在列表中找到「车机助手按键映射」并开启",
-                                Toast.LENGTH_LONG).show();
-                    } catch (Exception e) {
-                        Toast.makeText(requireContext(),
-                                 "无法打开无障碍设置，请手动进入系统设置",
-                                 Toast.LENGTH_LONG).show();
-                     }
-                 });
-        // Android 14+ 已明确限制普通应用只能结束自身进程，不能再把无效操作显示成“清理成功”。
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            builder.setNegativeButton(android.R.string.cancel, null);
-        } else {
-            builder.setNegativeButton(R.string.memory_clean_anyway, (d, w) -> executeBoost());
-        }
-        builder.setCancelable(true).show();
-    }
-
-    /** 实际执行内存清理（已有 Root 或无障碍服务） */
+    /** 实际执行内存清理 */
     private void executeBoost() {
         btnBoost.setText(R.string.memory_boosting);
         btnBoost.setEnabled(false);
@@ -249,9 +207,6 @@ public class CleanFragment extends Fragment {
                         msg = getString(R.string.memory_root_drop_caches,
                                 FormatUtil.formatSize(result.releasedBytes));
                     }
-                } else if ("accessibility".equals(result.mode)) {
-                    msg = getString(R.string.memory_accessibility_done,
-                            FormatUtil.formatSize(result.releasedBytes));
                 } else {
                     // 普通模式
                     msg = getString(R.string.memory_normal_done,

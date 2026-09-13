@@ -18,8 +18,6 @@ import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
-import com.carassistant.service.KeyMappingAccessibilityService;
-
 import java.util.List;
 
 /**
@@ -28,8 +26,7 @@ import java.util.List;
  * 策略优先级（自动选择最佳方案）：
  * 1. Root + drop_caches：清理系统页缓存/dentry/inode（最有效，秒级释放数百 MB）
  * 2. Root + am force-stop：强制停止正在运行的第三方应用
- * 3. 无障碍服务 + 模拟清除最近任务：非 Root 下最有效（释放 100-500 MB）
- * 4. 普通模式 + killBackgroundProcesses：系统 API（受限，效果有限）
+ * 3. 普通模式 + killBackgroundProcesses：系统 API（受限，效果有限）
  *
  * 所有策略均诚实标注实际效果，避免"伪清理"。
  */
@@ -77,12 +74,7 @@ public final class MemoryCleaner {
                 result = cleanWithRoot(ctx, whitelist);
                 result.mode = "root";
             }
-            // 策略 2：无障碍服务模拟清除最近任务
-            else if (KeyMappingAccessibilityService.isConnected()) {
-                result = cleanWithAccessibility(ctx);
-                result.mode = "accessibility";
-            }
-            // 策略 3：普通模式（受限）
+            // 策略 2：普通模式（受限）
             else {
                 result = cleanNormal(ctx, whitelist);
                 result.mode = "normal";
@@ -135,40 +127,6 @@ public final class MemoryCleaner {
         // 3. 触发 trim-memory，让应用主动释放
         ShellUtil.execRoot("am send-trim-memory all RUNNING_CRITICAL 2>/dev/null");
 
-        return r;
-    }
-
-    /** 无障碍服务模式：模拟清除最近任务（非 Root 最有效） */
-    private static Result cleanWithAccessibility(Context ctx) {
-        Result r = new Result();
-        r.methodDesc = "无障碍模式";
-
-        KeyMappingAccessibilityService svc = KeyMappingAccessibilityService.getInstance();
-        if (svc == null) {
-            r.success = false;
-            return r;
-        }
-
-        // 同步等待清理完成（cleanRecentTasks 内部已是异步线程）
-        final boolean[] done = {false};
-        final boolean[] actionSucceeded = {false};
-        svc.cleanRecentTasks(success -> {
-            synchronized (done) {
-                actionSucceeded[0] = success;
-                done[0] = true;
-                done.notifyAll();
-            }
-        });
-
-        // 等待清理完成（最多 15 秒）
-        synchronized (done) {
-            long deadline = System.currentTimeMillis() + 15000;
-            while (!done[0] && System.currentTimeMillis() < deadline) {
-                try { done.wait(500); } catch (InterruptedException ignored) {}
-            }
-        }
-
-        r.success = done[0] && actionSucceeded[0];
         return r;
     }
 

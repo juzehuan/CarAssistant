@@ -17,27 +17,23 @@ package com.carassistant.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.carassistant.service.SidebarService;
 import com.carassistant.util.AppAutoStartManager;
-import com.carassistant.util.PermissionUtil;
 import com.carassistant.util.PrefsUtil;
 
 import java.util.List;
 
 /**
  * 开机自启动接收器
- * 1. 启动车机助手侧边栏服务（已授予悬浮窗权限时）
- * 2. 启动用户配置的开机自启应用
+ * 启动用户配置的开机自启应用
  *    - 主方案：goAsync() + Handler 链式启动（可靠，不依赖 AlarmManager）
  *    - 备选方案：AlarmManager 闹钟链（作为兜底）
  *
- * 同时监听 MY_PACKAGE_REPLACED 以便应用升级后重新拉起侧边栏，
- * 但应用升级时不重新触发三方应用启动调度（避免每次更新都弹一堆应用）。
+ * 应用升级（MY_PACKAGE_REPLACED）时不重新触发三方应用启动调度，
+ * 避免每次更新都弹一堆应用。
  */
 public class BootReceiver extends BroadcastReceiver {
 
@@ -57,16 +53,7 @@ public class BootReceiver extends BroadcastReceiver {
 
         Context appCtx = context.getApplicationContext();
 
-        // 1. 启动侧边栏服务
-        Log.i(TAG, "before startSidebarService");
-        try {
-            startSidebarService(appCtx);
-        } catch (Throwable t) {
-            Log.e(TAG, "startSidebarService error", t);
-        }
-        Log.i(TAG, "after startSidebarService");
-
-        // 2. 启动开机自启应用（应用升级时跳过，避免每次更新都弹出应用）
+        // 启动开机自启应用（应用升级时跳过，避免每次更新都弹出应用）
         if (!Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)) {
             Log.i(TAG, "starting boot auto-start");
             // 主方案：goAsync + Handler 直接链式启动
@@ -144,22 +131,6 @@ public class BootReceiver extends BroadcastReceiver {
                     }
                 }
             }, delayMs);
-        }
-    }
-
-    /** 启动侧边栏服务（需悬浮窗权限） */
-    private void startSidebarService(Context ctx) {
-        try {
-            if (PermissionUtil.canDrawOverlays(ctx)) {
-                Intent service = new Intent(ctx, SidebarService.class);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    ctx.startForegroundService(service);
-                } else {
-                    ctx.startService(service);
-                }
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to start sidebar service", e);
         }
     }
 }

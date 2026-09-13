@@ -37,8 +37,7 @@ import java.util.List;
  * 核心机制：
  * - 开机后通过 AlarmManager 闹钟链顺序启动各应用，避免开机系统繁忙导致 startActivity 丢失
  * - 使用 boot_count 全局设置项作为去重令牌，保证同一次开机只调度一次
- * - 三重兜底：BootReceiver / KeyMappingAccessibilityService / TargetMediaSessionService
- *   均会调用 scheduleFromBoot()，靠 boot_count 幂等
+ * - 去重兜底：BootReceiver 调用 scheduleFromBoot()，靠 boot_count 幂等
  *
  * 启动参数存储在 car_assistant_prefs：
  * - boot_autostart_enabled：总开关（默认 true）
@@ -117,8 +116,7 @@ public final class AppAutoStartManager {
     /**
      * 开机后调度顺序启动链。
      * 幂等：同一次开机（boot_count 相同）只调度一次。
-     * 应在 BootReceiver、AccessibilityService.onServiceConnected、
-     * NotificationListenerService.onListenerConnected 三处调用以提高可靠性。
+     * 由 BootReceiver 在收到开机广播后调用。
      */
     public static synchronized void scheduleFromBoot(Context ctx) {
         if (ctx == null) return;
