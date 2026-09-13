@@ -61,10 +61,17 @@ public class StorageAdapter extends RecyclerView.Adapter<StorageAdapter.VH> {
     public void onBindViewHolder(@NonNull VH holder, int position) {
         StorageUtil.StorageInfo info = items.get(position);
         holder.tvName.setText(info.label != null ? info.label : info.path);
-        long used = info.total - info.available;
-        int percent = info.total > 0 ? (int) (used * 100 / info.total) : 0;
-        holder.tvInfo.setText(FormatUtil.formatSize(used) + " / " + FormatUtil.formatSize(info.total) + "  ·  " + percent + "%");
-        holder.pbProgress.setProgress(percent);
+        if (info.total > 0) {
+            long used = info.total - info.available;
+            int percent = (int) (used * 100 / info.total);
+            holder.tvInfo.setText(FormatUtil.formatSize(used) + " / " + FormatUtil.formatSize(info.total)
+                    + "  ·  " + percent + "%");
+            holder.pbProgress.setProgress(percent);
+        } else {
+            // 已挂载但拿不到容量信息时也要保留条目（否则 U 盘会被静默吞掉）
+            holder.tvInfo.setText(R.string.storage_size_unknown);
+            holder.pbProgress.setProgress(0);
+        }
 
         if (info.usb) {
             holder.ivIcon.setImageResource(R.drawable.ic_feature_usb);

@@ -14,6 +14,10 @@
 
 package com.carassistant.ui;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
@@ -69,6 +73,26 @@ public class FileFragment extends Fragment {
     /** 最近一次加载到的全部文件（用于搜索过滤） */
     private List<FileUtil.FileItem> allItems = new ArrayList<>();
 
+    /** 监听 U 盘 / SD 卡插拔，实时刷新存储列表 */
+    private final BroadcastReceiver storageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent != null ? intent.getAction() : null;
+            if (action == null) return;
+            boolean mounted = Intent.ACTION_MEDIA_MOUNTED.equals(action);
+            boolean removed = Intent.ACTION_MEDIA_UNMOUNTED.equals(action)
+                    || Intent.ACTION_MEDIA_REMOVED.equals(action)
+                    || Intent.ACTION_MEDIA_EJECT.equals(action);
+            if (!mounted && !removed) return;
+            // 正在浏览某个目录时，只有该目录已经消失才回退到存储列表，避免误打断浏览
+            if (currentDir != null && currentDir.exists()) return;
+            refreshStorages();
+            Toast.makeText(requireContext(),
+                    mounted ? R.string.usb_plugged_short : R.string.usb_removed,
+                    Toast.LENGTH_SHORT).show();
+        }
+    };
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -121,6 +145,18 @@ public class FileFragment extends Fragment {
 
         ivNavBack.setOnClickListener(v -> onBackPressed());
 
+        // 手动重新扫描存储卷
+        View btnRescan = view.findViewById(R.id.iv_storage_refresh);
+        if (btnRescan != null) {
+            btnRescan.setOnClickListener(v -> {
+                Toast.makeText(requireContext(), R.string.storage_rescan, Toast.LENGTH_SHORT).show();
+                currentDir = null;
+                rootDir = null;
+                rootLabel = null;
+                refreshStorages();
+            });
+        }
+
         // 搜索框：实时过滤当前目录文件
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -132,6 +168,28 @@ public class FileFragment extends Fragment {
         ivSearchClear.setOnClickListener(v -> etSearch.setText(""));
 
         refreshStorages();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        IntentFilter f = new IntentFilter();
+        f.addAction(Intent.ACTION_MEDIA_MOUNTED);
+        f.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+        f.addAction(Intent.ACTION_MEDIA_REMOVED);
+        f.addAction(Intent.ACTION_MEDIA_EJECT);
+        f.addDataScheme("file");
+        try {
+            requireContext().registerReceiver(storageReceiver, f);
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        try {
+            requireContext().unregisterReceiver(storageReceiver);
+        } catch (Exception ignored) {}
     }
 
     /**
@@ -171,22 +229,53 @@ public class FileFragment extends Fragment {
         }
     }
 
+    /**
+     * 异步扫描存储卷：getAllStorages 内部含 StatFs 与可能的 root 读取，
+     * 放在主线程有卡顿/ANR 风险。
+     */
     private void refreshStorages() {
-        List<StorageUtil.StorageInfo> list = StorageUtil.getAllStorages(requireContext());
-        // 仅显示存在且有容量的存储
-        list.removeIf(s -> s.total <= 0);
+        new StorageTask(this, requireContext().getApplicationContext()).execute();
+    }
+
+    private void onStoragesLoaded(List<StorageUtil.StorageInfo> list) {
+        if (!isAdded()) return;
+        if (etSearch != null && etSearch.getText().length() > 0) {
+            etSearch.setText("");
+        }
+        allItems.clear();
         storageAdapter.setData(list);
         // 显示存储列表，隐藏文件列表与导航栏
         rvStorage.setVisibility(View.VISIBLE);
         rvFiles.setVisibility(View.GONE);
         tvEmpty.setVisibility(View.GONE);
         llNavBar.setVisibility(View.GONE);
-        // 回到存储列表时清空搜索框与缓存
-        if (etSearch != null && etSearch.getText().length() > 0) {
-            etSearch.setText("");
+        tvPath.setText(getString(R.string.storage_count, list.size()));
+        // 一个可移动卷都没识别到时给出明确提示，便于排查 U 盘识别问题
+        if (list.size() <= 1) {
+            tvPath.setText(R.string.storage_count_only_internal);
         }
-        allItems.clear();
-        tvPath.setText("共 " + list.size() + " 个存储");
+    }
+
+    private static class StorageTask extends AsyncTask<Void, Void, List<StorageUtil.StorageInfo>> {
+        private final WeakReference<FileFragment> ref;
+        private final Context appCtx;
+
+        StorageTask(FileFragment f, Context ctx) {
+            this.ref = new WeakReference<>(f);
+            this.appCtx = ctx;
+        }
+
+        @Override
+        protected List<StorageUtil.StorageInfo> doInBackground(Void... voids) {
+            return StorageUtil.getAllStorages(appCtx);
+        }
+
+        @Override
+        protected void onPostExecute(List<StorageUtil.StorageInfo> data) {
+            FileFragment f = ref.get();
+            if (f == null || !f.isAdded()) return;
+            f.onStoragesLoaded(data != null ? data : new ArrayList<>());
+        }
     }
 
     private void ensurePermissionAndOpen(File dir) {

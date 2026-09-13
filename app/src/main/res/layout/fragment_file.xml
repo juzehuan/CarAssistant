@@ -24,14 +24,33 @@
         android:paddingTop="@dimen/header_padding_top"
         android:paddingBottom="@dimen/header_padding_bottom">
 
-        <TextView
-            android:id="@+id/tv_file_title"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/file_title"
-            android:textColor="#FFFFFF"
-            android:textSize="@dimen/header_title_size"
-            android:textStyle="bold"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tv_file_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/file_title"
+                android:textColor="#FFFFFF"
+                android:textSize="@dimen/header_title_size"
+                android:textStyle="bold"/>
+
+            <!-- 重新扫描存储卷（U 盘插入后若未自动出现可手动刷新） -->
+            <ImageView
+                android:id="@+id/iv_storage_refresh"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:src="@drawable/ic_refresh_white"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="3dp"
+                android:contentDescription="@string/storage_rescan"
+                tools:ignore="UseAppTint"/>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tv_file_path"

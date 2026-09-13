@@ -60,19 +60,34 @@ public class UsbReceiver extends BroadcastReceiver {
         if (intent.getData() != null) path = intent.getData().getPath();
 
         if (mounted) {
-            // 获取 U 盘标签/容量
-            String label = path != null ? path : "U盘";
+            // 先从 StorageUtil 找 U 盘卷（会做路径 + 块设备双重判定）
+            String label = null;
             long total = 0, avail = 0;
-            List<StorageUtil.StorageInfo> all = StorageUtil.getAllStorages(context);
-            for (StorageUtil.StorageInfo s : all) {
-                if (s.usb && s.total > 0) {
-                    label = s.label != null ? s.label : "U盘";
-                    total = s.total;
-                    avail = s.available;
-                    path = s.path;
-                    break;
+            try {
+                List<StorageUtil.StorageInfo> all = StorageUtil.getAllStorages(context);
+                for (StorageUtil.StorageInfo s : all) {
+                    if (s.usb && s.total > 0) {
+                        label = s.label != null ? s.label : "U盘";
+                        total = s.total;
+                        avail = s.available;
+                        path = s.path;
+                        break;
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            // 没识别成 U 盘：若挂载路径本身带 usb/udisk 特征也认为是 U 盘，
+            // 否则多半是 SD 卡，不打扰用户
+            if (label == null && path != null) {
+                String lp = path.toLowerCase();
+                if (lp.contains("usb") || lp.contains("udisk") || lp.contains("otg")) {
+                    label = "U盘";
+                    total = StorageUtil.getTotalSize(new java.io.File(path));
+                    avail = StorageUtil.getAvailableSize(new java.io.File(path));
                 }
             }
+            if (label == null) return;
+
             String sizeText = total > 0
                     ? com.carassistant.util.FormatUtil.formatSize(total) + " 可用 "
                         + com.carassistant.util.FormatUtil.formatSize(avail)
@@ -88,7 +103,8 @@ public class UsbReceiver extends BroadcastReceiver {
 
         Intent main = new Intent(ctx, MainActivity.class);
         main.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        main.putExtra("tab", "file");
+        // MainActivity 只认 EXTRA_NAV_ID（int 型的 bottom nav item id）
+        main.putExtra(MainActivity.EXTRA_NAV_ID, R.id.nav_file);
         PendingIntent pi = PendingIntent.getActivity(ctx, 1, main,
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 

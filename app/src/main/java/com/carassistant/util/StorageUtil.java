@@ -8,19 +8,20 @@
  * 分发、出售或逆向工程。违反者将承担法律责任。
  *
  * Source code protected by copyright law. Unauthorized copying, modification,
- * distribution, sale, or reverse engineering without written permission is
+ * distribution, sale or reverse engineering without written permission is
  * prohibited and subject to legal action.
  */
 
 package com.carassistant.util;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
-
 import android.util.Base64;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,12 +29,27 @@ import java.io.FileReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 存储工具：内部存储、SD 卡、U 盘容量与路径
+ *
+ * 识别策略（多层级兜底，任一层拿到就合并结果）：
+ * 1. 公开 API StorageManager.getStorageVolumes()（API 24+）
+ * 2. 隐藏 API StorageManager.getVolumeList() 反射（老系统兜底）
+ * 3. 直接扫描常见挂载根目录（车机 ROM 的 StorageManager 实现残缺时兜底）
+ *
+ * 注意：不能只依赖反射隐藏 API —— Android 9 起对 targetSdk >= 28 的应用
+ * 启用隐藏 API 限制，getVolumeList() 在部分版本会直接失效导致只能拿到内部存储。
  */
 public final class StorageUtil {
+
+    private static final String TAG = "StorageUtil";
 
     private StorageUtil() {}
 
@@ -71,136 +87,350 @@ public final class StorageUtil {
     }
 
     /**
-     * 通过 StorageManager 获取所有挂载的存储卷
+     * 获取所有已挂载的存储卷（内部存储 / SD 卡 / U 盘）
      */
-    @SuppressWarnings({"unchecked", "Reflection"})
     public static List<StorageInfo> getAllStorages(Context ctx) {
         List<StorageInfo> list = new ArrayList<>();
+        Set<String> seen = new LinkedHashSet<>();
         StorageManager sm = (StorageManager) ctx.getSystemService(Context.STORAGE_SERVICE);
-        if (sm == null) return list;
 
-        // 优先使用反射获取所有 Volume（兼容 Android 8）
-        try {
-            Method getVolumeList = StorageManager.class.getMethod("getVolumeList");
-            Object[] volumes = (Object[]) getVolumeList.invoke(sm);
-            if (volumes != null) {
-                for (Object vol : volumes) {
-                    StorageInfo info = parseStorageVolume(vol, ctx);
-                    if (info != null) list.add(info);
+        // ---- 1) 公开 API ----
+        if (sm != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            try {
+                List<StorageVolume> volumes = sm.getStorageVolumes();
+                if (volumes != null) {
+                    for (StorageVolume sv : volumes) {
+                        StorageInfo info = fromStorageVolume(ctx, sv);
+                        if (info != null && seen.add(info.path)) {
+                            Log.d(TAG, "volume(api): " + info.path + " removable=" + info.removable
+                                    + " usb=" + info.usb);
+                            list.add(info);
+                        }
+                    }
                 }
+            } catch (Throwable t) {
+                Log.w(TAG, "getStorageVolumes failed", t);
             }
-        } catch (Exception e) {
-            // ignore
         }
 
-        // 兜底：至少保证内部存储
-        if (list.isEmpty()) {
-            File intern = getInternalStorage();
-            if (intern != null && intern.exists()) {
-                StorageInfo info = new StorageInfo();
-                info.path = intern.getAbsolutePath();
-                info.label = "内部存储";
-                info.total = getTotalSize(intern);
-                info.available = getAvailableSize(intern);
-                info.removable = false;
-                info.usb = false;
-                list.add(info);
+        // ---- 2) 隐藏 API 兜底（Android 8/9 部分 ROM） ----
+        if (sm != null) {
+            try {
+                Method getVolumeList = StorageManager.class.getMethod("getVolumeList");
+                Object[] volumes = (Object[]) getVolumeList.invoke(sm);
+                if (volumes != null) {
+                    for (Object vol : volumes) {
+                        StorageInfo info = fromVolumeObject(ctx, vol);
+                        if (info != null && seen.add(info.path)) {
+                            Log.d(TAG, "volume(hidden): " + info.path + " removable=" + info.removable
+                                    + " usb=" + info.usb);
+                            list.add(info);
+                        }
+                    }
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "getVolumeList reflection failed", t);
             }
         }
+
+        // ---- 3) 文件系统扫描兜底 ----
+        scanMountPoints(ctx, list, seen);
+
+        // ---- 4) 保证内部存储一定在列表首位 ----
+        ensureInternal(ctx, list, seen);
+
         return list;
     }
 
-    @SuppressWarnings("Reflection")
-    private static StorageInfo parseStorageVolume(Object vol, Context ctx) {
-        StorageInfo info = new StorageInfo();
-        try {
-            Class<?> clz = vol.getClass();
+    // ==================== 解析 StorageVolume ====================
 
-            // path
+    private static StorageInfo fromStorageVolume(Context ctx, StorageVolume sv) {
+        if (sv == null) return null;
+
+        File dir = null;
+        // API 30+ 有公开 API
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {
-                Method getPath = clz.getMethod("getPath");
-                info.path = (String) getPath.invoke(vol);
-            } catch (Exception e) {
-                // Android Q+ 通过 getPathFile
-                try {
-                    Method getPathFile = clz.getMethod("getPathFile");
-                    File f = (File) getPathFile.invoke(vol);
-                    if (f != null) info.path = f.getAbsolutePath();
-                } catch (Exception ignored) {}
-            }
-            if (info.path == null) return null;
-
-            // removable
-            try {
-                Method isRemovable = clz.getMethod("isRemovable");
-                info.removable = (boolean) isRemovable.invoke(vol);
-            } catch (Exception ignored) {}
-
-            // 框架卷标（部分机型对 FAT 卷标按错误编码解码，得到 ??????）
-            String fwLabel = null;
-            try {
-                Method getDescription = clz.getMethod("getDescription", Context.class);
-                Object r = getDescription.invoke(vol, ctx);
-                if (r instanceof String) fwLabel = (String) r;
-            } catch (Exception ignored) {}
-
-            File f = new File(info.path);
-            info.total = getTotalSize(f);
-            info.available = getAvailableSize(f);
-
-            // 判定是否为 U 盘（路径特征）
-            String p = info.path.toLowerCase();
-            info.usb = info.removable && (p.contains("usb") || p.contains("udisk")
-                    || p.contains("/mnt/media_rw/"));
-
-            // 解析最终显示名称（修复 FAT 卷标乱码 ?????）
-            info.label = resolveLabel(fwLabel, info.path, info.removable, info.usb);
-        } catch (Exception e) {
-            return null;
+                dir = sv.getDirectory();
+            } catch (Throwable ignored) {}
         }
+        // 反射隐藏方法 getPathFile()（API 24+）
+        if (dir == null) {
+            try {
+                Method m = sv.getClass().getMethod("getPathFile");
+                Object r = m.invoke(sv);
+                if (r instanceof File) dir = (File) r;
+            } catch (Throwable ignored) {}
+        }
+        // 反射隐藏方法 getPath()（老版本）
+        if (dir == null) {
+            try {
+                Method m = sv.getClass().getMethod("getPath");
+                Object r = m.invoke(sv);
+                if (r instanceof String) dir = new File((String) r);
+            } catch (Throwable ignored) {}
+        }
+        if (dir == null) return null;
+
+        boolean removable = false;
+        try {
+            removable = sv.isRemovable();
+        } catch (Throwable ignored) {}
+
+        String fwLabel = null;
+        try {
+            fwLabel = sv.getDescription(ctx);
+        } catch (Throwable ignored) {}
+
+        return buildInfo(ctx, dir, removable, fwLabel);
+    }
+
+    /** 解析反射得到的 volume 对象（可能是 StorageVolume 或老版本的内部类） */
+    @SuppressWarnings("Reflection")
+    private static StorageInfo fromVolumeObject(Context ctx, Object vol) {
+        if (vol == null) return null;
+        if (vol instanceof StorageVolume) return fromStorageVolume(ctx, (StorageVolume) vol);
+
+        File dir = null;
+        try {
+            Method m = vol.getClass().getMethod("getPathFile");
+            Object r = m.invoke(vol);
+            if (r instanceof File) dir = (File) r;
+        } catch (Throwable ignored) {}
+        if (dir == null) {
+            try {
+                Method m = vol.getClass().getMethod("getPath");
+                Object r = m.invoke(vol);
+                if (r instanceof String) dir = new File((String) r);
+            } catch (Throwable ignored) {}
+        }
+        if (dir == null) return null;
+
+        boolean removable = false;
+        try {
+            Method m = vol.getClass().getMethod("isRemovable");
+            Object r = m.invoke(vol);
+            if (r instanceof Boolean) removable = (Boolean) r;
+        } catch (Throwable ignored) {}
+
+        String fwLabel = null;
+        try {
+            Method m = vol.getClass().getMethod("getDescription", Context.class);
+            Object r = m.invoke(vol, ctx);
+            if (r instanceof String) fwLabel = (String) r;
+        } catch (Throwable ignored) {}
+
+        return buildInfo(ctx, dir, removable, fwLabel);
+    }
+
+    private static StorageInfo buildInfo(Context ctx, File rawDir, boolean removable, String fwLabel) {
+        File dir = normalizeDir(rawDir);
+        if (dir == null) return null;
+
+        StorageInfo info = new StorageInfo();
+        info.path = dir.getAbsolutePath();
+        info.removable = removable || !isInternalPath(info.path);
+        info.total = getTotalSize(dir);
+        info.available = getAvailableSize(dir);
+        info.usb = looksLikeUsb(info.path, info.removable);
+        info.label = resolveLabel(fwLabel, info.path, info.removable, info.usb);
         return info;
     }
 
-    private static Boolean sRootCache = null;
-    private static boolean hasRoot() {
-        if (sRootCache == null) sRootCache = ShellUtil.hasRoot();
-        return sRootCache;
+    // ==================== 挂载点扫描兜底 ====================
+
+    /** 常见挂载根目录：StorageManager 拿不到时直接扫文件系统 */
+    private static final String[] SCAN_ROOTS = {
+            "/storage",
+            "/mnt/media_rw",
+            "/mnt/usb_storage",
+            "/mnt/usbotg",
+            "/mnt/usbdisk",
+            "/mnt/udisk",
+            "/mnt/ext_sd",
+            "/mnt/external_sd",
+            "/mnt/sdcard2"
+    };
+
+    private static void scanMountPoints(Context ctx, List<StorageInfo> list, Set<String> seen) {
+        for (String root : SCAN_ROOTS) {
+            File rf = new File(root);
+            File[] subs;
+            try {
+                subs = rf.listFiles();
+            } catch (Exception e) {
+                continue;
+            }
+            if (subs == null) continue;
+            for (File f : subs) {
+                if (!f.isDirectory()) continue;
+                String p = f.getAbsolutePath();
+                if (isInternalPath(p)) continue;
+                if (isNoiseMountPoint(p)) continue;
+                if (!isMounted(f)) continue;
+                if (!seen.add(p)) continue;
+
+                StorageInfo info = new StorageInfo();
+                info.path = p;
+                info.removable = true;
+                info.total = getTotalSize(f);
+                info.available = getAvailableSize(f);
+                info.usb = looksLikeUsb(p, true);
+                info.label = resolveLabel(null, p, true, info.usb);
+                Log.d(TAG, "volume(scan): " + p + " usb=" + info.usb);
+                list.add(info);
+            }
+        }
+    }
+
+    private static void ensureInternal(Context ctx, List<StorageInfo> list, Set<String> seen) {
+        for (StorageInfo s : list) {
+            if (!s.removable) return; // 已有内部存储
+        }
+        File intern = getInternalStorage();
+        if (intern == null) return;
+        String p = intern.getAbsolutePath();
+        if (seen.contains(p)) return;
+        StorageInfo info = new StorageInfo();
+        info.path = p;
+        info.removable = false;
+        info.usb = false;
+        info.total = getTotalSize(intern);
+        info.available = getAvailableSize(intern);
+        info.label = "内部存储";
+        list.add(0, info);
+    }
+
+    // ==================== 路径与状态判定 ====================
+
+    /**
+     * 把框架给出的挂载点换成真正可读的那一个。
+     * Android 8/9 上反射常拿到 /mnt/media_rw/XXXX-XXXX（普通应用无权访问），
+     * 对应的可读路径是 /storage/XXXX-XXXX。
+     */
+    private static File normalizeDir(File dir) {
+        if (dir == null) return null;
+        if (isUsable(dir)) return dir;
+
+        String p = dir.getAbsolutePath();
+        String seg = lastSegment(p);
+        if (seg == null) return dir;
+
+        if (p.startsWith("/mnt/media_rw/")) {
+            File alt = new File("/storage/" + seg);
+            if (isUsable(alt)) return alt;
+        } else if (p.startsWith("/storage/")) {
+            File alt = new File("/mnt/media_rw/" + seg);
+            if (isUsable(alt)) return alt;
+        }
+        return dir;
+    }
+
+    private static boolean isUsable(File f) {
+        return f != null && f.exists() && f.canRead() && getTotalSize(f) > 0;
+    }
+
+    /** 是否为内部存储路径（/storage/emulated/...、/storage/self 等） */
+    private static boolean isInternalPath(String p) {
+        if (p == null) return false;
+        File intern = getInternalStorage();
+        if (intern != null && p.equals(intern.getAbsolutePath())) return true;
+        String lp = p.toLowerCase(Locale.US);
+        return lp.startsWith("/storage/emulated")
+                || lp.equals("/storage/self")
+                || lp.startsWith("/storage/self/")
+                || lp.equals("/mnt/sdcard")
+                || lp.equals("/sdcard");
+    }
+
+    /** 明显不是存储卷的目录，扫描时排除 */
+    private static boolean isNoiseMountPoint(String p) {
+        String lp = p.toLowerCase(Locale.US);
+        return lp.endsWith("/emulated")
+                || lp.endsWith("/self")
+                || lp.endsWith("/obb")
+                || lp.endsWith("/asec")
+                || lp.endsWith("/secure")
+                || lp.endsWith("/runtime")
+                || lp.endsWith("/enc_emulated");
+    }
+
+    /** 卷是否已挂载且可用 */
+    private static boolean isMounted(File dir) {
+        if (dir == null || !dir.exists()) return false;
+        String state = null;
+        try {
+            state = Environment.getExternalStorageState(dir);
+        } catch (Exception ignored) {}
+        if (Environment.MEDIA_MOUNTED.equals(state)) return true;
+        // 明确已卸载 / 已拔出：直接排除（避免把拔掉后残留的空壳目录当成卷）
+        if (state != null && (Environment.MEDIA_UNMOUNTED.equals(state)
+                || Environment.MEDIA_REMOVED.equals(state)
+                || Environment.MEDIA_BAD_REMOVAL.equals(state))) {
+            return false;
+        }
+        // 部分 ROM 对 U 盘返回 unknown/checking：以 /proc/mounts 是否为独立挂载点为准
+        if (isRealMountPoint(dir.getAbsolutePath())) return true;
+        return dir.canRead() && getTotalSize(dir) > 0;
+    }
+
+    /** 该路径是否为 /proc/mounts 中的独立挂载点 */
+    private static boolean isRealMountPoint(String path) {
+        if (path == null) return false;
+        try (BufferedReader br = new BufferedReader(new FileReader("/proc/mounts"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("\\s+");
+                if (parts.length >= 2 && parts[1].equals(path)) return true;
+            }
+        } catch (Exception ignored) {}
+        return false;
     }
 
     /**
-     * 解析存储卷的显示名称。
-     * 框架 getDescription() 在部分车机/国产 ROM 上会把 FAT 卷标按错误编码解码成 ?????，
-     * 此时通过 root 直接读取引导扇区的 11 字节 OEM 卷标（中文为 GBK）还原真实名称。
+     * 判定是否为 U 盘。
+     *
+     * 不能只看路径关键字：Android 8/9 上 U 盘通常挂载为 /storage/XXXX-XXXX（UUID），
+     * 路径里既没有 usb 也没有 udisk。因此再用块设备号/设备名做二次判定：
+     * - /dev/block/vold/8:1  major=8 属于 SCSI 磁盘（U 盘走 USB-SCSI）
+     * - /dev/block/vold/179:x major=179 属于 MMC（SD 卡）
      */
-    private static String resolveLabel(String fwLabel, String path,
-                                       boolean removable, boolean usb) {
-        // 框架已给出正常名称（非乱码、非通用占位）则直接使用
-        if (fwLabel != null && !fwLabel.contains("？")
-                && !fwLabel.trim().isEmpty()
-                && !"可移动存储".equals(fwLabel)
-                && !"内部存储".equals(fwLabel)) {
-            return fwLabel;
+    private static boolean looksLikeUsb(String path, boolean removable) {
+        if (path == null) return false;
+        String lp = path.toLowerCase(Locale.US);
+        if (lp.contains("usb") || lp.contains("udisk") || lp.contains("usbdisk")
+                || lp.contains("usbotg") || lp.contains("otg")) {
+            return true;
         }
-        // 框架解码失败：尝试直接读取 FAT 引导扇区卷标（仅在确实需要时触发 root）
-        if (hasRoot()) {
-            String dev = findBlockDevice(path);
-            String raw = readFatLabel(dev);
-            if (raw != null) return raw;
+        if (!removable) return false;
+
+        String dev = findBlockDevice(path);
+        if (dev == null) return false;
+        String d = dev.toLowerCase(Locale.US);
+        if (d.contains("mmcblk")) return false;
+
+        // /dev/block/vold/<major>:<minor>
+        Matcher m = Pattern.compile("/dev/block/vold/(\\d+):").matcher(d);
+        if (m.find()) {
+            try {
+                int major = Integer.parseInt(m.group(1));
+                // 8, 65-71, 128-135：SCSI 磁盘（sdX，通常即 U 盘）
+                if (major == 8 || (major >= 65 && major <= 71) || (major >= 128 && major <= 135)) {
+                    return true;
+                }
+                // 179, 259：MMC（SD 卡）
+                return false;
+            } catch (Exception ignored) {}
         }
-        // 框架名称虽不完整但不是乱码，保留
-        if (fwLabel != null && !fwLabel.contains("？") && !fwLabel.trim().isEmpty()) {
-            return fwLabel;
-        }
-        // 兜底：用路径中的卷 UUID 生成可读名称，避免出现 ??????
-        if (usb || removable) {
-            String seg = lastSegment(path);
-            if (seg != null && !seg.isEmpty()) return "U盘(" + seg + ")";
-            return "U盘";
-        }
-        return fwLabel != null ? fwLabel : (removable ? "可移动存储" : "内部存储");
+
+        // /dev/sda1 /dev/sdb1 ...
+        Matcher m2 = Pattern.compile("/dev/(sd[a-z])(\\d*)").matcher(d);
+        if (m2.find()) return true;
+
+        return false;
     }
 
-    /** 从 /proc/mounts 根据挂载路径（或其 UUID 片段）定位块设备 */
+    /** 从 /proc/mounts 根据挂载路径定位块设备 */
     private static String findBlockDevice(String mountPath) {
         if (mountPath == null) return null;
         String seg = lastSegment(mountPath);
@@ -214,9 +444,7 @@ public final class StorageUtil {
                 String dev = parts[0];
                 String mp = parts[1];
                 boolean match = mountPath.equals(mp)
-                        || mp.equals(mountPath)
-                        || (seg != null && mp.endsWith("/" + seg))
-                        || (seg != null && mp.contains(seg));
+                        || (seg != null && !seg.isEmpty() && mp.endsWith("/" + seg));
                 if (match && mp.length() > bestLen) {
                     bestLen = mp.length();
                     bestDev = dev;
@@ -226,10 +454,54 @@ public final class StorageUtil {
         return bestDev;
     }
 
+    // ==================== 卷标解析 ====================
+
+    private static Boolean sRootCache = null;
+    private static boolean hasRoot() {
+        if (sRootCache == null) sRootCache = ShellUtil.hasRoot();
+        return sRootCache;
+    }
+
+    /**
+     * 解析存储卷的显示名称。
+     * 框架 getDescription() 在部分车机/国产 ROM 上会把 FAT 卷标按错误编码解码成 ???
+     * 此时通过 root 直接读取引导扇区的 11 字节 OEM 卷标（中文为 GBK）还原真实名称。
+     */
+    private static String resolveLabel(String fwLabel, String path,
+                                       boolean removable, boolean usb) {
+        if (isGoodLabel(fwLabel)) return fwLabel;
+        if (hasRoot()) {
+            String dev = findBlockDevice(path);
+            String raw = readFatLabel(dev);
+            if (raw != null) return raw;
+        }
+        if (isGoodLabel(fwLabel)) return fwLabel;
+
+        if (usb) {
+            String seg = lastSegment(path);
+            if (seg != null && !seg.isEmpty()) return "U盘(" + seg + ")";
+            return "U盘";
+        }
+        if (removable) {
+            String seg = lastSegment(path);
+            if (seg != null && !seg.isEmpty()) return "SD卡(" + seg + ")";
+            return "SD卡";
+        }
+        return fwLabel != null && !fwLabel.trim().isEmpty() ? fwLabel : "内部存储";
+    }
+
+    private static boolean isGoodLabel(String label) {
+        return label != null
+                && !label.contains("？")
+                && !label.trim().isEmpty()
+                && !"可移动存储".equals(label)
+                && !"内部存储".equals(label)
+                && !"SD卡".equals(label);
+    }
+
     /** 通过 root 读取块设备引导扇区，提取 FAT 卷标（11 字节，OEM 编码） */
     private static String readFatLabel(String dev) {
         if (dev == null) return null;
-        // dd 读取首扇区并通过 base64 输出，避免二进制经 shell 字符串传递被篡改
         ShellUtil.Result r = ShellUtil.execRoot("dd if=" + dev + " bs=512 count=1 2>/dev/null | base64");
         if (!r.success() || r.stdout == null || r.stdout.isEmpty()) return null;
         byte[] sector;
@@ -239,10 +511,8 @@ public final class StorageUtil {
             return null;
         }
         if (sector == null || sector.length < 512) return null;
-        // FAT12/16/32：卷标位于偏移 71，共 11 字节（OEM 代码页，中文设备为 GBK）
         String label = decodeOem(Arrays.copyOfRange(sector, 71, 82));
         if (isValidLabel(label)) return label;
-        // exFAT：部分实现在引导扇区偏移 0x80 同样保留 11 字节卷标，作为兜底尝试
         String label2 = decodeOem(Arrays.copyOfRange(sector, 128, 139));
         if (isValidLabel(label2)) return label2;
         return null;

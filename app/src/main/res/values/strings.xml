@@ -86,7 +86,12 @@
     <!-- U盘 -->
     <string name="usb_title">U盘管理</string>
     <string name="usb_plugged">U盘已插入：%1$s</string>
+    <string name="usb_plugged_short">U盘已插入</string>
     <string name="usb_removed">U盘已拔出</string>
+    <string name="storage_count">共 %1$d 个存储</string>
+    <string name="storage_count_only_internal">只识别到内部存储，未检测到 U 盘 / SD 卡</string>
+    <string name="storage_size_unknown">容量未知</string>
+    <string name="storage_rescan">重新扫描存储</string>
 
     <!-- 侧边栏 -->
     <!-- 侧边栏 -->
