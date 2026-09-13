@@ -6,6 +6,13 @@
 - `slim-core` = **精简版**（只保留六大核心功能），是当前开发主线，已推远端并设上游跟踪。
 - ⚠️ 注意 `main` 的名字不代表“最新版”，它反而是功能更全的旧版本；改代码前先确认自己在哪条分支上。
 - 分支间规模差异参考：`git diff --shortstat main slim-core` → 196 files changed, +682 / -23781。
+- 永久锚点标签（已推远端）：`v1-full` → `0cb092b`（全功能版）、`v1-slim` → `3067d48`（精简版）。
+
+## 网络：GitHub 必须走本机代理（重要）
+- 本机**直连 github.com:443 被墙**（`Test-NetConnection github.com -Port 443` 返回 False，curl 直连报 `Failed to connect ... after 21064 ms`）。
+- 本机代理 `127.0.0.1:7890` 可用（系统代理已开启，Clash 之类）。git 未配置代理时会随机报 `CONNECT tunnel failed, response 502` / `Empty reply from server`，看着像仓库问题、实际是网络。
+- **推拉命令模板**：`git -c http.proxy=http://127.0.0.1:7890 -c https.proxy=http://127.0.0.1:7890 push origin <branch>`
+- 如嫌麻烦可在仓库里持久化（代理关闭时会失效，需手动删）：`git config --local http.proxy http://127.0.0.1:7890`。
 
 ## 项目概况
 - Android 车机（一汽红旗）工具 App，包名 `com.carassistant`。
