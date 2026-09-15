@@ -70,3 +70,4 @@ hs_err_pid*
 # （上面的 *.png 是给截图/临时图用的，图标资源要覆盖掉）
 !app/src/main/res/mipmap-*/ic_launcher.png
 !app/src/main/res/mipmap-*/ic_launcher_round.png
+!tools/gen-icons/source/*.png
