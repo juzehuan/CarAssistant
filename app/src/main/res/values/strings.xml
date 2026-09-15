@@ -160,7 +160,7 @@
     <string name="control_brightness_changed">亮度已调整</string>
 
     <!-- 按键映射权限 -->
-    <string name="keymap_accessibility_label">车机助手按键映射</string>
+    <string name="keymap_accessibility_label">方控助手按键映射</string>
     <string name="keymap_accessibility_desc">用于全局拦截物理按键和模拟系统手势（返回、最近任务、锁屏等）。不读取屏幕内容，不上传任何数据。</string>
     <string name="keymap_permissions_title">需要开启的权限</string>
     <string name="keymap_perm_accessibility">无障碍服务</string>
@@ -172,9 +172,9 @@
     <string name="keymap_perm_notification_not_required">当前系统无需单独申请通知权限</string>
 
     <!-- 媒体会话服务（方控媒体按键定向派发） -->
-    <string name="media_session_service_label">车机助手媒体会话</string>
+    <string name="media_session_service_label">方控助手媒体会话</string>
     <string name="keymap_perm_media_session">媒体会话访问</string>
-    <string name="keymap_perm_media_session_tip">用于将方向盘媒体键定向派发到指定音乐应用，请在通知访问设置中开启「车机助手媒体会话」</string>
+    <string name="keymap_perm_media_session_tip">用于将方向盘媒体键定向派发到指定音乐应用，请在通知访问设置中开启「方控助手媒体会话」</string>
     <string name="media_target_app">目标应用（可多选）</string>
     <string name="media_target_app_hint">不选则由系统路由到当前播放器；选择一个或多个应用后，按键将智能路由到其中正在播放的应用</string>
     <string name="media_target_any">当前播放器（系统默认）</string>
@@ -354,7 +354,7 @@
     <string name="music_permission_grant">去开启</string>
     <string name="music_permission_required">请先授予通知访问权限</string>
     <string name="music_permission_subtitle">用于读取当前播放状态并显示歌词</string>
-    <string name="music_permission_step1">在系统「通知访问设置」中找到「车机助手媒体会话」</string>
+    <string name="music_permission_step1">在系统「通知访问设置」中找到「方控助手媒体会话」</string>
     <string name="music_permission_step2">开启开关，允许车机助手读取媒体信息</string>
     <string name="music_lyrics">歌词</string>
     <string name="music_lyrics_loading">歌词加载中…</string>
@@ -605,12 +605,12 @@
     <string name="permission_skip_no">继续授权</string>
     <string name="permission_runtime_required_toast">请先授予所有必需权限</string>
     <!-- 按键映射：新增能力文案 -->
-    <string name="keymap_ime_label">车机助手按键映射输入法</string>
+    <string name="keymap_ime_label">方控助手按键映射输入法</string>
     <string name="keymap_trigger_triple">三连按</string>
     <string name="keymap_trigger_sequence">按键序列</string>
     <string name="keymap_sequence_hint">请依次按下若干键组成序列（例如：音量+ → 音量- → 播放）。\n至少需 2 个键，按「确定」完成录制。</string>
     <string name="keymap_axis_hint">请拨动手柄 / 方向盘的模拟轴（方向、油门等）。\n本功能需先在系统「语言与输入法 → 当前输入法」中将「方控助手按键映射输入法」设为当前输入法。</string>
-    <string name="keymap_ime_tip">模拟轴捕获需要将「车机助手按键映射输入法」设为当前输入法。\n请到系统「语言与输入法 → 当前输入法」中选择；本输入法无键盘界面。</string>
+    <string name="keymap_ime_tip">模拟轴捕获需要将「方控助手按键映射输入法」设为当前输入法。\n请到系统「语言与输入法 → 当前输入法」中选择；本输入法无键盘界面。</string>
     <string name="keymap_constraint_hint">可设置「仅当某个应用在前台时」才触发该映射。\n留空表示始终生效；当前前台应用会被实时检测。</string>
     <string name="keymap_constraint_none">无约束（始终生效）</string>
     <string name="keymap_btn_sequence">录制序列</string>
