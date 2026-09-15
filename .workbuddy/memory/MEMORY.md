@@ -79,3 +79,19 @@ Android 8/9 上 U 盘挂在 `/storage/XXXX-XXXX`，不能用路径含 `usb`/`udi
   [System.IO.Directory]::Delete("$env:USERPROFILE\.gradle\caches\journal-1", $true)
   ```
 - 编译前建议固定先跑一次 `gradlew --stop`，能省一轮失败。
+
+## UI 入口可见性（踩过两次，务必按此自查）
+- 主题是 `Theme.MaterialComponents.Light.NoActionBar` → **ActionBar / 选项菜单永远不会显示**。
+  `onCreateOptionsMenu` + `res/menu/*.xml` 这套写法在本项目里等于死代码（已删 `main_menu.xml`）。
+  新增页面入口必须写在布局里（首页头部图标之类），不能靠菜单。
+- **入口和按钮都要放首屏内**。车机是横屏，竖向空间比手机小得多；2560 高的模拟器上首屏约到 y=1500，
+  放在 y=2200 的底部卡片用户滚不到（反馈过「看不到按钮」）。
+- 自查套路（不依赖截图）：`adb shell uiautomator dump` 导出 XML 后 grep 节点是否存在 + `bounds` 是否在首屏，
+  再用 `adb shell input tap <cx> <cy>` 点击验证；确认进程/服务状态用
+  `adb shell pidof com.carassistant` 与 `adb shell dumpsys activity services | grep MonitorService`。
+
+## 发布产物
+- `dist/CarAssistant-slim-YYYYMMDD.apk` 是给车机手动安装的包，来源即 `app/build/outputs/apk/debug/app-debug.apk` 的拷贝；
+  `dist/` 已被 `.gitignore` 覆盖，不进版本库。
+- 核实包内容（无需安装）：`aapt2 dump resources <apk> | grep "id/xxx"`、`aapt2 dump badging <apk> | grep application-label`。
+  badging 输出里的中文在 GBK 控制台会显示成乱码（如 `应用管理` → `搴旂敤绠＄悊`），属编码显示问题，不是包坏了。

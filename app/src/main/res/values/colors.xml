@@ -42,6 +42,8 @@
     <color name="icon_bg_monitor">#FFF3E0</color>
     <color name="icon_bg_autostart">#EEE8FF</color>
     <color name="icon_bg_device">#E5F2E6</color>
+    <!-- 方控映射（内嵌第三方应用入口） -->
+    <color name="icon_bg_keymap">#E2ECFF</color>
 
     <!-- 功能卡片图标渐变（用于按钮/弹窗等强表达场景） -->
     <color name="icon_bg_clean_start">#FFB3B8</color>

@@ -35,6 +35,11 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
+    <!-- Android 11+ 包可见性：需要查询并拉起随包内嵌的方控映射 -->
+    <queries>
+        <package android:name="com.hzsoft.keymapx" />
+    </queries>
+
     <application
         android:name=".App"
         android:allowBackup="false"

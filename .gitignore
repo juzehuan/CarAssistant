@@ -71,3 +71,7 @@ hs_err_pid*
 !app/src/main/res/mipmap-*/ic_launcher.png
 !app/src/main/res/mipmap-*/ic_launcher_round.png
 !tools/gen-icons/source/*.png
+
+# ================= 例外：内嵌的方控映射 APK 必须入库 =================
+# （上面的 *.apk 是给构建产物/参考包用的；assets 下这个包是交付内容的一部分，不能少）
+!app/src/main/assets/keymap.apk

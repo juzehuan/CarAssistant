@@ -19,6 +19,11 @@
     <string name="home_feature_monitor">性能监控</string>
     <string name="home_feature_autostart">自启管理</string>
     <string name="home_feature_device">设备信息</string>
+    <!-- 方控映射（随包内嵌的独立应用，assets/keymap.apk） -->
+    <string name="home_feature_keymap">方控映射</string>
+    <string name="keymap_prepare_install">正在准备方控映射安装包…</string>
+    <string name="keymap_install_failed">安装方控映射失败：%1$s</string>
+    <string name="keymap_launch_failed">未能打开方控映射，请从桌面图标进入</string>
     <string name="home_storage_used">%1$s 已用 / %2$s 总计</string>
 
     <!-- 清理 -->
@@ -93,13 +98,7 @@
     <string name="storage_size_unknown">容量未知</string>
     <string name="storage_rescan">重新扫描存储</string>
 
-    <!-- 侧边栏 -->
-    <!-- 侧边栏 -->
-    <!-- 侧边栏系统开关 -->
-
-    <!-- 按键映射权限 -->
-
-    <!-- 媒体会话服务（方控媒体按键定向派发） -->
+    <!-- 悬浮窗权限（性能监控悬浮窗，以及内嵌方控映射首次运行时都会要） -->
     <string name="float_permission_title">需要悬浮窗权限</string>
     <string name="float_permission_msg">侧边栏需要"显示在其他应用上层"权限，是否立即开启？</string>
     <string name="float_grant">去开启</string>

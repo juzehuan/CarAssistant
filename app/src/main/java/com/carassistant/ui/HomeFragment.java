@@ -85,7 +85,7 @@ public class HomeFragment extends Fragment {
         rvFeatures.addItemDecoration(new GridSpacingItemDecoration(spanCount, spacing, false));
         rvFeatures.setAdapter(featureAdapter);
 
-        // 构建功能项：仅保留核心六大功能
+        // 构建功能项：核心六大功能 + 内嵌的方控映射入口
         List<FeatureAdapter.FeatureItem> items = new ArrayList<>();
         items.add(new FeatureAdapter.FeatureItem(
                 R.drawable.ic_feature_clean, R.string.home_feature_clean, R.color.icon_bg_clean,
@@ -106,6 +106,10 @@ public class HomeFragment extends Fragment {
         items.add(new FeatureAdapter.FeatureItem(
                 R.drawable.ic_feature_device, R.string.home_feature_device, R.color.icon_bg_device,
                 v -> startActivity(new android.content.Intent(requireContext(), DeviceInfoActivity.class))));
+        // 方控映射：随包内嵌的第三方应用，未安装则拉起安装器，已安装则直接打开
+        items.add(new FeatureAdapter.FeatureItem(
+                R.drawable.ic_feature_keymap, R.string.home_feature_keymap, R.color.icon_bg_keymap,
+                v -> com.carassistant.util.KeyMapLauncher.open(requireActivity())));
         featureAdapter.setItems(items);
     }
 
