@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">车机助手</string>
+    <string name="app_name">方控助手</string>
 
     <!-- 通用动作 -->
     <string name="launch_fail">启动失败</string>

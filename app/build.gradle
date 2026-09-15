@@ -25,7 +25,9 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.carassistant"
+        // 独立方控 App：换成独立 applicationId，才能与车机助手并存安装。
+        // 注意：namespace 仍是 com.carassistant，代码里的 R / 包名都不用动。
+        applicationId "com.carassistant.keymap"
         minSdk 26          // Android 8.0
         targetSdk 34
         // ===== 版本号方案（对齐规则）=====

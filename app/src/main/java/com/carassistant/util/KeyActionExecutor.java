@@ -37,12 +37,8 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.widget.Toast;
 
-import com.carassistant.MainActivity;
 import com.carassistant.R;
-import com.carassistant.SettingsActivity;
 import com.carassistant.service.KeyMappingAccessibilityService;
-import com.carassistant.ui.DeviceInfoActivity;
-import com.carassistant.ui.FileFragment;
 
 import java.lang.reflect.Method;
 
@@ -50,7 +46,7 @@ import java.lang.reflect.Method;
  * 按键动作执行器
  *
  * 将映射的动作类型转换为实际系统操作。
- * 提取为独立工具类，便于在 MainActivity / SidebarService 等场景复用。
+ * 提取为独立工具类，便于在方控服务 / 方控主界面等场景复用。
  *
  * 所有操作均带 try-catch，避免因权限不足或系统不支持导致崩溃。
  */
@@ -159,30 +155,22 @@ public final class KeyActionExecutor {
                 }
                 break;
             case KeyMappingUtil.ACTION_BACK_HOME:
-                if (ctx instanceof MainActivity) {
-                    ((MainActivity) ctx).runOnUiThread(() ->
-                            Toast.makeText(ctx, R.string.home_feature_home, Toast.LENGTH_SHORT).show());
-                }
                 openLauncher(ctx);
                 break;
             case KeyMappingUtil.ACTION_OPEN_SETTINGS:
-                startActivitySafe(ctx, new Intent(ctx, SettingsActivity.class));
+                // 独立方控 App 没有自己的设置页，改为打开系统设置
+                startActivitySafe(ctx, new Intent(Settings.ACTION_SETTINGS));
                 break;
             case KeyMappingUtil.ACTION_OPEN_FILE_MANAGER:
-                try {
-                    Intent it = new Intent(ctx, MainActivity.class);
-                    it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    it.putExtra(MainActivity.EXTRA_NAV_ID, R.id.nav_file);
-                    ctx.startActivity(it);
-                } catch (Exception e) {
-                    toast(ctx, ctx.getString(R.string.launch_fail));
-                }
+                // 独立方控 App 不带文件管理页，改为拉起系统文件管理器
+                launchPackage(ctx, "com.android.documentsui");
                 break;
             case KeyMappingUtil.ACTION_OPEN_KEY_MAPPING:
                 startActivitySafe(ctx, new Intent(ctx, com.carassistant.ui.KeyMappingActivity.class));
                 break;
             case KeyMappingUtil.ACTION_OPEN_DEVICE_INFO:
-                startActivitySafe(ctx, new Intent(ctx, DeviceInfoActivity.class));
+                // 独立方控 App 没有设备信息页，改为打开系统「关于手机」
+                startActivitySafe(ctx, new Intent(Settings.ACTION_DEVICE_INFO_SETTINGS));
                 break;
 
             // ============ 系统设置子页类 ============

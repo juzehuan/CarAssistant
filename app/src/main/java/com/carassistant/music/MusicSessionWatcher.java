@@ -54,7 +54,7 @@ import java.util.Map;
  * 5. 健康监测：基于 lastSuccessfulReadElapsedMs 判断监听是否健康，
  *    不健康时通过 {@link TargetMediaSessionService#requestReconnect(Context)} 触发组件恢复
  *
- * 与 {@link com.carassistant.util.MusicController} 解耦：
+ * 与音乐播放控制逻辑解耦（独立方控 App 中未包含 MusicController）：
  * - Watcher 只负责会话生命周期与选择，不处理歌词/封面/控制
  * - 通过 {@link Listener} 回调通知 controller，由 controller 自行决定如何处理
  */
