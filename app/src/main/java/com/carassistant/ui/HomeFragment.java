@@ -63,6 +63,11 @@ public class HomeFragment extends Fragment {
         rvFeatures = view.findViewById(R.id.rv_features);
         setupFeatureGrid(view);
 
+        // 设置入口（内存清理白名单 / 退出应用）
+        view.findViewById(R.id.btn_settings).setOnClickListener(v ->
+                startActivity(new android.content.Intent(requireContext(),
+                        com.carassistant.SettingsActivity.class)));
+
         refreshStats();
     }
 
