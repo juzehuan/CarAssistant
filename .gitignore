@@ -65,3 +65,6 @@ keystore.properties
 # ================= Misc =================
 .attach_pid*
 hs_err_pid*
+
+# ================= WorkBuddy 会话数据（记忆 / 索引，不进版本库） =================
+.workbuddy/
