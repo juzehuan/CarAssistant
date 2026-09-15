@@ -168,7 +168,7 @@
     <string name="keymap_perm_not_granted">未开启</string>
     <string name="keymap_perm_granted">已开启</string>
     <string name="keymap_perm_go_grant">去开启</string>
-    <string name="keymap_perm_accessibility_tip">请在系统设置中找到「车机助手按键映射」并开启，开启后按键映射可在任意界面生效</string>
+    <string name="keymap_perm_accessibility_tip">请在系统设置中找到「方控助手按键映射」并开启，开启后按键映射可在任意界面生效</string>
     <string name="keymap_perm_notification_not_required">当前系统无需单独申请通知权限</string>
 
     <!-- 媒体会话服务（方控媒体按键定向派发） -->
@@ -333,7 +333,7 @@
     <string name="keymap_title">按键映射</string>
     <string name="home_feature_keymap">按键映射</string>
     <string name="keymap_usage">使用说明</string>
-    <string name="keymap_usage_desc">1. 点击右上角 + 号添加映射，按下物理按键（方向盘键/音量键等）\n2. 支持触发模式：单击 / 双击 / 长按 / 三连按 / 组合键（按住一键再按另一键）\n3. 支持「按键序列」：依次按下若干键组成序列触发（如 音量+ → 音量- → 播放）\n4. 支持「模拟轴」：手柄/方向盘的方向、油门等模拟轴事件也可映射（需在系统输入法中启用本应用输入法）\n5. 支持「仅前台应用生效」：可设置仅当某应用处于前台时才触发该映射（车机很实用，如导航/音乐前台时方控键行为不同）\n6. 支持动作：应用启动、音量、媒体、开关、亮度、系统操作、设置子页、常用应用、URL、广播等\n7. 长按列表项可编辑动作，点击播放按钮可立即测试\n8. 菜单支持导入/导出配置和应用预设模板\n9. 如无法捕获按键，可点击「手动输入」输入 keyCode\n10. 映射生效范围：车机助手在前台运行时</string>
+    <string name="keymap_usage_desc">1. 点击右上角 + 号添加映射，按下物理按键（方向盘键/音量键等）\n2. 支持触发模式：单击 / 双击 / 长按 / 三连按 / 组合键（按住一键再按另一键）\n3. 支持「按键序列」：依次按下若干键组成序列触发（如 音量+ → 音量- → 播放）\n4. 支持「模拟轴」：手柄/方向盘的方向、油门等模拟轴事件也可映射（需在系统输入法中启用本应用输入法）\n5. 支持「仅前台应用生效」：可设置仅当某应用处于前台时才触发该映射（车机很实用，如导航/音乐前台时方控键行为不同）\n6. 支持动作：应用启动、音量、媒体、开关、亮度、系统操作、设置子页、常用应用、URL、广播等\n7. 长按列表项可编辑动作，点击播放按钮可立即测试\n8. 菜单支持导入/导出配置和应用预设模板\n9. 如无法捕获按键，可点击「手动输入」输入 keyCode\n10. 映射生效范围：方控助手在前台运行时</string>
     <string name="keymap_empty">暂无按键映射\n点击右上角 + 号添加\n或通过菜单应用预设模板</string>
 
     <!-- 音乐伴侣 -->
@@ -609,7 +609,7 @@
     <string name="keymap_trigger_triple">三连按</string>
     <string name="keymap_trigger_sequence">按键序列</string>
     <string name="keymap_sequence_hint">请依次按下若干键组成序列（例如：音量+ → 音量- → 播放）。\n至少需 2 个键，按「确定」完成录制。</string>
-    <string name="keymap_axis_hint">请拨动手柄 / 方向盘的模拟轴（方向、油门等）。\n本功能需先在系统「语言与输入法 → 当前输入法」中将「车机助手按键映射输入法」设为当前输入法。</string>
+    <string name="keymap_axis_hint">请拨动手柄 / 方向盘的模拟轴（方向、油门等）。\n本功能需先在系统「语言与输入法 → 当前输入法」中将「方控助手按键映射输入法」设为当前输入法。</string>
     <string name="keymap_ime_tip">模拟轴捕获需要将「车机助手按键映射输入法」设为当前输入法。\n请到系统「语言与输入法 → 当前输入法」中选择；本输入法无键盘界面。</string>
     <string name="keymap_constraint_hint">可设置「仅当某个应用在前台时」才触发该映射。\n留空表示始终生效；当前前台应用会被实时检测。</string>
     <string name="keymap_constraint_none">无约束（始终生效）</string>

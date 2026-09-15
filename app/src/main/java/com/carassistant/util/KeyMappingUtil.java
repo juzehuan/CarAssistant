@@ -823,7 +823,7 @@ public final class KeyMappingUtil {
         if (actionType >= 30 && actionType <= 34) return "开关";
         if (actionType >= 40 && actionType <= 42) return "屏幕亮度";
         if (actionType >= 50 && actionType <= 55) return "系统操作";
-        if (actionType >= 60 && actionType <= 65) return "车机助手";
+        if (actionType >= 60 && actionType <= 65) return "方控助手";
         if (actionType >= 70 && actionType <= 79) return "系统设置";
         if (actionType >= 80 && actionType <= 87) return "常用应用";
         if (actionType >= 90 && actionType <= 99) return "高级动作";
