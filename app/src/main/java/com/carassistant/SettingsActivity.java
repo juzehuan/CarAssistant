@@ -34,6 +34,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.carassistant.adapter.PickAppAdapter;
 import com.carassistant.adapter.SimpleAppAdapter;
+import com.carassistant.ui.ConfirmDialog;
+import com.carassistant.util.AppExit;
 import com.carassistant.util.AppUtil;
 import com.carassistant.util.PrefsUtil;
 
@@ -48,6 +50,7 @@ import java.util.Set;
  * 设置页：
  * - 内存清理白名单管理
  * - 关于
+ * - 退出应用
  */
 public class SettingsActivity extends AppCompatActivity {
 
@@ -78,6 +81,14 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.btn_pick_whitelist).setOnClickListener(v -> showPickDialog());
+
+        // 退出应用：先二次确认，避免误触
+        findViewById(R.id.btn_exit_app).setOnClickListener(v ->
+                ConfirmDialog.show(this, R.drawable.ic_power, ConfirmDialog.TYPE_DANGER,
+                        getString(R.string.settings_exit),
+                        getString(R.string.settings_exit_confirm),
+                        getString(R.string.settings_exit_action),
+                        () -> AppExit.exit(SettingsActivity.this)));
 
         // 版本号
         try {

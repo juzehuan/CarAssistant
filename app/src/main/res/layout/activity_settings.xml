@@ -185,6 +185,58 @@
                     android:textSize="12sp"/>
             </LinearLayout>
 
+            <!-- 退出应用 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding_lg"
+                android:background="@drawable/bg_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_power"
+                        android:background="@drawable/bg_dialog_icon_danger"
+                        android:tint="#FFFFFF"
+                        android:padding="9dp"
+                        tools:ignore="UseAppTint"/>
+
+                    <TextView
+                        style="@style/CardTitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="@string/settings_exit"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/settings_exit_desc"
+                    android:textColor="@color/text_hint"
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="2dp"/>
+
+                <Button
+                    android:id="@+id/btn_exit_app"
+                    style="@style/Widget.CarAssistant.Button.Danger"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/settings_exit"/>
+
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

@@ -127,6 +127,11 @@
     <string name="settings_about">关于</string>
     <string name="settings_about_version">版本 %1$s</string>
     <string name="settings_about_desc">车机助手 - 车机端工具箱</string>
+    <!-- 退出应用 -->
+    <string name="settings_exit">退出应用</string>
+    <string name="settings_exit_desc">退出后将关闭所有页面并停止后台悬浮监控，释放内存占用</string>
+    <string name="settings_exit_confirm">退出后应用会完全关闭，后台悬浮监控也会停止。确定要退出吗？</string>
+    <string name="settings_exit_action">退出</string>
 
     <!-- 控制面板 -->
 
