@@ -41,15 +41,23 @@ Android 8/9 上 U 盘挂在 `/storage/XXXX-XXXX`，不能用路径含 `usb`/`udi
 - 108dp 画布，中心 72dp 可见，安全直径约 90dp（**半径 45dp 内最不会被遮罩裁切**）。
 - 放大图形用 `<group pivotX/pivotY/scaleX/scaleY>` 包一层，不要改 `pathData`。
 
-## 图标方案（已从矢量改为位图）
-- 当前图标是 **PNG 位图**：`res/mipmap-{m,h,xh,xxh,xxxh}dpi/ic_launcher.png` + `ic_launcher_round.png`。
-  矢量自适应图标配置（`mipmap-anydpi-v26/*.xml`、`drawable/ic_launcher_foreground.xml`）已删除。
-- 尺寸基准是 **108dp 画布**：mdpi 108 / hdpi 162 / xhdpi 216 / xxhdpi 324 / xxxhdpi 432。
-- 重新生成图标：改 `tools/gen-icons/ic_launcher_foreground.xml`（矢量源，支持 `<group>` 缩放）后运行
-  `python tools/gen-icons/gen_icons.py`，会自动写出全部密度的 PNG 并校验尺寸。
-- 原理：`pathData` 与 SVG `d` 兼容 + 无头浏览器渲染，不需要 cairo 等原生依赖。
-  ⚠️ group 变换换算：Android `postXxx` 是**左乘**语义，等价 SVG 为
-  `translate(tx+px,ty+py) rotate(r) scale(sx,sy) translate(-px,-py)`（顺序不能反）。
-- ⚠️ `.gitignore` 有全局 `*.png`（排截图用），已在末尾加 `!app/src/main/res/mipmap-*/ic_launcher*.png` 例外；
-  新增其它位图资源时注意同样会被吞掉。
-- ⚠️ 图标相关的坑：车机 launcher 会缓存应用名与图标，改完要卸载重装；纯位图图标在 Android 8+ 可能被套白底圆圈并缩放。
+## 图标方案（PNG 位图，用户提供的设计稿）
+- **唯一设计源**：`tools/gen-icons/source/ic_launcher_source.png`（192×192 RGBA，蓝色圆角方块+白色车形）。
+  改图标就替换这个文件，然后跑 `python tools/gen-icons/gen_icons.py`。
+- 密度基准是**传统图标标准 48dp**：mdpi 48 / hdpi 72 / xhdpi 96 / xxhdpi 144 / xxxhdpi 192。
+  输出 `res/mipmap-{m,h,xh,xxh,xxxh}dpi/ic_launcher.png` + `ic_launcher_round.png`（圆形版按遮罩裁切）。
+- 矢量自适应图标（`mipmap-anydpi-v26/*.xml`、`drawable/ic_launcher_foreground.xml`）已删除。
+  `tools/gen-icons/ic_launcher_foreground.xml` 仅作历史留档 + 脚本兜底。
+- ⚠️ 设计源只有 192px，**不要上采样**（会发虚）。需要更大尺寸就找用户要 512/1024 的设计稿。
+- ⚠️ `.gitignore` 有全局 `*.png`（排截图用）。新增任何位图资源都要在末尾补
+  `!路径/*.png` 例外，否则会被静默忽略、进不了提交。
+- ⚠️ 车机 launcher 会缓存图标，改完必须**卸载重装**才会刷新。
+
+## 构建：Gradle 缓存锁（journal-1）
+- 症状：启动阶段报 `FileNotFoundException: .gradle\caches\journal-1\journal-1.lock (拒绝访问)`，构建直接失败。
+- `gradlew --stop` **不一定有效**。有效解法是删掉整个 journal 缓存目录（Gradle 会自动重建，安全）：
+  ```powershell
+  & .\gradlew.bat --stop
+  [System.IO.Directory]::Delete("$env:USERPROFILE\.gradle\caches\journal-1", $true)
+  ```
+- 编译前建议固定先跑一次 `gradlew --stop`，能省一轮失败。
