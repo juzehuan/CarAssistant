@@ -157,36 +157,30 @@ public class KeyMappingActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.keymap_perm_accessibility_tip,
                     Toast.LENGTH_LONG).show();
         };
-        View.OnClickListener goNotification = v -> {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                notificationPermLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
-            } else {
-                // Android 13 以下：通知权限默认开启，跳转到应用详情页
-                try {
-                    Intent it = new Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS);
-                    it.putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, getPackageName());
-                    it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(it);
-                } catch (Exception e) {
-                    Toast.makeText(this, R.string.keymap_perm_notification_not_required,
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
+        View.OnClickListener goMediaSession = v -> {
+            // 媒体控制通过 MediaController 实现，必须在「通知访问」中启用本应用的
+            // 媒体会话服务，否则无障碍服务消费掉原始媒体键后无人接管 → 切不了歌。
+            PermissionUtil.requestNotificationListenerAccess(this);
+            Toast.makeText(this, R.string.keymap_perm_media_session_tip,
+                    Toast.LENGTH_LONG).show();
         };
 
         btnAccessibilityGo.setOnClickListener(goAccessibility);
         rowAccessibility.setOnClickListener(goAccessibility);
-        btnNotificationGo.setOnClickListener(goNotification);
-        rowNotification.setOnClickListener(goNotification);
+        btnNotificationGo.setOnClickListener(goMediaSession);
+        rowNotification.setOnClickListener(goMediaSession);
     }
 
     /** 刷新权限状态卡：仅在未授权时显示 */
     private void refreshPermissionCard() {
         boolean accOn = PermissionUtil.isAccessibilityEnabled(this);
-        boolean notOn = PermissionUtil.hasNotificationPermission(this);
+        // 第二项是「媒体会话访问」（通知访问权限）。媒体控制（切歌 / 播放暂停）走
+        // MediaController，必须在系统「通知访问」中启用本应用的服务，否则无障碍服务
+        // 消费掉原始媒体键之后无人接管，表现为「按键被吃掉但切不了歌」。
+        boolean mediaOn = PermissionUtil.isNotificationListenerEnabled(this);
 
         // 任一权限未授权则显示卡片
-        boolean showCard = !accOn || !notOn;
+        boolean showCard = !accOn || !mediaOn;
         cardPermissions.setVisibility(showCard ? View.VISIBLE : View.GONE);
 
         // 无障碍状态
@@ -204,8 +198,8 @@ public class KeyMappingActivity extends AppCompatActivity {
             btnAccessibilityGo.setVisibility(View.VISIBLE);
         }
 
-        // 通知状态
-        if (notOn) {
+        // 媒体会话访问（通知访问）状态
+        if (mediaOn) {
             tvNotificationStatus.setText(R.string.keymap_perm_granted);
             tvNotificationStatus.setTextColor(okColor);
             ivNotificationIcon.setColorFilter(okColor);

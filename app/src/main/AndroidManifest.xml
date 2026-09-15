@@ -57,6 +57,23 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!--
+                车机桌面图标分类元数据（红旗车机 launcher 依赖这些字段建图标）。
+                缺少时应用虽已安装，桌面却不显示入口图标。
+            -->
+            <meta-data
+                android:name="Group"
+                android:value="GROUP AUTOMAP" />
+            <meta-data
+                android:name="Domain"
+                android:value="DOMAIN AUTOMAP" />
+            <meta-data
+                android:name="Ability"
+                android:value="com.carassistant.App" />
+            <meta-data
+                android:name="MoreApp"
+                android:value="true" />
         </activity>
 
         <!--

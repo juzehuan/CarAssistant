@@ -505,7 +505,23 @@ public final class KeyActionExecutor {
             }
         }
         // 未指定目标应用（targetPackage 为空）：由系统路由到当前活跃播放器
-        // 回退1：AudioManager 全局派发
+        //
+        // 回退1（主路径）：通过媒体会话全局派发。
+        // 注意：无障碍服务命中映射后会消费掉原始媒体键，系统不再执行原生切歌，
+        // 所以这里必须自己把事件送到播放器。AudioManager.dispatchMediaKeyEvent 是隐藏 API，
+        // 三方应用缺 MEDIA_CONTENT_CONTROL 权限会静默失败（表现为「按键被吃掉但切不了歌」），
+        // 因此优先走 MediaController（公开 API，需已授予通知访问权限）。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                if (com.carassistant.service.TargetMediaSessionService
+                        .dispatchGlobal(ctx, keyCode)) {
+                    return;
+                }
+            } catch (Throwable ignored) {
+                // 继续走下方兜底
+            }
+        }
+        // 回退2：AudioManager 全局派发（对部分系统/预装场景仍可能有效）
         try {
             AudioManager am = (AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
             android.view.KeyEvent down = new android.view.KeyEvent(
@@ -515,7 +531,7 @@ public final class KeyActionExecutor {
             am.dispatchMediaKeyEvent(down);
             am.dispatchMediaKeyEvent(up);
         } catch (Exception ignored) {
-            // 回退2：ACTION_MEDIA_BUTTON 广播
+            // 回退3：ACTION_MEDIA_BUTTON 广播
             try {
                 Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
                 i.putExtra(Intent.EXTRA_KEY_EVENT, new android.view.KeyEvent(
@@ -523,6 +539,23 @@ public final class KeyActionExecutor {
                 ctx.sendBroadcast(i);
             } catch (Exception ignored2) {}
         }
+        // 回退4：显式广播给所有注册了 ACTION_MEDIA_BUTTON 的接收器。
+        // Android 8+ 隐式广播受限，逐个显式发送才可能送达（无需任何权限，仅作最后兜底）。
+        try {
+            android.content.pm.PackageManager pm = ctx.getPackageManager();
+            java.util.List<android.content.pm.ResolveInfo> ris =
+                    pm.queryBroadcastReceivers(new Intent(Intent.ACTION_MEDIA_BUTTON), 0);
+            if (ris != null) {
+                for (android.content.pm.ResolveInfo ri : ris) {
+                    if (ri.activityInfo == null) continue;
+                    Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
+                    i.setClassName(ri.activityInfo.packageName, ri.activityInfo.name);
+                    i.putExtra(Intent.EXTRA_KEY_EVENT, new android.view.KeyEvent(
+                            android.view.KeyEvent.ACTION_DOWN, keyCode));
+                    ctx.sendBroadcast(i);
+                }
+            }
+        } catch (Exception ignored3) {}
     }
 
     private static void toggleAirplane(Context ctx) {
