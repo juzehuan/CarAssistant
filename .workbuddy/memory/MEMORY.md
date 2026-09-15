@@ -14,6 +14,24 @@
 - **推拉命令模板**：`git -c http.proxy=http://127.0.0.1:7890 -c https.proxy=http://127.0.0.1:7890 push origin <branch>`
 - 如嫌麻烦可在仓库里持久化（代理关闭时会失效，需手动删）：`git config --local http.proxy http://127.0.0.1:7890`。
 
+## ⚠️ 签名：本地构建**无法覆盖**车机上的已装应用（重大坑）
+- 车机上装的旧版 `com.carassistant` 是**公司 release 签名**：
+  `CN=Remobie Check, O=Chongzhu, C=TH`（如 `C:\Users\Administrator\Downloads\app-release.apk`，2026-09-03）。
+- 本机 `assembleDebug` 产出的是 **Android Debug 签名**（`CN=Android Debug`）。两者签名不匹配，
+  Android 会拒绝安装，报 `INSTALL_FAILED_UPDATE_INCOMPATIBLE`，**旧应用原样保留**。
+  症状表现：改完功能装上后"什么都没变"（旧图标、新按钮找不到）——不是代码问题，是根本没装上。
+- 项目根目录**没有** `keystore.properties` / `*.jks`，所以本地也无法产出与旧版同签名的 release 包。
+- 验证签名的命令（build-tools 37.0.0 在用）：
+  ```powershell
+  & "$env:ANDROID_HOME\build-tools\37.0.0\apksigner.bat" verify --print-certs <apk> | Select-String "certificate DN"
+  ```
+- **当前可行路径**：先 `adb uninstall com.carassistant`（或车机上手动卸载）→ 再装 debug 包。
+  代价是会清掉白名单、开机自启列表等本地配置。
+- **长期路径**：找用户要 Remobie/Chongzhu 的 release keystore，放进项目根目录并写 `keystore.properties`
+  （`storeFile` / `storePassword` / `keyAlias` / `keyPassword`），之后 `assembleRelease` 才能原地升级。
+  配套脚本 `harden_resign.bat` 负责加固后的 zipalign + 重签名。
+- `versionCode` 固定为 `20260802`、`versionName 1.0.0`，**从没随构建更新过**；按注释约定应改成构建日期 YYYYMMDD。
+
 ## 项目概况
 - Android 车机（一汽红旗）工具 App，包名 `com.carassistant`。
 - 目标机型 Android 8/9（API 26-28）；`minSdk 26` / `targetSdk 34` / `compileSdk 34`。
