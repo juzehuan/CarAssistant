@@ -95,3 +95,22 @@ Android 8/9 上 U 盘挂在 `/storage/XXXX-XXXX`，不能用路径含 `usb`/`udi
   `dist/` 已被 `.gitignore` 覆盖，不进版本库。
 - 核实包内容（无需安装）：`aapt2 dump resources <apk> | grep "id/xxx"`、`aapt2 dump badging <apk> | grep application-label`。
   badging 输出里的中文在 GBK 控制台会显示成乱码（如 `应用管理` → `搴旂敤绠＄悊`），属编码显示问题，不是包坏了。
+
+## 内嵌第三方 App：方控映射（com.hzsoft.keymapx）
+- 上游来源 `C:\Users\Administrator\Downloads\appp`（逆向+优化工程，产物 `方控映射_1.1_优化版.apk`，
+  入口 `com.hzsoft.sidebar.KeyMapSettingsActivity`，签名密钥 `_tools\keymap-release.jks`，密码 `keymap123456`）。
+- 集成方式是**原样内嵌**：`app/src/main/assets/keymap.apk` 是逐字节副本
+  （SHA256 `5a60e6ff…37f702`、235982 字节），代码侧只做「已装则开、未装则装」。
+- ⚠️ `.gitignore` 有全局 `*.apk`。**任何放进 assets 的包都必须补 `!app/src/main/assets/*.apk` 例外**，
+  否则会被静默忽略：既不进提交也不进 APK，且不报错。
+- 装 APK 一律走 `FileUtil.installApk(ctx, file)`，不要另写 intent —— 那条路（FileProvider +
+  `ACTION_VIEW` + chooser 兜底）已经在文件管理页跑通。
+- 想换成别的内嵌应用：替换 assets 文件 + 改 `KeyMapLauncher` 里的 PKG / MAIN_ACTIVITY / 卡片文案即可。
+- 上游只有 smali 没有 Java 源码，所以「按源码合并进工程」这条路实际等于重写，不要轻易答应。
+
+## 模拟器验证：先加载 skill
+- 本项目做任何「装到模拟器上看功能是否生效」的活，**动手前先加载 `android-emulator-verify` skill**。
+  它带 `scripts/ui.py`（dump + 解析 + `ui.tap_text` 按文本点击），以及常见的坑
+  （adb 只认 Windows 路径、Bash 缺 coreutils、时序陷阱、release 包不能 run-as）。
+- 本机雷电常被**多个会话同时占用**：症状是 app 被 `pm suspend/disable-user` 冻掉、`am start` 抢不到前台、
+  `uiautomator dump` 报 `UiAutomationService … already registered!`。处置见该 skill 的 2.7 节。
