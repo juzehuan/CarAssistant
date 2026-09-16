@@ -68,3 +68,9 @@ hs_err_pid*
 
 # ================= WorkBuddy 会话数据（记忆 / 索引，不进版本库） =================
 .workbuddy/
+
+# ================= 例外：应用图标位图必须入库 =================
+# （上面的 *.png 是给截图/临时图用的，图标资源要覆盖掉）
+!app/src/main/res/mipmap-*/ic_launcher.png
+!app/src/main/res/mipmap-*/ic_launcher_round.png
+!tools/gen-icons/source/*.png
