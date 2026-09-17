@@ -312,23 +312,161 @@ public class TargetMediaSessionService extends NotificationListenerService {
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     public static boolean dispatchToPackage(String targetPackage, int keyCode) {
         if (targetPackage == null || targetPackage.isEmpty()) return false;
-        List<MediaController> sessions = sActiveSessions;
+        List<MediaController> sessions = getSessionsLive(null);
+        if (sessions.isEmpty()) sessions = sActiveSessions;
         for (MediaController mc : sessions) {
             if (targetPackage.equals(mc.getPackageName())) {
-                try {
-                    long now = System.currentTimeMillis();
-                    mc.dispatchMediaButtonEvent(new android.view.KeyEvent(
-                            now, now, android.view.KeyEvent.ACTION_DOWN, keyCode, 0));
-                    mc.dispatchMediaButtonEvent(new android.view.KeyEvent(
-                            now, now, android.view.KeyEvent.ACTION_UP, keyCode, 0));
-                    return true;
-                } catch (Exception e) {
-                    Log.w(TAG, "dispatch to " + targetPackage + " failed", e);
-                    return false;
-                }
+                return dispatchKeyToController(mc, keyCode);
             }
         }
         return false;
+    }
+
+    /**
+     * 全局派发媒体按键（未指定目标应用时的主路径）。
+     *
+     * 为什么必须有它：无障碍服务在 onKeyEvent 命中映射后会 return true 消费掉原始媒体键，
+     * 系统不再执行原生切歌，因此本应用必须自己把事件真正送到播放器。而
+     * AudioManager.dispatchMediaKeyEvent 是隐藏 API，第三方应用缺少
+     * MEDIA_CONTENT_CONTROL 权限时会静默失败 —— 表现就是「按键被吃掉但切不了歌」。
+     *
+     * 本方法走公开 API：MediaController.dispatchMediaButtonEvent + TransportControls，
+     * 是第三方应用唯一可靠的媒体控制通道（需要已授予通知访问权限）。
+     *
+     * 顺序：优先正在播放的会话，其次其它活跃会话；任一会话成功即返回。
+     *
+     * @param ctx     上下文（用于实时枚举会话，可为 null，为 null 时只用缓存）
+     * @param keyCode KeyEvent 键码（如 KEYCODE_MEDIA_NEXT）
+     * @return true 表示已成功派发到某个会话
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    public static boolean dispatchGlobal(Context ctx, int keyCode) {
+        List<MediaController> sessions = getSessionsLive(ctx);
+        if (sessions.isEmpty()) sessions = sActiveSessions;
+        if (sessions.isEmpty()) {
+            Log.w(TAG, "dispatchGlobal: 无活跃媒体会话（通知访问权限可能未开启）");
+            return false;
+        }
+        List<MediaController> ordered = new ArrayList<>();
+        for (MediaController mc : sessions) {
+            if (isActivelyPlaying(mc) && !ordered.contains(mc)) ordered.add(mc);
+        }
+        for (MediaController mc : sessions) {
+            if (!ordered.contains(mc)) ordered.add(mc);
+        }
+        for (MediaController mc : ordered) {
+            if (dispatchKeyToController(mc, keyCode)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 实时枚举活跃媒体会话（不依赖服务内部缓存）。
+     *
+     * 缓存 sActiveSessions 依赖 NotificationListenerService 已连接并完成一次回调，
+     * 服务刚启用 / 刚开机时可能还是空的，因此派发前主动查一次系统最稳。
+     *
+     * @param ctx 可为 null；为 null 时返回空列表，调用方会回退到缓存
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private static List<MediaController> getSessionsLive(Context ctx) {
+        if (ctx == null) return Collections.emptyList();
+        try {
+            MediaSessionManager msm = (MediaSessionManager)
+                    ctx.getApplicationContext().getSystemService(Context.MEDIA_SESSION_SERVICE);
+            if (msm == null) return Collections.emptyList();
+            ComponentName cn = new ComponentName(ctx, TargetMediaSessionService.class);
+            List<MediaController> list = msm.getActiveSessions(cn);
+            return list == null ? Collections.<MediaController>emptyList() : list;
+        } catch (SecurityException e) {
+            Log.w(TAG, "getActiveSessions 被拒绝：通知访问权限未开启");
+            return Collections.emptyList();
+        } catch (Exception e) {
+            Log.w(TAG, "getActiveSessions failed: " + e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 向单个 MediaController 派发媒体按键。
+     *
+     * 两级策略，缺一不可：
+     * 1. dispatchMediaButtonEvent —— 由应用自己的 MediaSession.Callback 处理，
+     *    语义最完整（部分应用依赖它做自定义逻辑）。注意必须检查返回值：
+     *    返回 false 表示应用没处理，不能当成成功。
+     * 2. TransportControls 标准动作（skipToNext / skipToPrevious / play / pause …）
+     *    —— 绝大多数播放器都会实现，是切歌真正生效的兜底。
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private static boolean dispatchKeyToController(MediaController mc, int keyCode) {
+        if (mc == null) return false;
+        try {
+            long now = android.os.SystemClock.uptimeMillis();
+            android.view.KeyEvent down = new android.view.KeyEvent(
+                    now, now, android.view.KeyEvent.ACTION_DOWN, keyCode, 0);
+            android.view.KeyEvent up = new android.view.KeyEvent(
+                    now, now, android.view.KeyEvent.ACTION_UP, keyCode, 0);
+            if (mc.dispatchMediaButtonEvent(down)) {
+                mc.dispatchMediaButtonEvent(up);
+                Log.d(TAG, "media button handled by session: " + mc.getPackageName());
+                return true;
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "dispatchMediaButtonEvent failed: " + e);
+        }
+        return dispatchTransportControl(mc, keyCode);
+    }
+
+    /**
+     * 通过 TransportControls 执行标准媒体动作（切歌真正生效的关键路径）。
+     *
+     * @return true 表示已发起（MediaController 存在且未抛异常）
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private static boolean dispatchTransportControl(MediaController mc, int keyCode) {
+        try {
+            MediaController.TransportControls tc = mc.getTransportControls();
+            if (tc == null) return false;
+            switch (keyCode) {
+                case android.view.KeyEvent.KEYCODE_MEDIA_NEXT:
+                    tc.skipToNext();
+                    break;
+                case android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                    tc.skipToPrevious();
+                    break;
+                case android.view.KeyEvent.KEYCODE_MEDIA_STOP:
+                    tc.stop();
+                    break;
+                case android.view.KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+                    tc.fastForward();
+                    break;
+                case android.view.KeyEvent.KEYCODE_MEDIA_REWIND:
+                    tc.rewind();
+                    break;
+                case android.view.KeyEvent.KEYCODE_MEDIA_PAUSE:
+                    tc.pause();
+                    break;
+                case android.view.KeyEvent.KEYCODE_MEDIA_PLAY:
+                    tc.play();
+                    break;
+                case android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE: {
+                    PlaybackState st = mc.getPlaybackState();
+                    if (st != null && st.getState() == PlaybackState.STATE_PLAYING) {
+                        tc.pause();
+                    } else {
+                        tc.play();
+                    }
+                    break;
+                }
+                default:
+                    return false;
+            }
+            Log.d(TAG, "transport control keyCode=" + keyCode + " -> " + mc.getPackageName());
+            return true;
+        } catch (Exception e) {
+            Log.w(TAG, "transport control failed: " + e);
+            return false;
+        }
     }
 
     /**

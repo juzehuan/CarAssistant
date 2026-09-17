@@ -13,6 +13,7 @@ package com.carassistant.util;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.view.KeyEvent;
 
 import java.util.ArrayList;
@@ -31,8 +32,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class KeyTriggerDetector {
 
+    /** 判定「按下未抬起」为异常残留的阈值：超过这个时长还没收到 UP 视为 UP 丢失。 */
+    private static final long STUCK_PRESS_TIMEOUT = 3000L;
+
     private final Context ctx;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    /** 每个物理键本次按下的起始时刻，用于识别 UP 丢失造成的残留。 */
+    private final Map<Integer, Long> pressStartTimes = new ConcurrentHashMap<>();
 
     /** 当前仍处于按下状态的物理键。 */
     private final Set<Integer> pressedKeys = new HashSet<>();
@@ -61,10 +68,22 @@ public class KeyTriggerDetector {
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // Android 长按会持续产生 repeat DOWN；首个 DOWN 若被消费，后续必须全部消费。
-        if (event.getRepeatCount() != 0 || pressedKeys.contains(keyCode)) {
+        if (event.getRepeatCount() != 0) {
             return consumedKeys.contains(keyCode);
         }
-
+        if (pressedKeys.contains(keyCode)) {
+            // 上一次按下迟迟没有抬起 —— 基本可以判定 UP 事件丢失（典型场景：
+            // 映射动作打开了新界面，系统把同一串事件里的 UP 吞掉了）。
+            // 如果不清理，之后每一次按下都会命中这里，被消费却不执行任何动作，
+            // 表现为「在这个界面里单击和长按全失效，换个界面又好使」。
+            Long start = pressStartTimes.get(keyCode);
+            if (start == null
+                    || SystemClock.uptimeMillis() - start < STUCK_PRESS_TIMEOUT) {
+                return consumedKeys.contains(keyCode);
+            }
+            resetStuckKey(keyCode);
+        }
+        pressStartTimes.put(keyCode, SystemClock.uptimeMillis());
         pressedKeys.add(keyCode);
         // 第二/第三次点击从按下时起就延长判定窗口，避免旧定时器在本次抬起前抢先触发。
         if (tapCounts.containsKey(keyCode)) cancelTapDecision(keyCode);
@@ -128,6 +147,7 @@ public class KeyTriggerDetector {
 
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         pressedKeys.remove(keyCode);
+        pressStartTimes.remove(keyCode);
         Runnable longTask = longPressRunnables.remove(keyCode);
         if (longTask != null) mainHandler.removeCallbacks(longTask);
 
@@ -202,6 +222,24 @@ public class KeyTriggerDetector {
         else if (count >= 2 && dbl != null) fire(dbl);
         else if (count >= 1 && tap != null) fire(tap);
         tapCounts.remove(keyCode);
+    }
+
+    /**
+     * 清掉某个键的全部按压残留（UP 丢失兜底）。
+     *
+     * 只重置这一个键，不动序列状态（序列是全局的，且已有自己的超时清理）。
+     */
+    private void resetStuckKey(int keyCode) {
+        pressedKeys.remove(keyCode);
+        consumedKeys.remove(keyCode);
+        suppressedKeys.remove(keyCode);
+        longPressFired.remove(keyCode);
+        completedOnDown.remove(keyCode);
+        deferredSequenceTaps.remove(keyCode);
+        pressStartTimes.remove(keyCode);
+        Runnable longTask = longPressRunnables.remove(keyCode);
+        if (longTask != null) mainHandler.removeCallbacks(longTask);
+        clearTapState(keyCode);
     }
 
     private void cancelTapDecision(int keyCode) {
@@ -400,6 +438,7 @@ public class KeyTriggerDetector {
         longPressFired.clear();
         completedOnDown.clear();
         deferredSequenceTaps.clear();
+        pressStartTimes.clear();
         clearSequence();
     }
 }

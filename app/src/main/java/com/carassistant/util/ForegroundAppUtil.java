@@ -36,8 +36,23 @@ public final class ForegroundAppUtil {
 
     private ForegroundAppUtil() {}
 
+    /**
+     * 无障碍服务上报的前台包名（最可靠来源）。
+     * 由 KeyMappingAccessibilityService 在 typeWindowStateChanged 事件里更新。
+     */
+    private static volatile String sEventPackage = "";
+
+    /** 无障碍服务上报前台包名；空值忽略，避免把已有的有效值冲掉 */
+    public static void reportForegroundPackage(String pkg) {
+        if (pkg != null && !pkg.isEmpty()) sEventPackage = pkg;
+    }
+
     /** 获取当前前台应用包名；失败时返回空串 */
     public static String getForegroundPackage(Context ctx) {
+        // 1. 无障碍事件：实时、准确，且不依赖「使用情况访问」权限（优先）
+        String fromEvent = sEventPackage;
+        if (!TextUtils.isEmpty(fromEvent)) return fromEvent;
+        // 2/3. 无障碍服务未连接时（如刚开机）退回系统接口
         if (ctx == null) return "";
         String pkg = getForegroundByUsageStats(ctx);
         if (!TextUtils.isEmpty(pkg)) return pkg;

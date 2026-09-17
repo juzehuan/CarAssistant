@@ -25,6 +25,7 @@ import android.view.accessibility.AccessibilityEvent;
 import androidx.annotation.Nullable;
 
 import com.carassistant.util.AppAutoStartManager;
+import com.carassistant.util.ForegroundAppUtil;
 import com.carassistant.util.KeyActionExecutor;
 import com.carassistant.util.KeyMappingUtil;
 import com.carassistant.util.KeyTriggerDetector;
@@ -125,7 +126,18 @@ public class KeyMappingAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        // 不需要处理无障碍事件
+        if (event == null) return;
+        // 记录前台应用包名，供按键映射的「仅前台应用生效」约束判定使用。
+        //
+        // 这是本应用最可靠的前台来源：UsageStatsManager 依赖用户手动授予
+        // 「使用情况访问」权限，未授权时会返回空或滞后的包名，导致带约束的映射
+        // 被误判为不满足 —— 症状就是「刚打开的这个界面里单击/长按失效，
+        // 回到别的界面又好了」。
+        // 这里只取事件自带的包名，不读取任何窗口内容（canRetrieveWindowContent=false）。
+        CharSequence pkg = event.getPackageName();
+        if (pkg != null && pkg.length() > 0) {
+            ForegroundAppUtil.reportForegroundPackage(pkg.toString());
+        }
     }
 
     @Override
