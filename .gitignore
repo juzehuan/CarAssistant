@@ -74,3 +74,6 @@ hs_err_pid*
 !app/src/main/res/mipmap-*/ic_launcher.png
 !app/src/main/res/mipmap-*/ic_launcher_round.png
 !tools/gen-icons/source/*.png
+# R8 混淆字典：release 构建必需，缺了会直接构建失败
+# （全局 *.txt 规则会把它挡在库外，历史上就因此丢过一次）
+!app/dictionary.txt

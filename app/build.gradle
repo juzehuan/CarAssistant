@@ -32,7 +32,7 @@ android {
         // versionCode 采用构建日期 YYYYMMDD（单调递增，保证升级兼容、防止版本回退）
         // versionName 采用语义化版本 x.y.z，与 versionCode 通过文档约定保持一致
         //   例：versionName "1.0.0" 对应 versionCode 20260802
-        versionCode 20260802
+        versionCode 20261023
         versionName "1.0.0"
         vectorDrawables.useSupportLibrary = true
     }
