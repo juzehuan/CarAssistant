@@ -355,12 +355,6 @@
         <!-- 合并模块：红旗智声 (行车语音提示)                              -->
         <!-- ============================================================ -->
         <activity
-            android:name="com.carassistant.voice.DisclaimerActivity"
-            android:exported="false"
-            android:label="@string/disclaimer_title"
-            android:theme="@style/CarVoiceTheme"
-            android:configChanges="orientation|screenSize|keyboardHidden" />
-        <activity
             android:name="com.carassistant.voice.MainActivity"
             android:exported="false"
             android:label="@string/cv_master_label"

@@ -43,11 +43,6 @@ public class MainActivity extends Activity {
     @Override // android.app.Activity
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        if (!DisclaimerActivity.hasAgreed(this)) {
-            startActivity(new Intent(this, (Class<?>) DisclaimerActivity.class));
-            finish();
-            return;
-        }
         setContentView(Res.layout(this, "cv_activity_main"));
         this.mSp = PreferenceManager.getDefaultSharedPreferences(this);
         this.mEnable = (CheckBox) findViewById(Res.id(this, "enableCB"));

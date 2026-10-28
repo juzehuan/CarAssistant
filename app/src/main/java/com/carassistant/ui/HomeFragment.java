@@ -128,10 +128,10 @@ public class HomeFragment extends Fragment {
         items.add(new FeatureAdapter.FeatureItem(
                 R.drawable.ic_feature_ambient, R.string.home_feature_ambient, R.color.icon_bg_ambient,
                 v -> startActivity(new android.content.Intent(requireContext(), com.carassistant.ambient.MainActivity.class))));
-        // 合并模块：红旗智声（行车语音提示，首屏为免责公告，同意后进入主界面）
+        // 合并模块：红旗智声（行车语音提示）
         items.add(new FeatureAdapter.FeatureItem(
                 R.drawable.ic_feature_voice, R.string.home_feature_voice, R.color.icon_bg_voice,
-                v -> startActivity(new android.content.Intent(requireContext(), com.carassistant.voice.DisclaimerActivity.class))));
+                v -> startActivity(new android.content.Intent(requireContext(), com.carassistant.voice.MainActivity.class))));
         featureAdapter.setItems(items);
     }
 
