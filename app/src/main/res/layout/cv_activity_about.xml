@@ -104,13 +104,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"/>
-            <TextView
-                android:textSize="12sp"
-                android:textColor="@color/cv_muted"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/cv_about_disclaimer_tip"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

@@ -29,7 +29,6 @@
     <!-- ===== 红旗智声 ===== -->
     <string name="cv_a11y_desc">红旗智声后台监听档位、车门与转向灯，用于播报提示音。</string>
     <string name="cv_about_body">「红旗智声」用于车机上的档位 / 车门 / 转向等自定义语音播报，仅供个人学习与娱乐。\n\n第三方独立应用，非一汽、红旗或车机厂商官方软件，与品牌无授权背书关系。\n\n普通安装包：不刷机、不改系统分区；后台播报需自行开启无障碍。\n\n应用内功能完全免费；若付费获得，请向收费方核实，与作者无关。\n\n禁止对本软件收费、倒卖或捆绑销售。\n\n请勿用于商业或违法用途；使用风险自行承担。玩机需谨慎，不放心请卸载。</string>
-    <string name="cv_about_disclaimer_tip">使用风险自行承担；玩机需谨慎，不放心请卸载。</string>
     <string name="cv_about_section_info">关于</string>
     <string name="cv_about_section_team">开发团队</string>
     <string name="cv_about_title">关于应用</string>
