@@ -47,4 +47,7 @@
     <string name="vol_level_max">最大</string>
     <string name="vol_level_mid">中</string>
     <string name="vol_level_mid_high">中上</string>
+    <string name="cv_mute_label">静音</string>
+    <string name="cv_mute_hint">开启后不播放任何提示音（仍可手动试听）</string>
+    <string name="status_muted">已静音</string>
 </resources>

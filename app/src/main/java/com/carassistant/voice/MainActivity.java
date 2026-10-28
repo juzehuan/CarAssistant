@@ -91,6 +91,9 @@ public class MainActivity extends Activity {
         wireToggle(checkBox6, VehicleVoiceEngine.PREF_DOOR_OPEN_ONLY);
         wireToggle(checkBox7, VehicleVoiceEngine.PREF_TURN);
         wireVolumeBoost();
+        CheckBox checkBoxMute = (CheckBox) findViewById(Res.id(this, "muteCB"));
+        checkBoxMute.setChecked(this.mSp.getBoolean(VehicleVoiceEngine.PREF_MUTE, false));
+        wireToggle(checkBoxMute, VehicleVoiceEngine.PREF_MUTE);
         findViewById(Res.id(this, "diagBtn")).setOnClickListener(new View.OnClickListener() { // from class: com.carassistant.voice.MainActivity.2
             @Override // android.view.View.OnClickListener
             public void onClick(View view) {
@@ -350,7 +353,11 @@ public class MainActivity extends Activity {
         if (!zIsAccessibilityEnabled) {
             this.mStatus.setText(Res.string(this, "status_a11y_off"));
         } else if (z) {
-            this.mStatus.setText(Res.string(this, "status_on"));
+            if (this.mSp.getBoolean(VehicleVoiceEngine.PREF_MUTE, false)) {
+                this.mStatus.setText(Res.string(this, "status_muted"));
+            } else {
+                this.mStatus.setText(Res.string(this, "status_on"));
+            }
         } else {
             this.mStatus.setText(Res.string(this, "status_off"));
         }

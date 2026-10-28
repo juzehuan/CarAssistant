@@ -175,6 +175,49 @@
     </LinearLayout>
     <LinearLayout
         android:orientation="vertical"
+        android:background="@drawable/cv_master_row"
+        android:paddingLeft="16dp"
+        android:paddingTop="12dp"
+        android:paddingRight="12dp"
+        android:paddingBottom="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+        <LinearLayout
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+                <TextView
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/cv_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cv_mute_label"/>
+                <TextView
+                    android:textSize="11sp"
+                    android:textColor="@color/cv_muted"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/cv_mute_hint"/>
+            </LinearLayout>
+            <CheckBox
+                android:id="@+id/muteCB"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleX="1.25"
+                android:scaleY="1.25"/>
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="vertical"
         android:id="@+id/a11yBlock"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

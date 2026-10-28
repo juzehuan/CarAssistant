@@ -58,6 +58,7 @@ public final class VehicleVoiceEngine {
     public static final String PREF_TURN = "key_carvoice_turn";
     public static final String PREF_VOL_BOOST = "key_carvoice_vol_boost";
     public static final String PREF_VOL_LEVEL = "key_carvoice_vol_level";
+    public static final String PREF_MUTE = "key_carvoice_mute";
     private static final int PROP_DOOR_POS = 373295872;
     private static final int PROP_FAW_DOOR_POS = 557859193;
     private static final int PROP_HAZARD_STATE = 289410563;
@@ -1314,6 +1315,9 @@ public final class VehicleVoiceEngine {
     }
 
     private void playEvent(String str, boolean z) {
+        if (prefs().getBoolean(PREF_MUTE, false)) {
+            return;
+        }
         this.mMain.post(new AnonymousClass7(z, str));
     }
 
