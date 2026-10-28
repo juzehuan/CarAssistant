@@ -1,0 +1,2447 @@
+{
+  "version": 2,
+  "packs": [
+    {
+      "id": "p_d596a0a4",
+      "name": "P档"
+    },
+    {
+      "id": "r_f3707ce2",
+      "name": "R档"
+    },
+    {
+      "id": "n_6ebd85c6",
+      "name": "N档"
+    },
+    {
+      "id": "d_aaba9d91",
+      "name": "D档"
+    },
+    {
+      "id": "pack_095f7599",
+      "name": "挂挡类语音包"
+    },
+    {
+      "id": "pack_524c50dc",
+      "name": "主驾"
+    },
+    {
+      "id": "pack_ea86c520",
+      "name": "副驾"
+    },
+    {
+      "id": "pack_7d60ee4f",
+      "name": "左后开门"
+    },
+    {
+      "id": "pack_a234dc55",
+      "name": "右后开门"
+    },
+    {
+      "id": "pack_bd5f073d",
+      "name": "开关门语音类"
+    },
+    {
+      "id": "zhuanxiang_e28fc3c6",
+      "name": "转向灯"
+    },
+    {
+      "id": "pack_a97b50ae",
+      "name": "乌萨奇语音包系列"
+    },
+    {
+      "id": "pack_b8cfaf7c",
+      "name": "冯宝宝"
+    },
+    {
+      "id": "pack_38cb5728",
+      "name": "动物城语音包"
+    },
+    {
+      "id": "pack_54e42c83",
+      "name": "小团团语音包系列"
+    },
+    {
+      "id": "pack_ffc872ac",
+      "name": "懒羊羊语音包系列"
+    },
+    {
+      "id": "pack_e5f46a3d",
+      "name": "林雪语音包系列"
+    },
+    {
+      "id": "pack_29b43f3e",
+      "name": "玲玲语音"
+    },
+    {
+      "id": "pack_bd8a3eef",
+      "name": "茉莉语音系列"
+    },
+    {
+      "id": "pack_4c54d42f",
+      "name": "蜡笔小新类语音包"
+    },
+    {
+      "id": "pack_c86edb54",
+      "name": "搞笑"
+    }
+  ],
+  "tagNames": {
+    "gear_p": "P档",
+    "gear_r": "R档/倒车",
+    "gear_n": "N档",
+    "gear_d": "D档",
+    "door_driver_open": "主驾开门",
+    "door_driver_close": "主驾关门",
+    "door_passenger_open": "副驾开门",
+    "door_passenger_close": "副驾关门",
+    "door_rl_open": "左后门开门",
+    "door_rl_close": "左后门关门",
+    "door_rr_open": "右后门开门",
+    "door_rr_close": "右后门关门",
+    "turn_signal": "转向灯",
+    "hazard": "双闪",
+    "seatbelt": "安全带",
+    "start": "启动/迎宾",
+    "shutdown": "熄火/锁车",
+    "misc": "其它"
+  },
+  "clips": [
+    {
+      "id": "p_d596a0a4_cd7c2259aa3",
+      "pack": "p_d596a0a4",
+      "folder": "P档",
+      "subfolder": "",
+      "file": "p_d596a0a4/p_d596a0a4_cd7c2259aa3.mp3",
+      "label": "P档-今天不开心到此为止噢",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "p_d596a0a4_p_1",
+      "pack": "p_d596a0a4",
+      "folder": "P档",
+      "subfolder": "",
+      "file": "p_d596a0a4/p_d596a0a4_p_1.mp3",
+      "label": "P档-行程结束(1)",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "p_d596a0a4_gear_p_79dbe1",
+      "pack": "p_d596a0a4",
+      "folder": "P档",
+      "subfolder": "",
+      "file": "p_d596a0a4/p_d596a0a4_gear_p_79dbe1.mp3",
+      "label": "玲驻车档",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "p_d596a0a4_c5d5a96d731",
+      "pack": "p_d596a0a4",
+      "folder": "P档",
+      "subfolder": "",
+      "file": "p_d596a0a4/p_d596a0a4_c5d5a96d731.mp3",
+      "label": "（p档）你把我的婴儿车锁上了",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "p_d596a0a4_p_01",
+      "pack": "p_d596a0a4",
+      "folder": "P档",
+      "subfolder": "",
+      "file": "p_d596a0a4/p_d596a0a4_p_01.mp3",
+      "label": "（p档）把车挺好 嘟嘟交通警01",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "r_f3707ce2_c3f721c77a3",
+      "pack": "r_f3707ce2",
+      "folder": "R档",
+      "subfolder": "",
+      "file": "r_f3707ce2/r_f3707ce2_c3f721c77a3.mp3",
+      "label": "R档-好像有人",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "r_f3707ce2_gear_r_1f7048",
+      "pack": "r_f3707ce2",
+      "folder": "R档",
+      "subfolder": "",
+      "file": "r_f3707ce2/r_f3707ce2_gear_r_1f7048.mp3",
+      "label": "玲倒挡",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "r_f3707ce2_r_01",
+      "pack": "r_f3707ce2",
+      "folder": "R档",
+      "subfolder": "",
+      "file": "r_f3707ce2/r_f3707ce2_r_01.mp3",
+      "label": "（r档）倒车请注意01",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "n_6ebd85c6_c0298aca50b",
+      "pack": "n_6ebd85c6",
+      "folder": "N档",
+      "subfolder": "",
+      "file": "n_6ebd85c6/n_6ebd85c6_c0298aca50b.mp3",
+      "label": "N挡",
+      "tags": [
+        "gear_n"
+      ]
+    },
+    {
+      "id": "n_6ebd85c6_c55c9f6037c",
+      "pack": "n_6ebd85c6",
+      "folder": "N档",
+      "subfolder": "",
+      "file": "n_6ebd85c6/n_6ebd85c6_c55c9f6037c.mp3",
+      "label": "n档",
+      "tags": [
+        "gear_n"
+      ]
+    },
+    {
+      "id": "n_6ebd85c6_gear_n_215d48",
+      "pack": "n_6ebd85c6",
+      "folder": "N档",
+      "subfolder": "",
+      "file": "n_6ebd85c6/n_6ebd85c6_gear_n_215d48.mp3",
+      "label": "玲空挡",
+      "tags": [
+        "gear_n"
+      ]
+    },
+    {
+      "id": "n_6ebd85c6_n_01",
+      "pack": "n_6ebd85c6",
+      "folder": "N档",
+      "subfolder": "",
+      "file": "n_6ebd85c6/n_6ebd85c6_n_01.mp3",
+      "label": "（n档）现在是空挡01",
+      "tags": [
+        "gear_n"
+      ]
+    },
+    {
+      "id": "d_aaba9d91_c76406975b7",
+      "pack": "d_aaba9d91",
+      "folder": "D档",
+      "subfolder": "",
+      "file": "d_aaba9d91/d_aaba9d91_c76406975b7.mp3",
+      "label": "D档-准备出发（短）",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "d_aaba9d91_c9573fc6e29",
+      "pack": "d_aaba9d91",
+      "folder": "D档",
+      "subfolder": "",
+      "file": "d_aaba9d91/d_aaba9d91_c9573fc6e29.mp3",
+      "label": "D档-大小姐驾到通通闪开",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "d_aaba9d91_gear_d_385c7b",
+      "pack": "d_aaba9d91",
+      "folder": "D档",
+      "subfolder": "",
+      "file": "d_aaba9d91/d_aaba9d91_gear_d_385c7b.mp3",
+      "label": "玲前进档",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "d_aaba9d91_start_b45019",
+      "pack": "d_aaba9d91",
+      "folder": "D档",
+      "subfolder": "",
+      "file": "d_aaba9d91/d_aaba9d91_start_b45019.wav",
+      "label": "飞行核心已启动，相信我20",
+      "tags": [
+        "start"
+      ]
+    },
+    {
+      "id": "d_aaba9d91_d_01",
+      "pack": "d_aaba9d91",
+      "folder": "D档",
+      "subfolder": "",
+      "file": "d_aaba9d91/d_aaba9d91_d_01.mp3",
+      "label": "（D档）狡猾的兔子01",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_095f7599_d_gogo",
+      "pack": "pack_095f7599",
+      "folder": "挂挡类语音包",
+      "subfolder": "",
+      "file": "pack_095f7599/pack_095f7599_d_gogo.mp3",
+      "label": "D档-gogo出发咯",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_095f7599_c9573fc6e29",
+      "pack": "pack_095f7599",
+      "folder": "挂挡类语音包",
+      "subfolder": "",
+      "file": "pack_095f7599/pack_095f7599_c9573fc6e29.mp3",
+      "label": "D档-大小姐驾到通通闪开",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_095f7599_c163d7effe3",
+      "pack": "pack_095f7599",
+      "folder": "挂挡类语音包",
+      "subfolder": "",
+      "file": "pack_095f7599/pack_095f7599_c163d7effe3.wav",
+      "label": "P档-小黄人-拜拜-短",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_095f7599_c47270a4ded",
+      "pack": "pack_095f7599",
+      "folder": "挂挡类语音包",
+      "subfolder": "",
+      "file": "pack_095f7599/pack_095f7599_c47270a4ded.wav",
+      "label": "P档-蜡笔小新-拜拜 下次再见",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_095f7599_c995ef8157f",
+      "pack": "pack_095f7599",
+      "folder": "挂挡类语音包",
+      "subfolder": "",
+      "file": "pack_095f7599/pack_095f7599_c995ef8157f.mp3",
+      "label": "P档-阿利路亚",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_095f7599_cb17035fe67",
+      "pack": "pack_095f7599",
+      "folder": "挂挡类语音包",
+      "subfolder": "",
+      "file": "pack_095f7599/pack_095f7599_cb17035fe67.mp3",
+      "label": "R档-请注意倒车",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_095f7599_c4741b196fa",
+      "pack": "pack_095f7599",
+      "folder": "挂挡类语音包",
+      "subfolder": "",
+      "file": "pack_095f7599/pack_095f7599_c4741b196fa.mp3",
+      "label": "特斯拉挂挡声音D档",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_095f7599_cb4c224e645",
+      "pack": "pack_095f7599",
+      "folder": "挂挡类语音包",
+      "subfolder": "",
+      "file": "pack_095f7599/pack_095f7599_cb4c224e645.mp3",
+      "label": "特斯拉挂挡声音N档",
+      "tags": [
+        "gear_n"
+      ]
+    },
+    {
+      "id": "pack_095f7599_c9c4c314b6a",
+      "pack": "pack_095f7599",
+      "folder": "挂挡类语音包",
+      "subfolder": "",
+      "file": "pack_095f7599/pack_095f7599_c9c4c314b6a.mp3",
+      "label": "特斯拉挂挡声音R档",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_524c50dc_misc_c4ca42",
+      "pack": "pack_524c50dc",
+      "folder": "主驾",
+      "subfolder": "",
+      "file": "pack_524c50dc/pack_524c50dc_misc_c4ca42.mp3",
+      "label": "1",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_524c50dc_door_driver_close_14944b",
+      "pack": "pack_524c50dc",
+      "folder": "主驾",
+      "subfolder": "",
+      "file": "pack_524c50dc/pack_524c50dc_door_driver_close_14944b.mp3",
+      "label": "主驾关门1",
+      "tags": [
+        "door_driver_close"
+      ]
+    },
+    {
+      "id": "pack_524c50dc_door_driver_open_8ef1a3",
+      "pack": "pack_524c50dc",
+      "folder": "主驾",
+      "subfolder": "",
+      "file": "pack_524c50dc/pack_524c50dc_door_driver_open_8ef1a3.mp3",
+      "label": "主驾开门",
+      "tags": [
+        "door_driver_open"
+      ]
+    },
+    {
+      "id": "pack_524c50dc_door_driver_close_f48bcb",
+      "pack": "pack_524c50dc",
+      "folder": "主驾",
+      "subfolder": "",
+      "file": "pack_524c50dc/pack_524c50dc_door_driver_close_f48bcb.mp3",
+      "label": "主驾车门关闭",
+      "tags": [
+        "door_driver_close"
+      ]
+    },
+    {
+      "id": "pack_524c50dc_door_driver_close_c72aa1",
+      "pack": "pack_524c50dc",
+      "folder": "主驾",
+      "subfolder": "",
+      "file": "pack_524c50dc/pack_524c50dc_door_driver_close_c72aa1.mp3",
+      "label": "主驾驶舱门已关闭",
+      "tags": [
+        "door_driver_close"
+      ]
+    },
+    {
+      "id": "pack_524c50dc_door_driver_open_3b8535",
+      "pack": "pack_524c50dc",
+      "folder": "主驾",
+      "subfolder": "",
+      "file": "pack_524c50dc/pack_524c50dc_door_driver_open_3b8535.mp3",
+      "label": "主驾驶舱门已开启",
+      "tags": [
+        "door_driver_open"
+      ]
+    },
+    {
+      "id": "pack_524c50dc_door_driver_close_a41f43",
+      "pack": "pack_524c50dc",
+      "folder": "主驾",
+      "subfolder": "",
+      "file": "pack_524c50dc/pack_524c50dc_door_driver_close_a41f43.mp3",
+      "label": "玲玲主驾关门",
+      "tags": [
+        "door_driver_close"
+      ]
+    },
+    {
+      "id": "pack_524c50dc_door_driver_open_715ddb",
+      "pack": "pack_524c50dc",
+      "folder": "主驾",
+      "subfolder": "",
+      "file": "pack_524c50dc/pack_524c50dc_door_driver_open_715ddb.mp3",
+      "label": "玲玲主驾开门",
+      "tags": [
+        "door_driver_open"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_open_0acdef",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_open_0acdef.mp3",
+      "label": "副驾_公主请上车",
+      "tags": [
+        "door_passenger_open"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_close_e7ba12",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_close_e7ba12.mp3",
+      "label": "副驾关门",
+      "tags": [
+        "door_passenger_close"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_open_f24e69",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_open_f24e69.mp3",
+      "label": "副驾开门",
+      "tags": [
+        "door_passenger_open"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_close_b4f756",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_close_b4f756.wav",
+      "label": "副驾舱门已关闭20",
+      "tags": [
+        "door_passenger_close"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_open_b527b8",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_open_b527b8.wav",
+      "label": "副驾舱门已开启20",
+      "tags": [
+        "door_passenger_open"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_close_57be97",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_close_57be97.mp3",
+      "label": "副驾车门关闭",
+      "tags": [
+        "door_passenger_close"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_close_e31545",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_close_e31545.mp3",
+      "label": "副驾驶舱门已关闭",
+      "tags": [
+        "door_passenger_close"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_open_abd1d4",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_open_abd1d4.mp3",
+      "label": "副驾驶舱门已开启",
+      "tags": [
+        "door_passenger_open"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_close_76bff6",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_close_76bff6.mp3",
+      "label": "玲玲副驾关门",
+      "tags": [
+        "door_passenger_close"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_open_897b95",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_open_897b95.mp3",
+      "label": "玲玲副驾开门",
+      "tags": [
+        "door_passenger_open"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_close_cb43ed",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_close_cb43ed.mp3",
+      "label": "（副驾关门）我们出发啦01",
+      "tags": [
+        "door_passenger_close"
+      ]
+    },
+    {
+      "id": "pack_ea86c520_door_passenger_open_518c74",
+      "pack": "pack_ea86c520",
+      "folder": "副驾",
+      "subfolder": "",
+      "file": "pack_ea86c520/pack_ea86c520_door_passenger_open_518c74.mp3",
+      "label": "（副驾开们）欢迎来到动物成01",
+      "tags": [
+        "door_passenger_open"
+      ]
+    },
+    {
+      "id": "pack_7d60ee4f_door_rl_close_c36af8",
+      "pack": "pack_7d60ee4f",
+      "folder": "左后开门",
+      "subfolder": "",
+      "file": "pack_7d60ee4f/pack_7d60ee4f_door_rl_close_c36af8.mp3",
+      "label": "冯宝宝左后关门",
+      "tags": [
+        "door_rl_close"
+      ]
+    },
+    {
+      "id": "pack_7d60ee4f_door_rl_open_8dc48f",
+      "pack": "pack_7d60ee4f",
+      "folder": "左后开门",
+      "subfolder": "",
+      "file": "pack_7d60ee4f/pack_7d60ee4f_door_rl_open_8dc48f.mp3",
+      "label": "冯宝宝左后开门",
+      "tags": [
+        "door_rl_open"
+      ]
+    },
+    {
+      "id": "pack_7d60ee4f_door_rl_close_dcf491",
+      "pack": "pack_7d60ee4f",
+      "folder": "左后开门",
+      "subfolder": "",
+      "file": "pack_7d60ee4f/pack_7d60ee4f_door_rl_close_dcf491.mp3",
+      "label": "左后车门关闭",
+      "tags": [
+        "door_rl_close"
+      ]
+    },
+    {
+      "id": "pack_7d60ee4f_door_rl_open_35b3c2",
+      "pack": "pack_7d60ee4f",
+      "folder": "左后开门",
+      "subfolder": "",
+      "file": "pack_7d60ee4f/pack_7d60ee4f_door_rl_open_35b3c2.mp3",
+      "label": "左后车门开启",
+      "tags": [
+        "door_rl_open"
+      ]
+    },
+    {
+      "id": "pack_7d60ee4f_door_rl_close_3d1dea",
+      "pack": "pack_7d60ee4f",
+      "folder": "左后开门",
+      "subfolder": "",
+      "file": "pack_7d60ee4f/pack_7d60ee4f_door_rl_close_3d1dea.mp3",
+      "label": "玲玲左后关门",
+      "tags": [
+        "door_rl_close"
+      ]
+    },
+    {
+      "id": "pack_7d60ee4f_door_rl_open_40f624",
+      "pack": "pack_7d60ee4f",
+      "folder": "左后开门",
+      "subfolder": "",
+      "file": "pack_7d60ee4f/pack_7d60ee4f_door_rl_open_40f624.mp3",
+      "label": "玲玲左后开门",
+      "tags": [
+        "door_rl_open"
+      ]
+    },
+    {
+      "id": "pack_a234dc55_door_rr_close_e85906",
+      "pack": "pack_a234dc55",
+      "folder": "右后开门",
+      "subfolder": "",
+      "file": "pack_a234dc55/pack_a234dc55_door_rr_close_e85906.mp3",
+      "label": "冯宝宝右后关门",
+      "tags": [
+        "door_rr_close"
+      ]
+    },
+    {
+      "id": "pack_a234dc55_door_rr_open_3a6ce8",
+      "pack": "pack_a234dc55",
+      "folder": "右后开门",
+      "subfolder": "",
+      "file": "pack_a234dc55/pack_a234dc55_door_rr_open_3a6ce8.mp3",
+      "label": "冯宝宝右后开门",
+      "tags": [
+        "door_rr_open"
+      ]
+    },
+    {
+      "id": "pack_a234dc55_door_rr_close_5447c2",
+      "pack": "pack_a234dc55",
+      "folder": "右后开门",
+      "subfolder": "",
+      "file": "pack_a234dc55/pack_a234dc55_door_rr_close_5447c2.mp3",
+      "label": "右后车门关闭",
+      "tags": [
+        "door_rr_close"
+      ]
+    },
+    {
+      "id": "pack_a234dc55_door_rr_open_5df57a",
+      "pack": "pack_a234dc55",
+      "folder": "右后开门",
+      "subfolder": "",
+      "file": "pack_a234dc55/pack_a234dc55_door_rr_open_5df57a.mp3",
+      "label": "右后车门开启",
+      "tags": [
+        "door_rr_open"
+      ]
+    },
+    {
+      "id": "pack_a234dc55_door_rr_close_ac93ac",
+      "pack": "pack_a234dc55",
+      "folder": "右后开门",
+      "subfolder": "",
+      "file": "pack_a234dc55/pack_a234dc55_door_rr_close_ac93ac.mp3",
+      "label": "玲玲右后关门",
+      "tags": [
+        "door_rr_close"
+      ]
+    },
+    {
+      "id": "pack_a234dc55_door_rr_open_3f5440",
+      "pack": "pack_a234dc55",
+      "folder": "右后开门",
+      "subfolder": "",
+      "file": "pack_a234dc55/pack_a234dc55_door_rr_open_3f5440.mp3",
+      "label": "玲玲右后开门",
+      "tags": [
+        "door_rr_open"
+      ]
+    },
+    {
+      "id": "pack_a234dc55_misc_34c6e3",
+      "pack": "pack_a234dc55",
+      "folder": "右后开门",
+      "subfolder": "",
+      "file": "pack_a234dc55/pack_a234dc55_misc_34c6e3.mp3",
+      "label": "（右后门）奇妙之旅01",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_bd5f073d_misc_a49b16",
+      "pack": "pack_bd5f073d",
+      "folder": "开关门语音类",
+      "subfolder": "",
+      "file": "pack_bd5f073d/pack_bd5f073d_misc_a49b16.mp3",
+      "label": "关门-小团团-准备好了吗 出发",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_bd5f073d_misc_0a0e36",
+      "pack": "pack_bd5f073d",
+      "folder": "开关门语音类",
+      "subfolder": "",
+      "file": "pack_bd5f073d/pack_bd5f073d_misc_0a0e36.mp3",
+      "label": "关门-猴哥-妖孽 哪里逃",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_bd5f073d_misc_325cf2",
+      "pack": "pack_bd5f073d",
+      "folder": "开关门语音类",
+      "subfolder": "",
+      "file": "pack_bd5f073d/pack_bd5f073d_misc_325cf2.mp3",
+      "label": "开门-小团团-来啦老弟",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_bd5f073d_misc_54d72b",
+      "pack": "pack_bd5f073d",
+      "folder": "开关门语音类",
+      "subfolder": "",
+      "file": "pack_bd5f073d/pack_bd5f073d_misc_54d72b.mp3",
+      "label": "开门-小飞棍来咯",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_bd5f073d_hello",
+      "pack": "pack_bd5f073d",
+      "folder": "开关门语音类",
+      "subfolder": "",
+      "file": "pack_bd5f073d/pack_bd5f073d_hello.mp3",
+      "label": "开门-意外Hello",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_bd5f073d_misc_f0d3ad",
+      "pack": "pack_bd5f073d",
+      "folder": "开关门语音类",
+      "subfolder": "",
+      "file": "pack_bd5f073d/pack_bd5f073d_misc_f0d3ad.mp3",
+      "label": "开门-猴哥-没穿黑丝请去后排",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_a97b50ae_cb062a8db37",
+      "pack": "pack_a97b50ae",
+      "folder": "乌萨奇语音包系列",
+      "subfolder": "",
+      "file": "pack_a97b50ae/pack_a97b50ae_cb062a8db37.mp3",
+      "label": "D挡-哈",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_a97b50ae_cbea1b877fe",
+      "pack": "pack_a97b50ae",
+      "folder": "乌萨奇语音包系列",
+      "subfolder": "",
+      "file": "pack_a97b50ae/pack_a97b50ae_cbea1b877fe.mp3",
+      "label": "R挡-乌拉",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_a97b50ae_misc_2a10bb",
+      "pack": "pack_a97b50ae",
+      "folder": "乌萨奇语音包系列",
+      "subfolder": "",
+      "file": "pack_a97b50ae/pack_a97b50ae_misc_2a10bb.mp3",
+      "label": "内关门-嘿嘿嘿哈",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_a97b50ae_misc_299add",
+      "pack": "pack_a97b50ae",
+      "folder": "乌萨奇语音包系列",
+      "subfolder": "",
+      "file": "pack_a97b50ae/pack_a97b50ae_misc_299add.mp3",
+      "label": "内开门-拜拜咯",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_a97b50ae_misc_a0a3ac",
+      "pack": "pack_a97b50ae",
+      "folder": "乌萨奇语音包系列",
+      "subfolder": "",
+      "file": "pack_a97b50ae/pack_a97b50ae_misc_a0a3ac.mp3",
+      "label": "呀哈",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_a97b50ae_misc_8139a3",
+      "pack": "pack_a97b50ae",
+      "folder": "乌萨奇语音包系列",
+      "subfolder": "",
+      "file": "pack_a97b50ae/pack_a97b50ae_misc_8139a3.mp3",
+      "label": "外关门-布鲁",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_a97b50ae_misc_a380d4",
+      "pack": "pack_a97b50ae",
+      "folder": "乌萨奇语音包系列",
+      "subfolder": "",
+      "file": "pack_a97b50ae/pack_a97b50ae_misc_a380d4.mp3",
+      "label": "外开门-乌萨奇到",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_a97b50ae_misc_1d19f9",
+      "pack": "pack_a97b50ae",
+      "folder": "乌萨奇语音包系列",
+      "subfolder": "",
+      "file": "pack_a97b50ae/pack_a97b50ae_misc_1d19f9.mp3",
+      "label": "迎宾音-乌拉拉乌拉",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_driver_close_9937c9",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_driver_close_9937c9.mp3",
+      "label": "冯宝宝主驾关门",
+      "tags": [
+        "door_driver_close"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_driver_close_311575",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_driver_close_311575.mp3",
+      "label": "冯宝宝主驾关门2",
+      "tags": [
+        "door_driver_close"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_driver_open_d300a8",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_driver_open_d300a8.mp3",
+      "label": "冯宝宝主驾开门",
+      "tags": [
+        "door_driver_open"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_driver_open_7296ae",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_driver_open_7296ae.mp3",
+      "label": "冯宝宝主驾开门2",
+      "tags": [
+        "door_driver_open"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_passenger_close_948281",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_passenger_close_948281.mp3",
+      "label": "冯宝宝副驾关门",
+      "tags": [
+        "door_passenger_close"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_passenger_open_d247f1",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_passenger_open_d247f1.mp3",
+      "label": "冯宝宝副驾开门",
+      "tags": [
+        "door_passenger_open"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_passenger_open_78661c",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_passenger_open_78661c.mp3",
+      "label": "冯宝宝副驾开门2",
+      "tags": [
+        "door_passenger_open"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_rr_close_e85906",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_rr_close_e85906.mp3",
+      "label": "冯宝宝右后关门",
+      "tags": [
+        "door_rr_close"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_rr_open_3a6ce8",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_rr_open_3a6ce8.mp3",
+      "label": "冯宝宝右后开门",
+      "tags": [
+        "door_rr_open"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_rr_open_fc9146",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_rr_open_fc9146.mp3",
+      "label": "冯宝宝右后开门2",
+      "tags": [
+        "door_rr_open"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_rl_close_c36af8",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_rl_close_c36af8.mp3",
+      "label": "冯宝宝左后关门",
+      "tags": [
+        "door_rl_close"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_rl_open_8dc48f",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_rl_open_8dc48f.mp3",
+      "label": "冯宝宝左后开门",
+      "tags": [
+        "door_rl_open"
+      ]
+    },
+    {
+      "id": "pack_b8cfaf7c_door_rl_open_97229e",
+      "pack": "pack_b8cfaf7c",
+      "folder": "冯宝宝",
+      "subfolder": "",
+      "file": "pack_b8cfaf7c/pack_b8cfaf7c_door_rl_open_97229e.mp3",
+      "label": "冯宝宝左后开门2",
+      "tags": [
+        "door_rl_open"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_woshi",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_woshi.mp3",
+      "label": "woshi",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_misc_0ea285",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_misc_0ea285.mp3",
+      "label": "我们出发吧",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_d_01",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_d_01.mp3",
+      "label": "（D档）狡猾的兔子01",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_n_01",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_n_01.mp3",
+      "label": "（n档）现在是空挡01",
+      "tags": [
+        "gear_n"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_c5d5a96d731",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_c5d5a96d731.mp3",
+      "label": "（p档）你把我的婴儿车锁上了",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_p_01",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_p_01.mp3",
+      "label": "（p档）把车挺好 嘟嘟交通警01",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_r_01",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_r_01.mp3",
+      "label": "（r档）倒车请注意01",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_seatbelt_e859de",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_seatbelt_e859de.mp3",
+      "label": "（主驾安全带）我们要去巡逻了01",
+      "tags": [
+        "seatbelt"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_door_driver_open_30b761",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_door_driver_open_30b761.mp3",
+      "label": "（主驾开门）我是",
+      "tags": [
+        "door_driver_open"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_door_passenger_close_cb43ed",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_door_passenger_close_cb43ed.mp3",
+      "label": "（副驾关门）我们出发啦01",
+      "tags": [
+        "door_passenger_close"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_door_passenger_open_518c74",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_door_passenger_open_518c74.mp3",
+      "label": "（副驾开们）欢迎来到动物成01",
+      "tags": [
+        "door_passenger_open"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_misc_34c6e3",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_misc_34c6e3.mp3",
+      "label": "（右后门）奇妙之旅01",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_38cb5728_door_rl_close_a2ae4b",
+      "pack": "pack_38cb5728",
+      "folder": "动物城语音包",
+      "subfolder": "",
+      "file": "pack_38cb5728/pack_38cb5728_door_rl_close_a2ae4b.mp3",
+      "label": "（左后关门）欢迎你我亲爱的01",
+      "tags": [
+        "door_rl_close"
+      ]
+    },
+    {
+      "id": "pack_54e42c83_cf9c642af43",
+      "pack": "pack_54e42c83",
+      "folder": "小团团语音包系列",
+      "subfolder": "",
+      "file": "pack_54e42c83/pack_54e42c83_cf9c642af43.mp3",
+      "label": "D档-准备出发",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_54e42c83_c76406975b7",
+      "pack": "pack_54e42c83",
+      "folder": "小团团语音包系列",
+      "subfolder": "",
+      "file": "pack_54e42c83/pack_54e42c83_c76406975b7.mp3",
+      "label": "D档-准备出发（短）",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_54e42c83_cd7c2259aa3",
+      "pack": "pack_54e42c83",
+      "folder": "小团团语音包系列",
+      "subfolder": "",
+      "file": "pack_54e42c83/pack_54e42c83_cd7c2259aa3.mp3",
+      "label": "P档-今天不开心到此为止噢",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_54e42c83_c3f721c77a3",
+      "pack": "pack_54e42c83",
+      "folder": "小团团语音包系列",
+      "subfolder": "",
+      "file": "pack_54e42c83/pack_54e42c83_c3f721c77a3.mp3",
+      "label": "R档-好像有人",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_54e42c83_misc_a49b16",
+      "pack": "pack_54e42c83",
+      "folder": "小团团语音包系列",
+      "subfolder": "",
+      "file": "pack_54e42c83/pack_54e42c83_misc_a49b16.mp3",
+      "label": "关门-小团团-准备好了吗 出发",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_54e42c83_misc_860330",
+      "pack": "pack_54e42c83",
+      "folder": "小团团语音包系列",
+      "subfolder": "",
+      "file": "pack_54e42c83/pack_54e42c83_misc_860330.mp3",
+      "label": "关门-来咯来咯",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_54e42c83_misc_325cf2",
+      "pack": "pack_54e42c83",
+      "folder": "小团团语音包系列",
+      "subfolder": "",
+      "file": "pack_54e42c83/pack_54e42c83_misc_325cf2.mp3",
+      "label": "开门-小团团-来啦老弟",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_54e42c83_misc_ab493e",
+      "pack": "pack_54e42c83",
+      "folder": "小团团语音包系列",
+      "subfolder": "",
+      "file": "pack_54e42c83/pack_54e42c83_misc_ab493e.mp3",
+      "label": "开门-拜拜",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_d_1",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_d_1.mp3",
+      "label": "D档-我们冲呀~(1)",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_c40e982d8ed",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_c40e982d8ed.mp3",
+      "label": "D档-我们冲呀~",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_p_1",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_p_1.mp3",
+      "label": "P档-行程结束(1)",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_cc90ad41154",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_cc90ad41154.mp3",
+      "label": "P档-行程结束",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_r_1",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_r_1.mp3",
+      "label": "R档-撤退撤退(1)",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_ca75b15079d",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_ca75b15079d.mp3",
+      "label": "R档-撤退撤退",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_misc_589ef1",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_misc_589ef1.mp3",
+      "label": "内关门-准备出发(1)",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_misc_2cbe1e",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_misc_2cbe1e.mp3",
+      "label": "内关门-准备出发",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_misc_12b2b0",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_misc_12b2b0.mp3",
+      "label": "内开门-拜拜咯(1)",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_misc_299add",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_misc_299add.mp3",
+      "label": "内开门-拜拜咯",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_misc_a194f8",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_misc_a194f8.mp3",
+      "label": "外关门-我去去就回(1)",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_misc_19ac25",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_misc_19ac25.mp3",
+      "label": "外关门-我去去就回",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_misc_16782b",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_misc_16782b.mp3",
+      "label": "迎宾音-一起出发吧(1)",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_misc_4f4076",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_misc_4f4076.mp3",
+      "label": "迎宾音-一起出发吧",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_start_df0552",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_start_df0552.mp3",
+      "label": "迎宾音或外开门-欢迎尊贵的心系天下车主(1)",
+      "tags": [
+        "start"
+      ]
+    },
+    {
+      "id": "pack_ffc872ac_start_73d265",
+      "pack": "pack_ffc872ac",
+      "folder": "懒羊羊语音包系列",
+      "subfolder": "",
+      "file": "pack_ffc872ac/pack_ffc872ac_start_73d265.mp3",
+      "label": "迎宾音或外开门-欢迎尊贵的心系天下车主",
+      "tags": [
+        "start"
+      ]
+    },
+    {
+      "id": "pack_e5f46a3d_c4ca9709e16",
+      "pack": "pack_e5f46a3d",
+      "folder": "林雪语音包系列",
+      "subfolder": "",
+      "file": "pack_e5f46a3d/pack_e5f46a3d_c4ca9709e16.mp3",
+      "label": "D挡",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_e5f46a3d_c3b67124172",
+      "pack": "pack_e5f46a3d",
+      "folder": "林雪语音包系列",
+      "subfolder": "",
+      "file": "pack_e5f46a3d/pack_e5f46a3d_c3b67124172.mp3",
+      "label": "P挡",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_e5f46a3d_p_2",
+      "pack": "pack_e5f46a3d",
+      "folder": "林雪语音包系列",
+      "subfolder": "",
+      "file": "pack_e5f46a3d/pack_e5f46a3d_p_2.mp3",
+      "label": "P档2",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_e5f46a3d_cf3707ce2c3",
+      "pack": "pack_e5f46a3d",
+      "folder": "林雪语音包系列",
+      "subfolder": "",
+      "file": "pack_e5f46a3d/pack_e5f46a3d_cf3707ce2c3.mp3",
+      "label": "R档",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_e5f46a3d_misc_bad66b",
+      "pack": "pack_e5f46a3d",
+      "folder": "林雪语音包系列",
+      "subfolder": "",
+      "file": "pack_e5f46a3d/pack_e5f46a3d_misc_bad66b.mp3",
+      "label": "内关门",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_e5f46a3d_misc_469ae6",
+      "pack": "pack_e5f46a3d",
+      "folder": "林雪语音包系列",
+      "subfolder": "",
+      "file": "pack_e5f46a3d/pack_e5f46a3d_misc_469ae6.mp3",
+      "label": "内开门",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_e5f46a3d_misc_547455",
+      "pack": "pack_e5f46a3d",
+      "folder": "林雪语音包系列",
+      "subfolder": "",
+      "file": "pack_e5f46a3d/pack_e5f46a3d_misc_547455.mp3",
+      "label": "外关门",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_e5f46a3d_misc_d5f9f3",
+      "pack": "pack_e5f46a3d",
+      "folder": "林雪语音包系列",
+      "subfolder": "",
+      "file": "pack_e5f46a3d/pack_e5f46a3d_misc_d5f9f3.mp3",
+      "label": "外开门",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_e5f46a3d_misc_9604f8",
+      "pack": "pack_e5f46a3d",
+      "folder": "林雪语音包系列",
+      "subfolder": "",
+      "file": "pack_e5f46a3d/pack_e5f46a3d_misc_9604f8.mp3",
+      "label": "超速",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_e5f46a3d_misc_f4037b",
+      "pack": "pack_e5f46a3d",
+      "folder": "林雪语音包系列",
+      "subfolder": "",
+      "file": "pack_e5f46a3d/pack_e5f46a3d_misc_f4037b.mp3",
+      "label": "迎宾音",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_gear_r_1f7048",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "档位",
+      "file": "pack_29b43f3e/pack_29b43f3e_gear_r_1f7048.mp3",
+      "label": "玲倒挡",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_gear_d_385c7b",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "档位",
+      "file": "pack_29b43f3e/pack_29b43f3e_gear_d_385c7b.mp3",
+      "label": "玲前进档",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_gear_n_215d48",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "档位",
+      "file": "pack_29b43f3e/pack_29b43f3e_gear_n_215d48.mp3",
+      "label": "玲空挡",
+      "tags": [
+        "gear_n"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_gear_p_79dbe1",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "档位",
+      "file": "pack_29b43f3e/pack_29b43f3e_gear_p_79dbe1.mp3",
+      "label": "玲驻车档",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_door_driver_close_a41f43",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "车门",
+      "file": "pack_29b43f3e/pack_29b43f3e_door_driver_close_a41f43.mp3",
+      "label": "玲玲主驾关门",
+      "tags": [
+        "door_driver_close"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_door_driver_open_715ddb",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "车门",
+      "file": "pack_29b43f3e/pack_29b43f3e_door_driver_open_715ddb.mp3",
+      "label": "玲玲主驾开门",
+      "tags": [
+        "door_driver_open"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_door_passenger_close_76bff6",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "车门",
+      "file": "pack_29b43f3e/pack_29b43f3e_door_passenger_close_76bff6.mp3",
+      "label": "玲玲副驾关门",
+      "tags": [
+        "door_passenger_close"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_door_passenger_open_897b95",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "车门",
+      "file": "pack_29b43f3e/pack_29b43f3e_door_passenger_open_897b95.mp3",
+      "label": "玲玲副驾开门",
+      "tags": [
+        "door_passenger_open"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_door_rr_close_ac93ac",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "车门",
+      "file": "pack_29b43f3e/pack_29b43f3e_door_rr_close_ac93ac.mp3",
+      "label": "玲玲右后关门",
+      "tags": [
+        "door_rr_close"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_door_rr_open_3f5440",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "车门",
+      "file": "pack_29b43f3e/pack_29b43f3e_door_rr_open_3f5440.mp3",
+      "label": "玲玲右后开门",
+      "tags": [
+        "door_rr_open"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_door_rl_close_3d1dea",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "车门",
+      "file": "pack_29b43f3e/pack_29b43f3e_door_rl_close_3d1dea.mp3",
+      "label": "玲玲左后关门",
+      "tags": [
+        "door_rl_close"
+      ]
+    },
+    {
+      "id": "pack_29b43f3e_door_rl_open_40f624",
+      "pack": "pack_29b43f3e",
+      "folder": "玲玲语音",
+      "subfolder": "车门",
+      "file": "pack_29b43f3e/pack_29b43f3e_door_rl_open_40f624.mp3",
+      "label": "玲玲左后开门",
+      "tags": [
+        "door_rl_open"
+      ]
+    },
+    {
+      "id": "pack_bd8a3eef_c960865241d",
+      "pack": "pack_bd8a3eef",
+      "folder": "茉莉语音系列",
+      "subfolder": "",
+      "file": "pack_bd8a3eef/pack_bd8a3eef_c960865241d.mp3",
+      "label": "D档-茉莉-前进档，能快一点吗",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_bd8a3eef_c8a11aa10b0",
+      "pack": "pack_bd8a3eef",
+      "folder": "茉莉语音系列",
+      "subfolder": "",
+      "file": "pack_bd8a3eef/pack_bd8a3eef_c8a11aa10b0.mp3",
+      "label": "P档-茉莉-喔，停车了，不要走嘛",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_bd8a3eef_ce750677ee5",
+      "pack": "pack_bd8a3eef",
+      "folder": "茉莉语音系列",
+      "subfolder": "",
+      "file": "pack_bd8a3eef/pack_bd8a3eef_ce750677ee5.mp3",
+      "label": "R档-茉莉-倒车档，我喜欢倒着进",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_bd8a3eef_misc_2289f0",
+      "pack": "pack_bd8a3eef",
+      "folder": "茉莉语音系列",
+      "subfolder": "",
+      "file": "pack_bd8a3eef/pack_bd8a3eef_misc_2289f0.mp3",
+      "label": "关门-茉莉-哎呀，不要那么大力嘛",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_bd8a3eef_misc_27ea61",
+      "pack": "pack_bd8a3eef",
+      "folder": "茉莉语音系列",
+      "subfolder": "",
+      "file": "pack_bd8a3eef/pack_bd8a3eef_misc_27ea61.mp3",
+      "label": "开门-茉莉-开门要小心哦",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_c4ca9709e16",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_c4ca9709e16.mp3",
+      "label": "D挡",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_c46f20b4658",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_c46f20b4658.mp3",
+      "label": "D档-出发咯",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_c0298aca50b",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_c0298aca50b.mp3",
+      "label": "N挡",
+      "tags": [
+        "gear_n"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_c3b67124172",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_c3b67124172.mp3",
+      "label": "P挡",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_c5f5cbcf14b",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_c5f5cbcf14b.mp3",
+      "label": "P档-再见不要太想我",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_cc5bd7bceb0",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_cc5bd7bceb0.mp3",
+      "label": "R挡",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_c6332db788b",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_c6332db788b.mp3",
+      "label": "R档-倒车咯！",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_door_driver_open_5c75c5",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_door_driver_open_5c75c5.mp3",
+      "label": "主驾开门关闭",
+      "tags": [
+        "door_driver_open"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_door_driver_open_4a6caa",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_door_driver_open_4a6caa.mp3",
+      "label": "主驾车门开启",
+      "tags": [
+        "door_driver_open"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_c9cf9466a80",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_c9cf9466a80.mp3",
+      "label": "倒车挡注意安全【R】",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_2cbe1e",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_2cbe1e.mp3",
+      "label": "内关门-准备出发",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_d2a7ca",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_d2a7ca.mp3",
+      "label": "内开门-拜拜下次再见",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_c9d3da56e70",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_c9d3da56e70.mp3",
+      "label": "前进挡【D】",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_door_passenger_close_57be97",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_door_passenger_close_57be97.mp3",
+      "label": "副驾车门关闭",
+      "tags": [
+        "door_passenger_close"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_door_passenger_open_edd4b4",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_door_passenger_open_edd4b4.mp3",
+      "label": "副驾车门开启",
+      "tags": [
+        "door_passenger_open"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_cc68c65184b",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_cc68c65184b.mp3",
+      "label": "动力已锁止【P】",
+      "tags": [
+        "gear_p"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_door_rr_close_5447c2",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_door_rr_close_5447c2.mp3",
+      "label": "右后车门关闭",
+      "tags": [
+        "door_rr_close"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_door_rr_open_5df57a",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_door_rr_open_5df57a.mp3",
+      "label": "右后车门开启",
+      "tags": [
+        "door_rr_open"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_9547f2",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_9547f2.mp3",
+      "label": "外关门-诶嘿",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_746af7",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_746af7.mp3",
+      "label": "外开门-我来了",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_door_rl_close_dcf491",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_door_rl_close_dcf491.mp3",
+      "label": "左后车门关闭",
+      "tags": [
+        "door_rl_close"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_door_rl_open_35b3c2",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_door_rl_open_35b3c2.mp3",
+      "label": "左后车门开启",
+      "tags": [
+        "door_rl_open"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_c2df1c26cd6",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_c2df1c26cd6.mp3",
+      "label": "当前空挡，注意溜车【N】",
+      "tags": [
+        "gear_n"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_b397fc",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_b397fc.mp3",
+      "label": "拉起手刹",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_b0b9d0",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_b0b9d0.mp3",
+      "label": "松开手刹",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_701a85",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_701a85.mp3",
+      "label": "标准模式",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_start_0f33f6",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_start_0f33f6.mp3",
+      "label": "欢迎乘坐量子号飞船【启动】",
+      "tags": [
+        "start"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_3111fa",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_3111fa.mp3",
+      "label": "沙地模式",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_bbc894",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_bbc894.mp3",
+      "label": "泥地模式",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_688fec",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_688fec.mp3",
+      "label": "灯光关闭",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_40ec9f",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_40ec9f.mp3",
+      "label": "灯光开启",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_c64cf1",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_c64cf1.mp3",
+      "label": "经济模式",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_d08057",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_d08057.mp3",
+      "label": "舒适模式",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_668073",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_668073.mp3",
+      "label": "越野模式",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_start_1b7350",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_start_1b7350.mp3",
+      "label": "车辆已启动系统自检正常【启动】",
+      "tags": [
+        "start"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_shutdown_d164d8",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_shutdown_d164d8.mp3",
+      "label": "车辆已熄火下次再见【熄火】",
+      "tags": [
+        "shutdown"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_b0d8ea",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_b0d8ea.mp3",
+      "label": "迎宾音-动感超人上线",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_seatbelt_855f2e",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_seatbelt_855f2e.mp3",
+      "label": "迎宾音安全带要系好",
+      "tags": [
+        "seatbelt"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_da87fd",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_da87fd.mp3",
+      "label": "运动模式",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_880560",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_880560.mp3",
+      "label": "近光灯",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_73f837",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_73f837.mp3",
+      "label": "远光灯",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_42421d",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_42421d.mp3",
+      "label": "限滑关闭",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_7383e1",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_7383e1.mp3",
+      "label": "限滑开启",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_4c54d42f_misc_70dd83",
+      "pack": "pack_4c54d42f",
+      "folder": "蜡笔小新类语音包",
+      "subfolder": "",
+      "file": "pack_4c54d42f/pack_4c54d42f_misc_70dd83.mp3",
+      "label": "雪地模式",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_windows",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_windows.mp3",
+      "label": "Windows开机声音",
+      "tags": [
+        "start"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_misc_0bb382",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_misc_0bb382.mp3",
+      "label": "两块钱一斤",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_misc_79036b",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_misc_79036b.mp3",
+      "label": "你干嘛",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_misc_0ee9cb",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_misc_0ee9cb.mp3",
+      "label": "哥们儿，这瓜多少钱一斤",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_cae16476687",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_cae16476687.mp3",
+      "label": "我要验牌（D档或其它事件）",
+      "tags": [
+        "gear_d"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_misc_12308f",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_misc_12308f.mp3",
+      "label": "握草",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_misc_a69a11",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_misc_a69a11.mp3",
+      "label": "死鬼~1",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_gear_r_ba1914",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_gear_r_ba1914.mp3",
+      "label": "洒水车倒车请注意（简短版）",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_ce3f6a38f49",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_ce3f6a38f49.mp3",
+      "label": "牌没有问题（R档或其它事件）",
+      "tags": [
+        "gear_r"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_misc_55626e",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_misc_55626e.mp3",
+      "label": "皇上驾到",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_timi",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_timi.wav",
+      "label": "腾讯游戏Timi",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_misc_d25daf",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_misc_d25daf.mp3",
+      "label": "蜡笔小新动感超人上线了",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_misc_3e4289",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_misc_3e4289.mp3",
+      "label": "超级马里奥",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_turn_signal_e28fc3",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_turn_signal_e28fc3.mp3",
+      "label": "转向灯",
+      "tags": [
+        "turn_signal",
+        "turn_left",
+        "turn_right"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_oi",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_oi.mp3",
+      "label": "迎宾音-小白OI",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "pack_c86edb54_misc_387430",
+      "pack": "pack_c86edb54",
+      "folder": "搞笑",
+      "subfolder": "",
+      "file": "pack_c86edb54/pack_c86edb54_misc_387430.mp3",
+      "label": "这瓜皮是金子做的",
+      "tags": [
+        "misc"
+      ]
+    },
+    {
+      "id": "zhuanxiang_e28fc3c6_c0e1f2d3e1c",
+      "pack": "zhuanxiang_e28fc3c6",
+      "folder": "转向灯",
+      "subfolder": "",
+      "file": "zhuanxiang_e28fc3c6/zhuanxiang_e28fc3c6_c0e1f2d3e1c.mp3",
+      "label": "右转弯",
+      "tags": [
+        "turn_right",
+        "turn_signal"
+      ]
+    },
+    {
+      "id": "zhuanxiang_e28fc3c6_cd63a944810",
+      "pack": "zhuanxiang_e28fc3c6",
+      "folder": "转向灯",
+      "subfolder": "",
+      "file": "zhuanxiang_e28fc3c6/zhuanxiang_e28fc3c6_cd63a944810.mp3",
+      "label": "左转弯",
+      "tags": [
+        "turn_left",
+        "turn_signal"
+      ]
+    }
+  ]
+}

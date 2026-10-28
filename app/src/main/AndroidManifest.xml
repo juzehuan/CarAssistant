@@ -56,6 +56,31 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
 
+    <!-- ===== 旗光律动 / 红旗智声 合并所需权限 ===== -->
+    <!-- 录音(Visualizer 跟乐可选)；车机特权权限仅在平台签名包下生效，普通签名仅 no-op -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.car.permission.CAR_VENDOR_EXTENSION" />
+    <uses-permission android:name="android.car.permission.CAR_INFO" />
+    <uses-permission android:name="android.car.permission.CONTROL_CAR_DOORS" />
+
+    <!-- 包可见性：让 bindService 能发现车机厂商服务(Qisi/ExternalCar) -->
+    <queries>
+        <package android:name="ltd.qisi.adapterservice" />
+        <package android:name="com.android.externalcar" />
+        <package android:name="com.android.car" />
+        <package android:name="cn.kuwo.autolite" />
+        <package android:name="com.luna.music.car" />
+        <intent>
+            <action android:name="ltd.qisi.adapterservice.QISIAdapterService" />
+        </intent>
+        <intent>
+            <action android:name="android.car.IExternalCar" />
+        </intent>
+        <intent>
+            <action android:name="android.car.ICar" />
+        </intent>
+    </queries>
+
     <application
         android:name=".App"
         android:allowBackup="false"
@@ -281,5 +306,103 @@
         <meta-data
             android:name="MoreApp"
             android:value="true" />
+
+        <!-- ============================================================ -->
+        <!-- 合并模块：旗光律动 (氛围灯律动)                                -->
+        <!-- ============================================================ -->
+        <activity
+            android:name="com.carassistant.ambient.MainActivity"
+            android:exported="false"
+            android:label="@string/tagline"
+            android:theme="@style/QiguangTheme"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name="com.carassistant.ambient.AboutActivity"
+            android:exported="false"
+            android:label="@string/qg_about_title"
+            android:theme="@style/QiguangTheme"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <service
+            android:name="com.carassistant.ambient.RhythmAccessibilityService"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/qg_accessibility" />
+        </service>
+        <service
+            android:name="com.carassistant.ambient.MediaNotificationListenerService"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+        <receiver
+            android:name="com.carassistant.ambient.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ============================================================ -->
+        <!-- 合并模块：红旗智声 (行车语音提示)                              -->
+        <!-- ============================================================ -->
+        <activity
+            android:name="com.carassistant.voice.DisclaimerActivity"
+            android:exported="false"
+            android:label="@string/disclaimer_title"
+            android:theme="@style/CarVoiceTheme"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name="com.carassistant.voice.MainActivity"
+            android:exported="false"
+            android:label="@string/cv_master_label"
+            android:theme="@style/CarVoiceTheme"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name="com.carassistant.voice.DiagActivity"
+            android:exported="false"
+            android:label="@string/diag_title"
+            android:theme="@style/CarVoiceTheme"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name="com.carassistant.voice.AboutActivity"
+            android:exported="false"
+            android:label="@string/cv_about_title"
+            android:theme="@style/CarVoiceTheme"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name="com.carassistant.voice.ClipPickerActivity"
+            android:exported="false"
+            android:label="选择音频"
+            android:theme="@style/CarVoiceTheme"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <service
+            android:name="com.carassistant.voice.VoiceAccessibilityService"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/carvoice_accessibility" />
+        </service>
+        <receiver
+            android:name="com.carassistant.voice.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

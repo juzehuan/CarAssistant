@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ===== 旗光律动 ===== -->
+    <string name="a11y_btn">开启无障碍</string>
+    <string name="qg_a11y_desc">旗光律动后台服务：氛围灯跟乐/驾驶联动。开启后可关闭本页。</string>
+    <string name="qg_about_body">「旗光律动」用于红旗车机氛围灯跟乐律动、电车呼吸与驾驶联动等光效，仅供个人学习与娱乐。\n\n第三方独立应用，非一汽、红旗或车机厂商官方软件，与品牌无授权背书关系。\n\n普通安装包：不刷机、不改系统分区；后台运行需自行开启无障碍，跟乐模式建议开启通知使用权。\n\n应用内功能完全免费；若付费获得，请向收费方核实，与作者无关。\n\n禁止对本软件收费、倒卖或捆绑销售。\n\n请勿用于商业或违法用途；使用风险自行承担。玩机需谨慎，不放心请卸载。</string>
+    <string name="qg_about_disclaimer_tip">玩机需谨慎；不放心请自行卸载。使用风险自行承担。</string>
+    <string name="qg_about_section_info">关于</string>
+    <string name="qg_about_section_team">开发团队</string>
+    <string name="qg_about_title">关于应用</string>
+    <string name="qg_about_version_fmt">版本 %1$s</string>
+    <string name="custom_add">加入</string>
+    <string name="custom_color_fmt">色号 %1$d</string>
+    <string name="custom_interval_fmt">当前 %1$d 秒</string>
+    <string name="custom_interval_title">换色间隔</string>
+    <string name="custom_palette_hint">2～30 色 · 点选预览 · 长按删除</string>
+    <string name="custom_palette_title">我的色板</string>
+    <string name="custom_preview">试色到灯</string>
+    <string name="custom_reset">恢复默认色板</string>
+    <string name="hint_body">无障碍用于后台保活；通知使用权用于检测音乐播放。两项都开齐后，本提示会自动消失。</string>
+    <string name="master_hint">开启后按所选模式驱动氛围灯</string>
+    <string name="qg_master_label">启用律动</string>
+    <string name="mode_hint">切换后即时生效，每档专属光效</string>
+    <string name="mode_title">选择模式</string>
+    <string name="notif_btn">开启通知使用权</string>
+    <string name="perm_title">还需完成权限</string>
+    <string name="tagline">座舱氛围灯 · 跟乐 / 呼吸 / 驾驶联动</string>
+
+    <!-- ===== 红旗智声 ===== -->
+    <string name="cv_a11y_desc">红旗智声后台监听档位、车门与转向灯，用于播报提示音。</string>
+    <string name="cv_about_body">「红旗智声」用于车机上的档位 / 车门 / 转向等自定义语音播报，仅供个人学习与娱乐。\n\n第三方独立应用，非一汽、红旗或车机厂商官方软件，与品牌无授权背书关系。\n\n普通安装包：不刷机、不改系统分区；后台播报需自行开启无障碍。\n\n应用内功能完全免费；若付费获得，请向收费方核实，与作者无关。\n\n禁止对本软件收费、倒卖或捆绑销售。\n\n请勿用于商业或违法用途；使用风险自行承担。玩机需谨慎，不放心请卸载。</string>
+    <string name="cv_about_disclaimer_tip">完整条款见首次启动的使用免责公告。</string>
+    <string name="cv_about_section_info">关于</string>
+    <string name="cv_about_section_team">开发团队</string>
+    <string name="cv_about_title">关于应用</string>
+    <string name="cv_about_version_fmt">版本 %1$s</string>
+    <string name="diag_title">诊断</string>
+    <string name="disclaimer_ad_duration">约 60 秒</string>
+    <string name="disclaimer_ad_hint">请完整阅读上方条款，倒计时结束后可确认同意</string>
+    <string name="disclaimer_ad_label">阅读等待</string>
+    <string name="disclaimer_agree_btn">我已阅读并同意</string>
+    <string name="disclaimer_body">欢迎使用「红旗智声」。请在停车状态下完整阅读。不同意请立即卸载并停止使用。\n\n【摘要】（详细条款见下文，同意视为接受全文）\n1. 本软件完全免费；付费渠道与作者无关。\n2. 本软件为第三方软件，非车辆 / 车机厂商官方应用，玩机需谨慎；不放心请自行卸载。\n3. 无需 Root、无需 ADB 授权，不刷机、不改系统分区。\n4. 需开启无障碍方可后台播报；作者不保证不影响质保，质保与售后争议与作者无关。\n5. 使用风险自行承担；须输入「同意，后果自行承担」后才能使用。\n\n一、免费说明\n本软件完全免费，仅供个人学习与娱乐。禁止对其安装包、激活或相关服务收费、倒卖或捆绑销售。若您付费获得，请向收费方核实，付费行为与作者无关。\n\n二、第三方软件说明\n本软件由第三方开发，非一汽、红旗、奔腾或其他车辆 / 车机供应商的官方软件，与上述品牌无代理、无授权背书关系。安装使用不代表厂商认可。玩机需谨慎；担心风险或出现异常，请自行卸载。\n\n三、未修改车机系统承诺\n本软件为独立安装的普通应用：不刷机、不改官方固件、不修改系统分区，不篡改系统核心文件。无需 Root，亦不要求 ADB 授权（无需电脑连接调试、无需经 ADB 写入系统目录）。功能通过系统允许的公开接口及无障碍等应用层能力读取车况并播报，不构成对车机系统本身的改写。\n\n四、无障碍说明\n后台播报需开启本应用的无障碍服务。该权限仅用于配合车况监听与播报相关能力；本软件不借此上传账号密码，也不要求联网提交个人隐私信息。您可随时在系统设置中关闭无障碍或卸载本应用。\n\n五、质保与售后\n是否影响车辆或车机质保、能否继续享受 4S 店 / 厂商售后，以销售合同、厂商政策及当地法规为准，由厂商认定，作者无法干预，亦不提供质保证明或售后协调。作者不保证不影响质保。因安装或使用本软件引发的质保、保修、售后争议，与作者无关，后果由使用者自行承担。\n\n六、风险与责任\n驾驶中请以路况与安全为先，勿因播报分心。使用中可能出现播报干扰、音量变化、应用冲突或异常等情形。因下载、安装、使用、误用本软件，或与车辆 / 车机 / 其他软件共同作用导致的任何损失（含人身、财产、车辆、车机、数据及质保相关损失），均由使用者自行承担，作者不承担赔偿或连带责任。怕有问题，请勿安装或自行卸载。\n\n七、合规\n请遵守法律法规、交通规则与车辆使用规范，禁止用于违法或危害公共安全的用途。\n\n八、同意方式\n须完整观看提示时长后，主动输入「同意，后果自行承担」并点击确认，即视为已仔细阅读、理解并自愿接受本公告全部条款（含摘要与详细条款），愿意自行承担全部风险与后果。</string>
+    <string name="disclaimer_countdown_done">已完成，可输入确认语继续</string>
+    <string name="disclaimer_countdown_fmt">剩余 %d 秒</string>
+    <string name="disclaimer_exit_btn">不同意并退出</string>
+    <string name="disclaimer_input_hint">倒计时结束后，请输入：同意，后果自行承担</string>
+    <string name="disclaimer_title">使用免责公告</string>
+    <string name="disclaimer_type_agree">请完整输入「同意，后果自行承担」后再继续</string>
+    <string name="disclaimer_wait">请先完成阅读倒计时</string>
+    <string name="door_hint">开关门边沿播报</string>
+    <string name="gear_hint">P/R/N/D；R 档循环倒车，离开 R 立刻停</string>
+    <string name="hint_a11y">需开启无障碍，否则无法后台播报</string>
+    <string name="cv_master_label">启用红旗智声</string>
+    <string name="status_a11y_off">请开启无障碍</string>
+    <string name="status_off">已暂停</string>
+    <string name="status_on">监听中</string>
+    <string name="turn_hint">拨左/右转向或开双闪时播一次；先开诊断确认信号，再试听选音</string>
+    <string name="vol_boost_hint">关闭则跟随系统音量；打开后播报临时调高，播完恢复</string>
+    <string name="vol_boost_label">播报时提升音量</string>
+    <string name="vol_level_max">最大</string>
+    <string name="vol_level_mid">中</string>
+    <string name="vol_level_mid_high">中上</string>
+</resources>

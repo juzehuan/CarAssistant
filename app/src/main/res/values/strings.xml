@@ -618,4 +618,8 @@
     <string name="keymap_btn_single_combo">单键/组合</string>
     <string name="keymap_seq_prefix">序列：</string>
     <string name="keymap_axis_prefix">模拟轴：</string>
+
+    <!-- 合并模块：旗光律动 / 红旗智声 首页入口 -->
+    <string name="home_feature_ambient">氛围灯律动</string>
+    <string name="home_feature_voice">行车语音提示</string>
 </resources>

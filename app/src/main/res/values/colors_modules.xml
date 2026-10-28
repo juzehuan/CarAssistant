@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 旗光律动 -->
+<color name="qg_accent">#ffffb090</color>
+    <color name="qg_amber">#ffffc14a</color>
+    <color name="qg_bg_bottom">#ff1a060a</color>
+    <color name="qg_bg_mid">#ff0c0a0e</color>
+    <color name="qg_bg_top">#ff050608</color>
+    <color name="qg_brand">#ffe11d2e</color>
+    <color name="qg_brand_soft">#44e11d2e</color>
+    <color name="qg_btn">#ff1a1216</color>
+    <color name="qg_btn_accent">#ffe11d2e</color>
+    <color name="qg_card">#cc101218</color>
+    <color name="qg_card_stroke">#40ff6a4a</color>
+    <color name="qg_hud">#22ff8a3d</color>
+    <color name="qg_line">#ffe11d2e</color>
+    <color name="qg_mode_custom">#ff5bc0de</color>
+    <color name="qg_mode_custom_auto">#ff7dd3c0</color>
+    <color name="qg_mode_drive">#ffff7a45</color>
+    <color name="qg_mode_ev">#ff4ade80</color>
+    <color name="qg_mode_grad">#ffc49bff</color>
+    <color name="qg_mode_pulse">#ffffb74d</color>
+    <color name="qg_mode_rage">#ffff2d3d</color>
+    <color name="qg_mode_soft">#ff6ec8ff</color>
+    <color name="qg_muted">#ff9a8e88</color>
+    <color name="qg_ok">#ff5fcf8f</color>
+    <color name="qg_panel">#ff0a0c10</color>
+    <color name="qg_text">#fffff6f0</color>
+    <color name="qg_warm">#ffff8a3d</color>
+    <color name="qg_warn">#ffffb347</color>
+    <!-- 红旗智声 -->
+<color name="cv_accent">#3db88a</color>
+    <color name="cv_bg_bottom">#152028</color>
+    <color name="cv_bg_top">#0b1218</color>
+    <color name="cv_brand">#e8eef4</color>
+    <color name="cv_btn">#1e2c38</color>
+    <color name="cv_hongqi">#c8102e</color>
+    <color name="cv_line">#33243a48</color>
+    <color name="cv_muted">#8a9aab</color>
+    <color name="cv_text">#f2f5f8</color>
+</resources>

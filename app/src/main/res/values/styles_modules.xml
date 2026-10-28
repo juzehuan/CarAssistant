@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<style name="QiguangTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:colorBackground">@color/qg_bg_top</item>
+        <item name="android:textColorPrimary">@color/qg_text</item>
+        <item name="android:textColorSecondary">@color/qg_muted</item>
+        <item name="android:windowBackground">@color/qg_bg_top</item>
+        <item name="android:statusBarColor">@color/qg_bg_top</item>
+        <item name="android:navigationBarColor">@color/qg_bg_bottom</item>
+    </style>
+<style name="CarVoiceTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:colorBackground">@color/cv_bg_top</item>
+        <item name="android:textColorPrimary">@color/cv_text</item>
+        <item name="android:textColorSecondary">@color/cv_muted</item>
+        <item name="android:windowBackground">@color/cv_bg_top</item>
+        <item name="android:statusBarColor">@color/cv_bg_top</item>
+        <item name="android:navigationBarColor">@color/cv_bg_bottom</item>
+    </style>
+</resources>

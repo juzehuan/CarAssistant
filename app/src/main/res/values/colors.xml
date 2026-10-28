@@ -131,4 +131,12 @@
     <color name="music_accent_light">#FFFF2D55</color>
     <color name="music_accent_glow">#44EE0A24</color>
     <color name="music_vinyl_label">#FFEE0A24</color>
+
+    <!-- 合并模块功能图标底色 -->
+    <color name="icon_bg_ambient">#FFE0F2E9</color>
+    <color name="icon_bg_ambient_start">#FFB7E4C7</color>
+    <color name="icon_bg_ambient_end">#FF13B36B</color>
+    <color name="icon_bg_voice">#FFE1EEF5</color>
+    <color name="icon_bg_voice_start">#FFBFD7E6</color>
+    <color name="icon_bg_voice_end">#FF1F8FC4</color>
 </resources>
